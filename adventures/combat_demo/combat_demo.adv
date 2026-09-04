@@ -1,0 +1,42 @@
+# Demo de combat (v1) : montre le PRNG, l'ecran de combat, l'arme portee.
+# Prose originale.
+
+@title  Demo Combat
+@author a2adv
+@start  entree
+
+@stat HABILETE  8 0 12      # sert d'attaque au combat (2d6 + HABILETE)
+@stat ENDURANCE 14 0 20     # sert de points de vie
+
+@combat_attack HABILETE
+@combat_hp     ENDURANCE
+@combat_basedmg 2           # degats du heros a mains nues
+
+@item epee "Epee courte" atk=1 dmg=2    # +1 attaque, +2 degats tant qu'elle est portee
+
+:: entree
+=! LA FOSSE AUX GOBELINS
+Une fosse etroite, eclairee par une torche mourante. Au fond grogne un gobelin.
+Contre le mur, une *epee courte* est plantee dans un cadavre.
+
+* {not has epee} [Arracher l'epee du cadavre] -> entree
+  ~ give epee
+  ~ sound pickup
+* [Affronter le gobelin] -> combat_gobelin
+
+:: combat_gobelin
+@combat "Gobelin" att=6 hp=9 dmg=3 armor=0
+@victoire sortie
+  ~ score 100
+  ~ sound win
+@defaite  mort
+@fuite    entree
+Le gobelin bondit, dague au poing !
+
+:: sortie
+@ending victoire
+Le gobelin s'effondre. Tu enjambes sa carcasse et gagnes la sortie.
+
+:: mort
+@ending defaite
+La dague du gobelin trouve ta gorge. Le noir t'engloutit.

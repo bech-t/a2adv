@@ -1,0 +1,680 @@
+# L'Orbe de Sortis — aventure complete (systeme leger : stats + flags)
+# Inspiration : livres dont vous etes le heros (heroic fantasy).
+# But : rapporter l'Orbe de Sortis du donjon de l'archimage Malgarde.
+
+@title   L'Orbe de Sortis
+@author  a2adv
+@start   depart
+@intro   intro_legende
+
+# --- Caracteristiques -------------------------------------------------------
+@stat VIE    20  0 20
+@stat FORCE   7  0 15
+@stat MAGIE   2  0 12
+@stat OR     15  0 99
+
+# --- Objets (liste finie ; le heros part avec une dague) --------------------
+@item dague        "DAGUE" on
+@item epee         "EPEE"
+@item bouclier     "BOUCLIER"
+@item torche       "TORCHE"
+@item lanterne     "LANTERNE"
+@item corde        "CORDE"
+@item cle_rouille  "CLE ROUILLEE"
+@item cle_argent   "CLE D'ARGENT"
+@item potion_soin  "POTION DE SOIN"
+@item potion_force "POTION DE FORCE"
+@item grimoire     "GRIMOIRE"
+@item gemme        "GEMME BLEUE"
+@item amulette     "AMULETTE"
+@item provisions   "PROVISIONS"
+@item anneau       "ANNEAU MAGIQUE"
+@item fiole        "FIOLE DE POISON"
+@item orbe         "ORBE DE SORTIS"
+
+# --- Drapeaux du monde ------------------------------------------------------
+@flag connait_orbe
+@flag a_bu
+@flag garde_paye
+@flag chemin_foret
+@flag chemin_montagne
+@flag loup_vaincu
+@flag sorciere_amie
+@flag sort_appris
+@flag pont_franchi
+@flag troll_ecarte
+@flag porte_donjon
+@flag garde_donjon_vaincu
+@flag prisonnier_libre
+@flag pieges_desamorces
+@flag barriere_franchie
+@flag tresor_pris
+@flag archimage_affaibli
+
+# ===========================================================================
+# INTRO (scenes jouees au lancement, avant le menu ; ESC pour sauter)
+# ===========================================================================
+
+:: intro_legende
+@mode full_text
+Depuis mille ans, la malediction de l'archimage Malgarde pese sur la contree
+de Mornegarde. On dit qu'au fond de son donjon repose l'Orbe de Sortis, seule
+capable de briser le sort. Nul n'en est jamais revenu... jusqu'a vous.
+
+# ===========================================================================
+# ACTE I — LE VILLAGE DE MORNEGARDE
+# ===========================================================================
+
+:: depart
+Le vent d'automne pousse les feuilles mortes dans les ruelles de Mornegarde.
+On raconte que l'archimage Malgarde garde, au fond de son donjon, l'Orbe de
+Sortis : celui qui la rapportera delivrera la contree de sa malediction.
+Vous n'avez qu'une dague, quelques pieces, et beaucoup de courage.
+
+* [Gagner la place du village] -> place_village
+
+:: place_village
+La place est le coeur de Mornegarde : la taverne du Sanglier fume a votre
+gauche, l'echoppe du marchand s'ouvre a droite, et la grande porte mene au
+monde sauvage.
+
+* [Entrer a la taverne] -> taverne
+* [Visiter l'echoppe du marchand] -> echoppe
+* {has potion_soin} [Boire une potion de soin] -> boire_soin
+* [Se diriger vers la grande porte] -> portes
+
+:: boire_soin
+Vous videz la fiole tiede. Une chaleur bienfaisante recoud vos blessures.
+~ take potion_soin
+~ add VIE 8
+* [Continuer] -> place_village
+
+:: taverne
+La salle sent la biere et la tourbe. Un vieux barde borgne vous fixe depuis
+un coin sombre. Le tavernier astique un pichet.
+
+* [Aborder le vieux barde] -> taverne_barde
+* {not flag a_bu} [Boire une chope (1 or)] -> taverne_boire
+* [Ressortir sur la place] -> place_village
+
+:: taverne_barde
+« L'Orbe ? » souffle le borgne. « Malgarde la protege d'une barriere de
+sortilege. Sans magie ni grimoire, tu n'iras nulle part. Et mefie-toi de
+son geolier... » Il vous glisse une vieille amulette avant de disparaitre.
+~ set connait_orbe
+~ give amulette
+* [Le remercier et sortir] -> place_village
+
+:: taverne_boire
+La chope vous rechauffe et deux ivrognes vous confient un raccourci par la
+foret. Vous vous sentez d'attaque.
+~ set a_bu
+~ sub OR 1
+~ add VIE 1
+* [Retourner dans la salle] -> taverne
+
+:: echoppe
+« Bienvenue, aventurier ! » lance le marchand. « De la bonne came, pas chere. »
+Vous avez de quoi choisir, si votre bourse suit.
+
+* {stat OR >= 10 and not has epee} [Acheter une epee (10 or)] -> echoppe
+  ~ sub OR 10
+  ~ give epee
+* {stat OR >= 6 and not has bouclier} [Acheter un bouclier (6 or)] -> echoppe
+  ~ sub OR 6
+  ~ give bouclier
+* {stat OR >= 3 and not has torche} [Acheter une torche (3 or)] -> echoppe
+  ~ sub OR 3
+  ~ give torche
+* {stat OR >= 2 and not has corde} [Acheter une corde (2 or)] -> echoppe
+  ~ sub OR 2
+  ~ give corde
+* {stat OR >= 5 and not has potion_soin} [Acheter une potion de soin (5 or)] -> echoppe
+  ~ sub OR 5
+  ~ give potion_soin
+* {stat OR >= 4 and not has provisions} [Acheter des provisions (4 or)] -> echoppe
+  ~ sub OR 4
+  ~ give provisions
+* [Quitter l'echoppe] -> place_village
+
+:: portes
+Le garde de la porte croise sa hallebarde. « Peage : deux pieces pour sortir
+en armes. » Derriere lui, un panneau ronge indique deux directions : la foret
+noire, ou les monts brumeux.
+
+* {stat OR >= 2} [Payer le peage (2 or)] -> peage_paye
+* {stat FORCE >= 7} [Bousculer le garde et forcer le passage] -> forcer_garde
+* [Renoncer et rester au village] -> place_village
+
+:: peage_paye
+~ sub OR 2
+~ set garde_paye
+Le garde empoche vos pieces et s'ecarte. « Bonne route, et bonne chance. »
+* [Prendre la route de la foret noire] -> foret_entree
+* [Prendre la route des monts brumeux] -> montagne_entree
+
+:: forcer_garde
+D'un coup d'epaule vous renversez le garde ahuri et filez avant que l'alarme
+ne sonne. On se souviendra de vous a Mornegarde.
+~ sub VIE 1
+* [Prendre la route de la foret noire] -> foret_entree
+* [Prendre la route des monts brumeux] -> montagne_entree
+
+# ===========================================================================
+# ACTE II-A — LA FORET NOIRE
+# ===========================================================================
+
+:: foret_entree
+~ set chemin_foret
+Sous les frondaisons, la lumiere se fait rare. Un sentier serpente vers une
+clairiere ; un autre plonge vers le bruit d'une riviere.
+
+* [Gagner la clairiere] -> foret_clairiere
+* [Descendre vers la riviere] -> foret_riviere
+
+:: foret_clairiere
+Au centre de la clairiere, une cabane biscornue laisse echapper une fumee
+verte. Sur une souche, quelqu'un a oublie une corde et un quignon de pain.
+
+* {not has corde} [Ramasser la corde et le pain] -> ramasse_corde
+* [Frapper a la porte de la cabane] -> cabane
+* [Repartir vers la riviere] -> foret_riviere
+
+:: ramasse_corde
+~ give corde
+~ give provisions
+~ sound pickup
+Vous empochez la corde et les provisions.
+* [Observer la cabane] -> foret_clairiere
+
+:: cabane
+Une vieille sorciere aux yeux de chat vous jauge. « Tu vas chez Malgarde ?
+Rends-moi service et je t'enseignerai un sortilege. Apporte-moi une gemme
+bleue... ou bien pars, si tu l'as deja. »
+
+* {has gemme} [Offrir la gemme bleue] -> sorciere_gemme
+* {not has gemme} [Promettre de revenir avec la gemme] -> foret_clairiere
+* [Refuser et sortir] -> cabane_refus
+
+:: sorciere_gemme
+~ take gemme
+~ set sorciere_amie
+~ set sort_appris
+~ add MAGIE 4
+La sorciere sourit et grave dans votre esprit les mots d'un sortilege de
+lumiere. « La barriere de Malgarde ne te resistera plus. » Elle vous donne
+aussi une fiole de poison, « pour les mauvaises rencontres ».
+~ give fiole
+* [La remercier] -> foret_clairiere
+
+:: cabane_refus
+« Comme tu voudras, tetu. » La porte claque. Le vent s'est leve.
+* [Descendre vers la riviere] -> foret_riviere
+
+:: foret_riviere
+La riviere gronde, trop large pour un saut. Un tronc glissant en travers
+pourrait servir de pont... si vous aviez de quoi vous assurer. Sur l'autre
+rive, la foret s'ouvre vers de vieilles ruines.
+
+* {has corde} [Franchir en s'assurant avec la corde] -> riviere_corde
+* [Tenter la traversee sur le tronc nu] -> riviere_saut
+* [Remonter vers la clairiere] -> foret_clairiere
+
+:: riviere_corde
+~ set pont_franchi
+La corde tendue, vous traversez sans encombre le courant glace.
+* [Atteindre les ruines] -> foret_loup
+
+:: riviere_saut
+Le tronc est traitre. Vous glissez, la riviere vous emporte et vous martele
+contre les rochers avant que vous ne vous echouiez, hagard, sur l'autre rive.
+~ sub VIE 6
+* {stat VIE >= 1} [Ramper jusqu'aux ruines] -> foret_loup
+* {stat VIE <= 0} [...] -> fin_noyade
+
+:: foret_loup
+Parmi les colonnes brisees, un grand loup gris surgit, babines retroussees.
+Il bondit !
+
+* {has epee} [Le combattre a l'epee] -> loup_epee
+* {stat FORCE >= 10} [L'affronter a mains nues] -> loup_mains
+* {has provisions} [Lui jeter vos provisions et fuir] -> loup_provisions
+* [Combattre a la dague] -> loup_dague
+
+:: loup_epee
+Votre lame trouve la gorge de la bete au deuxieme assaut. Le loup s'effondre.
+~ set loup_vaincu
+~ sub VIE 2
+* [Poursuivre vers le donjon] -> approche_donjon
+
+:: loup_mains
+Vous saisissez le loup a la gorge et l'etranglez dans un corps a corps
+sauvage. Vous en sortez laceres mais vivant.
+~ set loup_vaincu
+~ sub VIE 5
+* {stat VIE >= 1} [Poursuivre vers le donjon] -> approche_donjon
+* {stat VIE <= 0} [...] -> fin_loup
+
+:: loup_provisions
+Le loup se jette sur la viande. Vous en profitez pour detaler vers le donjon.
+~ take provisions
+* [Courir vers le donjon] -> approche_donjon
+
+:: loup_dague
+La dague est trop courte. Le loup vous mord cruellement avant que vous ne
+l'acheviez d'un coup desespere.
+~ set loup_vaincu
+~ sub VIE 8
+* {stat VIE >= 1} [Reprendre haleine, puis avancer] -> approche_donjon
+* {stat VIE <= 0} [...] -> fin_loup
+
+# ===========================================================================
+# ACTE II-B — LES MONTS BRUMEUX
+# ===========================================================================
+
+:: montagne_entree
+~ set chemin_montagne
+Le sentier grimpe entre des rochers coupants. La brume avale les sommets.
+Plus haut, un pont de cordes enjambe un gouffre sans fond.
+
+* [Monter jusqu'au pont] -> montagne_pont
+* [Explorer une grotte a flanc de paroi] -> montagne_grotte
+
+:: montagne_pont
+Le pont de cordes pend, a moitie rompu, au-dessus du vide. Le franchir sera
+un pari. Une gemme bleue scintille, coincee entre deux planches.
+
+* [S'emparer de la gemme bleue] -> prend_gemme
+* {has corde} [Reparer le pont avec votre corde] -> pont_repare
+* [Traverser tel quel, en priant] -> pont_risque
+
+:: prend_gemme
+~ give gemme
+Vous decrochez la gemme et la glissez dans votre bourse.
+* [Revenir au pont] -> montagne_pont
+
+:: pont_repare
+~ set pont_franchi
+Vos noeuds tiennent bon. Vous passez le gouffre sans trembler et rejoignez
+l'autre versant, ou s'ouvre une grotte plus vaste.
+* [Entrer dans la grande grotte] -> montagne_grotte
+
+:: pont_risque
+Une planche cede sous votre pied. Vous vous rattrapez de justesse, le coeur
+au bord des levres, et atteignez l'autre bord, tremblant.
+~ sub VIE 4
+~ set pont_franchi
+* {stat VIE >= 1} [Reprendre votre souffle] -> montagne_grotte
+* {stat VIE <= 0} [...] -> fin_chute
+
+:: montagne_grotte
+La grotte resonne d'un ronflement caverneux : un troll dort, roule en boule
+sur un tas d'ossements. Au-dela, un boyau descend vers les fondations d'un
+donjon. Une lanterne rouille pend a la paroi.
+
+* {not has lanterne} [Decrocher la lanterne sans bruit] -> prend_lanterne
+* {has fiole} [Verser le poison dans la gorge du troll endormi] -> troll_poison
+* {stat FORCE >= 11} [Terrasser le troll dans son sommeil] -> troll_force
+* [Se faufiler sans le reveiller] -> troll_faufiler
+
+:: prend_lanterne
+~ give lanterne
+Vous detachez la lanterne : de l'huile clapote encore dedans.
+* [Observer le troll] -> montagne_grotte
+
+:: troll_poison
+~ take fiole
+~ set troll_ecarte
+Le poison fait son oeuvre : le troll agonise sans meme ouvrir les yeux.
+La voie est libre.
+* [Descendre vers le donjon] -> approche_donjon
+
+:: troll_force
+D'un rocher souleve a deux mains, vous fracassez le crane du monstre. Le
+combat est bref mais vous laisse en sueur.
+~ set troll_ecarte
+~ sub VIE 3
+* [Descendre vers le donjon] -> approche_donjon
+
+:: troll_faufiler
+Vous retenez votre souffle et enjambez le troll. Une pierre roule... la bete
+grogne, une main balaie l'air et vous frappe avant que vous ne plongiez dans
+le boyau.
+~ sub VIE 6
+* {stat VIE >= 1} [Fuir dans le boyau] -> approche_donjon
+* {stat VIE <= 0} [...] -> fin_troll
+
+# ===========================================================================
+# ACTE III — LE DONJON DE MALGARDE
+# ===========================================================================
+
+:: approche_donjon
+Les deux chemins se rejoignent devant une tour noire plantee dans la lande.
+Une porte de fer clouee en barre l'entree. Une serrure rouillee vous nargue.
+
+* {has cle_rouille} [Ouvrir avec la cle rouillee] -> donjon_ouvre
+* {stat FORCE >= 12} [Enfoncer la porte a l'epaule] -> donjon_forcer
+* {has torche} [Chercher une autre entree a la lumiere de la torche] -> donjon_soupirail
+* {has lanterne} [Chercher une autre entree a la lanterne] -> donjon_soupirail
+* [Fouiller les gravats au pied de la tour] -> gravats
+
+:: gravats
+~ give cle_rouille
+Sous un pan de mur effondre, vos doigts se referment sur une vieille cle
+rouillee. Elle pourrait bien aller a cette serrure.
+* [Revenir a la porte] -> approche_donjon
+
+:: donjon_soupirail
+A la lumiere, vous reperez un soupirail bas, juste assez large. Vous vous y
+glissez et tombez dans une cave humide.
+~ set porte_donjon
+* [Avancer dans le donjon] -> donjon_hall
+
+:: donjon_forcer
+La porte cede dans un fracas d'enfer. Malheureusement, le bruit ne passera
+pas inapercu.
+~ set porte_donjon
+~ sub VIE 2
+* [Entrer d'un pas decide] -> donjon_hall
+
+:: donjon_ouvre
+~ set porte_donjon
+La cle rouillee tourne en grincant. La porte s'ouvre sur un hall glacial.
+* [Entrer] -> donjon_hall
+
+:: donjon_hall
+Un hall dallé, eclaire de torches vertes. Trois voies : un escalier vers les
+cachots, une porte cloutee vers une bibliotheque, et un couloir gardé.
+
+* {stat VIE <= 0} [...] -> fin_epuise
+* [Descendre aux cachots] -> donjon_cachots
+* [Pousser la porte de la bibliotheque] -> donjon_biblio
+* [Emprunter le couloir garde] -> donjon_garde
+
+:: donjon_cachots
+Rangee de cellules puantes. Dans l'une d'elles, un homme decharne tend la
+main a travers les barreaux. Une cle d'argent pend, hors de portee, a un clou.
+
+* [Attraper la cle d'argent] -> prend_cle_argent
+* {has cle_argent} [Liberer le prisonnier] -> libere_prisonnier
+* [Remonter au hall] -> donjon_hall
+
+:: prend_cle_argent
+~ give cle_argent
+En vous etirant entre deux barreaux, vous decrochez la cle d'argent.
+* [Regarder le prisonnier] -> donjon_cachots
+
+:: libere_prisonnier
+~ set prisonnier_libre
+La serrure cede. L'homme, un ancien apprenti de Malgarde, vous benit :
+« Sa barriere craint la lumiere. Et tiens, prends cet anneau, il t'aidera. »
+~ give anneau
+~ add MAGIE 2
+* [Remonter au hall] -> donjon_hall
+
+:: donjon_biblio
+Des milliers de grimoires moisis. L'un d'eux, relie de cuir noir, vibre
+faiblement quand vous l'approchez.
+
+* {not has grimoire} [Prendre le grimoire noir] -> prend_grimoire
+* {has grimoire and not flag sort_appris} [Etudier le grimoire] -> etudie_grimoire
+* [Fouiller les rayonnages] -> biblio_fouille
+* [Retourner au hall] -> donjon_hall
+
+:: prend_grimoire
+~ give grimoire
+Le grimoire est lourd et froid. Des runes courent sur sa tranche.
+* [L'examiner de plus pres] -> donjon_biblio
+
+:: etudie_grimoire
+~ set sort_appris
+~ add MAGIE 5
+Des heures durant, vous dechiffrez les runes. Un sortilege de lumiere
+s'imprime enfin dans votre memoire.
+* [Refermer le grimoire] -> donjon_biblio
+
+:: biblio_fouille
+Derriere une rangee de tomes, une gemme bleue et quelques pieces oubliees.
+~ add OR 8
+* {not has gemme} [Empocher la gemme et l'or] -> prend_gemme_biblio
+* [Ne prendre que l'or et sortir] -> donjon_biblio
+
+:: prend_gemme_biblio
+~ give gemme
+Vous glissez la gemme bleue dans votre bourse.
+* [Retourner aux rayonnages] -> donjon_biblio
+
+:: donjon_garde
+Le couloir est barre par le geolier de Malgarde : un colosse casque, hache
+au poing. Impossible de passer sans en decoudre.
+
+* {has epee and has bouclier} [L'affronter, epee et bouclier] -> garde_epee_bouclier
+* {has epee} [Le combattre a l'epee] -> garde_epee
+* {has fiole} [Lui jeter la fiole de poison au visage] -> garde_poison
+* [Charger a la dague] -> garde_dague
+* [Battre en retraite vers le hall] -> donjon_hall
+
+:: garde_epee_bouclier
+Le bouclier encaisse la hache, l'epee trouve la faille de l'armure. Le colosse
+s'ecroule dans un fracas de ferraille.
+~ set garde_donjon_vaincu
+~ sub VIE 3
+* [Franchir le couloir] -> salle_pieges
+
+:: garde_epee
+Un duel ferraillant et sanglant. Vous l'emportez, mais la hache vous a mordu.
+~ set garde_donjon_vaincu
+~ sub VIE 7
+* {stat VIE >= 1} [Franchir le couloir] -> salle_pieges
+* {stat VIE <= 0} [...] -> fin_garde
+
+:: garde_poison
+La fiole se brise sur son heaume ; le poison ruisselle sous l'acier. Le
+colosse titube, s'etrangle et tombe.
+~ take fiole
+~ set garde_donjon_vaincu
+* [Franchir le couloir] -> salle_pieges
+
+:: garde_dague
+Votre dague ne suffit pas contre pareille armure. Le geolier vous assene un
+coup terrible avant que vous ne trouviez, par miracle, un defaut a sa cuirasse.
+~ set garde_donjon_vaincu
+~ sub VIE 10
+* {stat VIE >= 1} [Vous trainer plus loin] -> salle_pieges
+* {stat VIE <= 0} [...] -> fin_garde
+
+:: salle_pieges
+Une salle dallée de motifs suspects. Au fond, un coffre, et une porte gravee
+d'une etoile magique. Le sol, lui, ne vous inspire aucune confiance.
+
+* {flag prisonnier_libre} [Suivre le chemin sur que l'apprenti a decrit] -> pieges_ok
+* {stat MAGIE >= 4} [Deceler les dalles piegees par la magie] -> pieges_ok
+* [Traverser en tatonnant] -> pieges_tatons
+
+:: pieges_ok
+~ set pieges_desamorces
+Vous evitez chaque dalle traitresse et atteignez le coffre intact.
+* [Ouvrir le coffre] -> coffre
+* [Ignorer le coffre et gagner la porte etoilee] -> barriere
+
+:: pieges_tatons
+Une dalle bascule : des lames jaillissent des murs. Vous en rechappez couvert
+d'entailles.
+~ sub VIE 8
+* {stat VIE >= 1} [Atteindre le coffre en boitant] -> coffre
+* {stat VIE <= 0} [...] -> fin_pieges
+
+:: coffre
+Le coffre recele une potion de force et une bourse bien garnie.
+~ give potion_force
+~ add OR 20
+~ set tresor_pris
+* {has potion_force} [Boire aussitot la potion de force] -> boire_force
+* [Garder la potion et gagner la porte etoilee] -> barriere
+
+:: boire_force
+~ take potion_force
+~ add FORCE 4
+Une vigueur brulante gonfle vos muscles.
+* [Gagner la porte etoilee] -> barriere
+
+:: barriere
+La porte etoilee est scellee par une barriere de sortilege qui bourdonne.
+Sans lumiere magique, elle vous reduira en cendres.
+
+* {flag sort_appris} [Reciter le sortilege de lumiere] -> barriere_sort
+* {has amulette and stat MAGIE >= 3} [Invoquer la lumiere par l'amulette] -> barriere_amulette
+* [Tenter de forcer le passage] -> barriere_force
+
+:: barriere_sort
+~ set barriere_franchie
+Les mots de lumiere jaillissent de vos levres ; la barriere se dissout en
+etincelles. La voie vers Malgarde est ouverte.
+* [Entrer dans la salle de l'archimage] -> salle_archimage
+
+:: barriere_amulette
+~ set barriere_franchie
+L'amulette irradie d'un feu doux qui absorbe la barriere. Le passage s'ouvre.
+* [Entrer dans la salle de l'archimage] -> salle_archimage
+
+:: barriere_force
+La barriere vous foudroie. Vous reculez, la peau brulee, les cheveux fumants.
+Impossible de passer ainsi.
+~ sub VIE 9
+* {stat VIE <= 0} [...] -> fin_barriere
+* [Chercher un autre moyen] -> barriere
+
+# ===========================================================================
+# CONFRONTATION FINALE
+# ===========================================================================
+
+:: salle_archimage
+Au sommet d'un escalier d'onyx, l'archimage Malgarde leve les bras. Derriere
+lui, sur un autel, l'Orbe de Sortis pulse d'une lumiere bleue.
+« Encore un voleur ! » tonne-t-il, la foudre au bout des doigts.
+
+* {has amulette and flag sort_appris} [Brandir l'amulette en incantant] -> final_amulette
+* {flag sort_appris} [Lui renvoyer son sortilege] -> final_sort
+* {stat FORCE >= 12} [Bondir et le terrasser] -> final_force
+* {has epee} [Charger a l'epee] -> final_epee
+* [L'attaquer a la dague] -> final_dague
+
+:: final_amulette
+L'amulette et le sortilege s'unissent en un rayon aveuglant. La foudre de
+Malgarde se retourne contre lui ; l'archimage hurle et se desagrege. Le
+silence retombe sur l'autel ou l'Orbe vous attend.
+~ set archimage_affaibli
+* [Saisir l'Orbe de Sortis] -> prendre_orbe
+
+:: final_sort
+Votre sortilege ebranle Malgarde, mais ne suffit pas a l'abattre. Il chancelle,
+affaibli, et prepare deja sa riposte.
+~ set archimage_affaibli
+~ sub VIE 4
+* {has epee} [Achever l'archimage a l'epee] -> final_achever
+* {stat VIE >= 1} [Se jeter sur lui a la dague] -> final_achever
+* {stat VIE <= 0} [...] -> fin_archimage
+
+:: final_force
+Vous fondez sur lui avant qu'il ne lance sa foudre et le plaquez au sol.
+Un eclair vous traverse, mais votre poigne ne lache pas.
+~ sub VIE 8
+~ set archimage_affaibli
+* {stat VIE >= 1} [L'achever] -> final_achever
+* {stat VIE <= 0} [...] -> fin_archimage
+
+:: final_epee
+Vous vous ruez, lame en avant. La foudre vous cueille de plein fouet mais
+votre epee entaille l'archimage, qui recule en saignant.
+~ sub VIE 10
+~ set archimage_affaibli
+* {stat VIE >= 1} [Porter le coup final] -> final_achever
+* {stat VIE <= 0} [...] -> fin_archimage
+
+:: final_dague
+Contre un archimage, une dague est deriseoire. Sa foudre vous fauche avant
+meme que vous n'ayez atteint l'escalier.
+~ sub VIE 14
+* {stat VIE >= 1 and flag archimage_affaibli} [Frapper malgre tout] -> final_achever
+* [...] -> fin_archimage
+
+:: final_achever
+Dans un dernier eclat, Malgarde s'effondre au pied de l'autel. L'Orbe de
+Sortis brille, libre, a portee de main.
+~ set archimage_affaibli
+* [Saisir l'Orbe de Sortis] -> prendre_orbe
+
+:: prendre_orbe
+~ give orbe
+Vos doigts se referment sur l'Orbe tiede. Un soupir de soulagement semble
+parcourir toute la contree. Mais la tour tremble : Malgarde mort, son donjon
+s'effondre.
+
+* {flag prisonnier_libre} [Fuir avec l'apprenti qui connait les issues] -> fin_victoire_totale
+* [Fuir par ou vous etes venu] -> fuite
+
+:: fuite
+Vous devalez les escaliers tandis que les voutes s'ecroulent. Poussiere et
+gravats vous mordent les talons.
+
+* {stat VIE >= 6} [Foncer sans regarder en arriere] -> fin_victoire
+* {has anneau} [Vous envelopper de l'anneau magique et passer] -> fin_victoire
+* [Vous frayer un chemin en toussant] -> fin_victoire_amere
+
+# ===========================================================================
+# FINS
+# ===========================================================================
+
+:: fin_victoire_totale
+@ending victoire
+Guide par l'apprenti, vous jaillissez a l'air libre au moment ou la tour
+s'abat. L'Orbe de Sortis leve la malediction : Mornegarde vous acclame en
+heros, et les menestrels chanteront longtemps votre nom.
+
+:: fin_victoire
+@ending victoire
+Vous surgissez du donjon en ruines, l'Orbe serree contre vous. La contree est
+sauvee. Vous rentrez a Mornegarde, fourbu mais glorieux.
+
+:: fin_victoire_amere
+@ending victoire
+Vous rampez hors des decombres, a demi asphyxie, l'Orbe intacte. La victoire
+a un gout de cendre, mais la malediction est brisee. C'est l'essentiel.
+
+:: fin_noyade
+@ending defaite
+La riviere ne vous a pas rendu. Votre quete s'acheve, emportee par le courant.
+
+:: fin_loup
+@ending defaite
+Le loup gris a eu raison de vous parmi les ruines silencieuses. Nul ne saura.
+
+:: fin_troll
+@ending defaite
+La massue du troll vous a brise. Votre aventure s'arrete dans la grotte obscure.
+
+:: fin_chute
+@ending defaite
+Le pont a cede. Le gouffre brumeux vous a englouti sans un bruit.
+
+:: fin_garde
+@ending defaite
+Le geolier de Malgarde se dresse, victorieux, au-dessus de votre corps.
+
+:: fin_pieges
+@ending defaite
+Les lames de la salle piegee ont eu le dernier mot. Vous ne verrez jamais l'Orbe.
+
+:: fin_barriere
+@ending defaite
+La barriere de sortilege vous a consume. De vous, il ne reste qu'une ombre sur
+les dalles.
+
+:: fin_archimage
+@ending defaite
+La foudre de Malgarde a fait de vous un tas de cendres. L'Orbe demeure sienne.
+
+:: fin_epuise
+@ending defaite
+Vos forces vous abandonnent au coeur du donjon. Vous vous effondrez, vaincu par
+vos blessures, si pres du but.

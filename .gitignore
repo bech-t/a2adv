@@ -1,0 +1,43 @@
+# Player Apple II (cc65)
+player/apple2/build/
+*.o
+*.d
+*.map
+
+# Sorties / images disque
+*.dsk
+*.DSK
+*.po
+*.2mg
+
+# Compilations d'aventures : regenerables via `make dsk ADV=...`, ne pas versionner
+# (sinon elles se perimment silencieusement des que la source .adv change).
+adventures/*/build/
+
+# Sources d'images des aventures : PNG d'origine et conversions intermediaires.
+# Lourds (plusieurs Mo piece) et regenerables ; seuls les .HGR de img/named/
+# sont necessaires au build.
+adventures/*/img/src/
+
+# IMGnn.HGR : toujours REGENERE par `make dsk` depuis img/named/<ID>.HGR
+# (cf. IMAGES.MAP produit par a2c) ; jamais a committer, jamais a nommer a la
+# main. BOOT*.HGR et MENU.HGR restent versionnes (noms fixes, hors @image).
+adventures/*/img/IMG[0-9][0-9].HGR
+
+# Materiel de reference tiers (scenario original, pas nos droits a redistribuer) :
+# a garder en local, jamais dans le depot public.
+adventures/*/*.pdf
+adventures/*/*Rolis*
+adventures/*/*_files/
+
+# Metadonnees Windows (flux "provenance" ajoute par l'Explorateur sous WSL)
+*Zone.Identifier*
+
+# Compilateur (Python)
+__pycache__/
+*.pyc
+.venv/
+
+# Éditeur Angular (bien plus tard)
+editor/node_modules/
+editor/dist/

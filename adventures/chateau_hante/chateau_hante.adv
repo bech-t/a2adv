@@ -1,0 +1,307 @@
+# Le Chateau Hante — adaptation en livre-jeu (structure inspiree d'un vieux
+# jeu BASIC a pieces : 18 salles, 6 objets, but = le rituel de la poupee).
+# Prose originale ; deplacements = choix ; objets = flags de possession.
+
+@title  Le Chateau Hante
+@author a2adv
+@start  entree
+@intro  intro_legende intro_quete intro_entree
+
+@stat COURAGE 8 0 8
+
+@item lampe  "Lampe a huile"
+@item cle    "Cle rouillee"
+@item corde  "Corde"
+@item livre  "Grimoire"
+@item filet  "Filet"
+@item poupee "Poupee de porcelaine"
+
+@flag couloir_vu       # a-t-on deja traverse le couloir ? (situation 1re fois)
+
+# ===========================================================================
+# INTRO
+# ===========================================================================
+
+:: intro_legende
+@mode full_text
+=! LE CHATEAU HANTE
+
+Il y a un siecle, le seigneur Aldric de Sombreveille voulut arracher a la mort
+ce qu'aucun homme ne devrait convoiter. 
+Alchimiste rongé d'orgueil, il crut
+pouvoir garder aupres de lui, pour l'eternite, sa fille unique : la petite
+Ligeia. 
+
+Une nuit sans lune, il scella l'ame de l'enfant dans une poupee de
+porcelaine. Mais le rituel se retourna contre lui. Ligeia devint un spectre
+glace, condamne a errer ; Aldric perit dans son laboratoire, la bouche pleine
+de cendres ; et le chateau se referma sur eux comme un tombeau.
+
+:: intro_quete
+@mode full_text
+Depuis, le village vit sous son ombre : les recoltes noircissent, les enfants
+s'eveillent en hurlant. 
+Vous seul avez ose dechiffrer l'ultime page du grimoire d'Aldric. Elle dit ceci : 
+pour delivrer Ligeia, il faut porter sa poupee jusqu'a la terre consacree du cimetiere,
+ sous le chateau, et y prononcer les mots du contre-rituel. 
+
+Ce soir, la grille s'ouvre devant vous. Prenez garde :
+chaque frayeur entame un peu votre raison, et le spectre de l'enfant, 
+prisonnier de sa propre garde, ne vous laissera pas l'approcher sans combattre.
+
+:: intro_entree
+@mode image_text
+@image entree
+La grille noire se dresse entre deux statues rongees.
+Au bout de l'allee, le chateau vous attend.
+
+@chapter "Rez-de-chaussee"
+
+# ===========================================================================
+# REZ-DE-CHAUSSEE
+# ===========================================================================
+
+:: entree
+Les grilles rouillees se referment seules derriere vous, dans un grincement qui
+ressemble a un rire. La cour est envahie de ronces et de statues sans visage,
+que la lune blafarde etire en silhouettes menacantes. 
+
+Devant vous, la lourde porte du grand hall bee sur une obscurite plus noire que la nuit.
+
+* [Franchir la porte du grand hall] -> hall
+
+:: hall
+Un hall immense et glace, ou chaque pas reveille des echos qui n'en finissent
+pas. Aux murs, des portraits d'ancetres au regard trop vivant semblent tourner
+la tete a votre passage. 
+Un grand escalier de pierre s'enfonce vers les etages,
+avale par les tenebres. De part et d'autre, deux hautes portes vous attendent.
+
+* [Entrer dans la bibliotheque] -> biblio
+* [Passer au salon] -> salon
+* [Ressortir dans la cour] -> entree
+
+:: biblio
+Des rayonnages vertigineux ploient sous des milliers de grimoires que la
+moisissure a soudes entre eux. L'air sent le cuir pourri et l'encens froid.
+{not has lampe} Sur un lutrin de fer, une *lampe a huile* pleine attend, comme posee la un instant plus tot.
+{not has livre} A cote, un vieux *grimoire* relie de peau noire palpite faiblement, comme un coeur qui refuse de mourir.
+
+* {not has lampe} [Prendre la lampe a huile] -> biblio
+  ~ give lampe
+  ~ score 10
+  ~ sound pickup
+* {not has livre} [Emporter le grimoire de peau noire] -> biblio
+  ~ give livre
+  ~ score 10
+  ~ sound pickup
+* [Revenir au hall] -> hall
+
+:: salon
+Un salon fige dans le deuil : fauteuils eventres, miroirs voiles de draps
+jaunis, cheminee froide d'ou monte une odeur de cendre humide. Sur le manteau,
+une pendule arretee marque minuit depuis cent ans. Une porte entrouverte laisse
+deviner la salle a manger.
+
+* [Gagner la salle a manger] -> salle_manger
+* [Retourner au hall] -> hall
+
+:: salle_manger
+Une table interminable dressee pour un festin depuis longtemps pourri : la
+vaisselle est fendue, les mets ne sont plus que poussiere grise, les couverts
+d'argent noircis. Aux chandeliers, des toiles d'araignee tiennent lieu de
+bougies. Une porte battante grince vers les cuisines.
+
+* [Entrer dans la cuisine] -> cuisine
+* [Revenir au salon] -> salon
+
+:: cuisine
+Un chaos de marmites renversees et de crochets a viande rouilles qui se
+balancent sans un souffle d'air. Le sol colle sous vos pas.
+{not has cle} Accrochee au mur, parmi les louches ternies, une grosse *cle rouillee* luit d'un eclat qui ne doit rien a la lune.
+
+* {not has cle} [Decrocher la cle rouillee] -> cuisine
+  ~ give cle
+  ~ score 10
+  ~ sound pickup
+* [Passer a l'ancien office] -> office
+* [Revenir a la salle a manger] -> salle_manger
+
+:: office
+Un etroit office a vaisselle, tapisse de toiles d'araignee si epaisses qu'elles
+etouffent le bruit. Des piles d'assiettes ebrechees montent jusqu'au plafond,
+pretes a s'ecrouler. Dans un angle, une trappe basse ouvre sur un escalier qui
+descend vers le cellier.
+
+* [Descendre au cellier] -> cellier
+* [Revenir a la cuisine] -> cuisine
+
+:: cellier
+Des rangees de tonneaux crevés suintent dans une humidite de tombeau ; l'eau
+goutte quelque part, avec une regularite obsedante. Des formes pales fuient a
+votre approche — rats, peut-etre, ou pire. Au fond, un escalier grincant
+s'enfonce vers les etages, avale par une obscurite totale.
+
+* [Prendre l'escalier grincant] -> escalier
+* [Remonter a l'office] -> office
+
+:: escalier
+L'escalier de bois vermoulu craque et ploie sous chaque marche, comme s'il
+voulait vous faire tomber. Une haleine froide descend d'en haut.
+{not has lampe} Au-dela des premieres marches, tout n'est que tenebres : monter ainsi, ce serait courir a l'aveugle vers le vide.
+{has lampe} Votre lampe repousse l'ombre pas a pas ; les marches montent en tremblant vers un couloir.
+
+* {has lampe} [Monter jusqu'au couloir] -> couloir
+* [Redescendre au cellier] -> cellier
+
+@chapter "Etage"
+
+# ===========================================================================
+# ETAGE
+# ===========================================================================
+
+:: couloir
+~ {not flag couloir_vu} sub COURAGE 1
+~ {not flag couloir_vu} sound magic
+@on_exit
+~ set couloir_vu
+Un long couloir aux tentures dechirees, ou des courants d'air venus de nulle
+part font claquer des portes que vous ne voyez pas. Le plancher gemit.
+{not flag couloir_vu} Soudain, une berceuse d'enfant s'eleve tout pres, glacante, et un frisson vous parcourt l'echine avant que le silence ne retombe.
+{flag couloir_vu} Deux chambres se font face, silencieuses.
+
+* [Entrer dans la chambre de maitre] -> chambre
+* [Pousser la porte de la salle de bain] -> bain
+* [Redescendre l'escalier] -> escalier
+
+:: chambre
+La chambre de maitre, ecrasee sous un lit a baldaquin que les mites ont reduit
+en dentelle. Un parfum de violette fanee flotte encore, incongru dans tant de
+pourriture.
+{not has corde} Au pied du lit, dans un coffre force et ouvert, une longue *corde* solide est lovee comme un serpent endormi.
+
+* {not has corde} [Emporter la corde] -> chambre
+  ~ give corde
+  ~ score 10
+  ~ sound pickup
+* [Monter a la loge du gardien] -> gardien
+* [Revenir au couloir] -> couloir
+
+:: bain
+Une salle de bain lugubre, carrelee de faience jaunie. La baignoire de fonte
+est pleine d'une eau noire, parfaitement immobile, ou vous evitez de plonger le
+regard trop longtemps. Un escalier de service, etroit, grimpe vers le grenier.
+
+* [Grimper au grenier] -> grenier
+* [Revenir au couloir] -> couloir
+
+:: gardien
+La loge du gardien, jonchee d'os de rongeurs et de vieux registres illisibles.
+Ici veillait autrefois l'homme charge de tenir close la porte du laboratoire.
+{not has filet} Un grand *filet* de chasse, encore solide, pend a un clou : de quoi entraver une bete... ou ce qui n'en est plus une.
+
+* {not has filet} [Prendre le filet] -> gardien
+  ~ give filet
+  ~ score 10
+  ~ sound pickup
+* [Gagner la tour est] -> tour_est
+* [Redescendre a la chambre] -> chambre
+
+:: grenier
+Sous les combles poussiereux, la lune tombe par une lucarne brisee sur un
+plancher jonche de vieux jouets casses.
+{not has poupee} Sur un coffre, une *poupee de porcelaine* est assise bien droite, comme si on venait de l'y poser. Son visage peint sourit ; ses yeux vous suivent.
+{not has poupee and not has filet} Autour d'elle rode un spectre glace, la silhouette d'une enfant aux orbites vides, qui se dresse entre vous et le jouet.
+{not has poupee and has filet} Le spectre flotte, hesitant ; votre *filet* fremit, pret a l'entraver.
+{has poupee} Le grenier est desormais silencieux : l'ame de l'enfant repose entre vos mains.
+
+* {has filet and not has poupee} [Capturer le spectre au filet et saisir la poupee] -> grenier
+  ~ give poupee
+  ~ score 25
+  ~ sound magic
+* {not has filet} [Tenter de saisir la poupee malgre le spectre] -> spectre_fuite
+* [Redescendre a la salle de bain] -> bain
+* [Passer a la tour ouest] -> tour_ouest
+
+:: spectre_fuite
+Le spectre ouvre une bouche d'ombre et pousse un hurlement qui glace la moelle
+et fait saigner les oreilles. Terrasse par l'effroi, vous devalez l'escalier
+sans demander votre reste, poursuivi par ce cri d'enfant qui n'en finit pas.
+~ sub COURAGE 2
+~ sound lose
+* {stat COURAGE >= 1} [Reprendre vos esprits] -> bain
+* {stat COURAGE <= 0} [...] -> fin_folie
+
+:: tour_ouest
+Le sommet de la tour ouest, ouvert aux quatre vents qui hurlent dans les
+meurtrieres. En contrebas, tres loin, on devine les croix penchees du cimetiere
+et la lueur verdatre qui flotte au-dessus des tombes. Une seule porte redescend
+vers le grenier.
+
+* [Revenir au grenier] -> grenier
+
+:: tour_est
+La tour est se reduit a un palier de pierre et a une unique porte de fer,
+gravee de symboles alchimiques qui donnent la nausee a les fixer. Derriere,
+c'est le laboratoire ou tout a commence.
+{not has cle} Un gros cadenas rouille en interdit l'acces.
+{has cle} Votre cle rouillee entre dans le cadenas comme si elle avait ete forgee pour lui.
+
+* {has cle} [Ouvrir le laboratoire] -> labo
+  ~ sound door
+* [Rejoindre la loge du gardien] -> gardien
+
+@chapter "Denouement"
+
+# ===========================================================================
+# DENOUEMENT
+# ===========================================================================
+
+:: labo
+Le laboratoire d'Aldric : cornues brisees, alambics figes, symboles a la craie
+a demi effaces sur les dalles. Au centre, la depouille dessechee d'un homme
+agenouille devant un puits noir — le seigneur lui-meme, dit-on, qui descend
+jusqu'a la crypte du cimetiere. L'air y est si lourd qu'il pese sur la poitrine.
+
+* {has corde} [Descendre au cimetiere par le puits] -> cimetiere
+* {not has corde} [Se laisser tomber dans le puits] -> fin_chute
+* [Remonter a la tour est] -> tour_est
+
+:: cimetiere
+La crypte debouche a ciel ouvert sur un cimetiere blotti sous le chateau, entre
+des croix rongees et une lune malade. Une brume verdatre rampe entre les tombes.
+Au centre, un autel de pierre noire attend, use par des siecles de rituels. Vous
+sentez que c'est ici, et nulle part ailleurs, que l'histoire doit s'achever.
+{not has poupee} Mais sans la poupee ou dort l'ame de Ligeia, vos mots resteront vains.
+{not has livre} Sans le grimoire d'Aldric, vous ignorez les paroles du contre-rituel.
+
+* {has poupee and has livre} [Deposer la poupee sur l'autel et lire le contre-rituel] -> fin_victoire
+  ~ score 50
+  ~ sound magic
+* [Remonter au laboratoire] -> labo
+
+# ===========================================================================
+# FINS
+# ===========================================================================
+
+:: fin_victoire
+@ending victoire
+Les mots anciens roulent dans la nuit comme un tonnerre lointain. La poupee
+s'illumine de l'interieur, se fend, et une petite silhouette translucide s'en
+eleve. Pour la premiere fois depuis un siecle, le spectre de Ligeia sourit
+vraiment, avant de se dissoudre dans une lumiere douce. Le chateau tout entier
+soupire, et ses pierres semblent enfin se reposer. A l'aube, le village
+s'eveille sans cauchemars — et l'on chantera longtemps le nom de celui qui osa
+franchir la grille.
+
+:: fin_chute
+@ending defaite
+Le puits est plus profond que la nuit elle-meme. Vous tombez longtemps, tres
+longtemps, jusqu'a ce que le froid et le silence vous recoivent. Le chateau de
+Sombreveille garde un visiteur de plus, et le village, une esperance de moins.
+
+:: fin_folie
+@ending defaite
+Le hurlement de l'enfant ne quitte plus votre tete. On vous retrouvera, bien
+des annees plus tard, cheveux blanchis, errant dans les couloirs du chateau, a
+bercer une poupee imaginaire en riant tout bas avec les portraits.

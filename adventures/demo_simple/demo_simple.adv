@@ -1,0 +1,76 @@
+# demo.adv — mini-aventure d'exemple pour valider la grammaire DSL v0
+# (2 stats + 1 objet, 6 sections, une fin victoire et une fin defaite)
+
+@title   La Caverne aux Echos
+@author  Thomas
+@start   lisiere
+
+@stat VIE    10  0 10
+@stat OR      0  0 99
+@stat MORAL   5  0 10
+
+@item torche  "Torche"
+
+@flag a_fouille        off
+@flag torche_allumee   off
+
+# ---------------------------------------------------------------------------
+
+:: lisiere
+@mode image_text
+@image foret
+Au bout du sentier, l'entree sombre d'une caverne vous fait face.
+Le vent y siffle comme une voix lointaine.
+
+* [S'approcher de l'entree] -> entree
+* [Fouiller les buissons] -> buissons
+
+:: buissons
+@mode full_text
+@on_enter
+  ~ set a_fouille
+Sous les ronces, vous trouvez une vieille torche encore utilisable.
+
+* {not has torche} [Ramasser la torche] -> lisiere
+  ~ give torche
+  ~ add MORAL 2
+* [Retourner au sentier] -> lisiere
+
+:: entree
+@mode image_text
+@image caverne
+{has torche} La torche eclaire des parois couvertes de symboles.
+{not has torche} L'obscurite est totale : vous avancez a l'aveugle.
+
+* {has torche} [Suivre les symboles] -> tresor
+* [Avancer dans le noir] -> gouffre
+* [Ressortir] -> lisiere
+
+:: tresor
+@mode full_image
+@image coffre
+Les symboles menent a un coffre debordant de pieces d'or !
+
+* [Empocher le tresor] -> victoire
+  ~ add OR 50
+
+:: gouffre
+@mode full_text
+@on_enter
+  ~ sub VIE 10
+  ~ sub MORAL 5
+Un pas de trop : le sol se derobe. Vous chutez dans le vide...
+
+* [...] -> defaite
+
+# --- Fins ------------------------------------------------------------------
+
+:: victoire
+@mode full_text
+@ending victoire
+Vous ressortez fortune faite. L'aventure est un succes !
+
+:: defaite
+@mode full_text
+@ending defaite
+Les echos de la caverne resteront votre derniere compagnie.
