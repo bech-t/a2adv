@@ -1,0 +1,137 @@
+<div class="preamble">
+  <h2>
+    <mat-icon>settings</mat-icon>
+    Préambule — réglages globaux de l'aventure
+  </h2>
+
+  <mat-card appearance="outlined" class="meta-card">
+    <mat-card-content class="meta">
+      <mat-form-field appearance="outline" class="f-title" subscriptSizing="dynamic">
+        <mat-label>Titre</mat-label>
+        <input matInput [value]="doc().title" (change)="onMeta('title', $any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="f-author" subscriptSizing="dynamic">
+        <mat-label>Auteur</mat-label>
+        <input matInput [value]="doc().author" (change)="onMeta('author', $any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="f-start" subscriptSizing="dynamic">
+        <mat-label>Section de départ (@start)</mat-label>
+        <input matInput [value]="doc().start" (change)="onMeta('start', $any($event.target).value)" />
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Caractéristiques -->
+  <mat-card appearance="outlined" class="decl-card">
+    <mat-card-header><mat-card-title><mat-icon>insights</mat-icon> Caractéristiques (@stat)</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <div class="card-toolbar"><button mat-stroked-button (click)="addStat()"><mat-icon>add</mat-icon> Ajouter</button></div>
+      @if (doc().stats.length) {
+        <table class="decl-table">
+          <thead>
+            <tr><th>Nom</th><th>Initiale</th><th>Min</th><th>Max</th><th>Masquée</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (s of doc().stats; track s.line) {
+              <tr>
+                <td><input class="cell name" [value]="s.name" (change)="updateStat(s, { name: $any($event.target).value })" /></td>
+                <td><input class="cell num" type="number" [value]="s.init" (change)="updateStat(s, { init: toNumber($any($event.target).value) })" /></td>
+                <td><input class="cell num" type="number" [value]="s.lo" (change)="updateStat(s, { lo: toNumber($any($event.target).value) })" /></td>
+                <td><input class="cell num" type="number" [value]="s.hi" (change)="updateStat(s, { hi: toNumber($any($event.target).value) })" /></td>
+                <td class="center">
+                  <mat-checkbox [checked]="s.hidden" (change)="updateStat(s, { hidden: $event.checked })"
+                    matTooltip="Absente du bandeau d'état, mais toujours lisible en condition" />
+                </td>
+                <td>
+                  <button mat-icon-button (click)="removeStat(s)" matTooltip="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty">Aucune caractéristique.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Drapeaux -->
+  <mat-card appearance="outlined" class="decl-card">
+    <mat-card-header><mat-card-title><mat-icon>flag</mat-icon> Drapeaux (@flag)</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <div class="card-toolbar"><button mat-stroked-button (click)="addFlag()"><mat-icon>add</mat-icon> Ajouter</button></div>
+      @if (doc().flags.length) {
+        <table class="decl-table">
+          <thead>
+            <tr><th>Nom</th><th>Défaut ON</th><th>Local</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (f of doc().flags; track f.line) {
+              <tr>
+                <td><input class="cell name" [value]="f.name" (change)="updateFlag(f, { name: $any($event.target).value })" /></td>
+                <td class="center">
+                  <mat-checkbox [checked]="f.on" [disabled]="f.local" (change)="updateFlag(f, { on: $event.checked })"
+                    matTooltip="Un drapeau local démarre toujours à off" />
+                </td>
+                <td class="center">
+                  <mat-checkbox [checked]="f.local" (change)="updateFlag(f, { local: $event.checked })"
+                    matTooltip="Remis à off à chaque changement de chapitre" />
+                </td>
+                <td>
+                  <button mat-icon-button (click)="removeFlag(f)" matTooltip="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty">Aucun drapeau.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Objets -->
+  <mat-card appearance="outlined" class="decl-card">
+    <mat-card-header><mat-card-title><mat-icon>inventory_2</mat-icon> Objets (@item)</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <div class="card-toolbar"><button mat-stroked-button (click)="addItem()"><mat-icon>add</mat-icon> Ajouter</button></div>
+      @if (doc().items.length) {
+        <table class="decl-table">
+          <thead>
+            <tr><th>Id</th><th>Libellé</th><th>Possédé au départ</th><th>Atq</th><th>Dég</th><th>Armure</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (it of doc().items; track it.line) {
+              <tr>
+                <td><input class="cell name" [value]="it.name" (change)="updateItem(it, { name: $any($event.target).value })" /></td>
+                <td><input class="cell label" [value]="it.label" (change)="updateItem(it, { label: $any($event.target).value })" /></td>
+                <td class="center">
+                  <mat-checkbox [checked]="it.on" (change)="updateItem(it, { on: $event.checked })" />
+                </td>
+                <td><input class="cell num small" type="number" [value]="it.atk" (change)="updateItem(it, { atk: toNumber($any($event.target).value) })" /></td>
+                <td><input class="cell num small" type="number" [value]="it.dmg" (change)="updateItem(it, { dmg: toNumber($any($event.target).value) })" /></td>
+                <td><input class="cell num small" type="number" [value]="it.armor" (change)="updateItem(it, { armor: toNumber($any($event.target).value) })" /></td>
+                <td>
+                  <button mat-icon-button (click)="removeItem(it)" matTooltip="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty">Aucun objet.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <p class="hint">
+    Chaque modification réanalyse le document en entier — aucune conséquence ailleurs dans le fichier
+    (contrairement à `a2c`, cet éditeur ne vérifie ni les bornes, ni les références).
+  </p>
+</div>

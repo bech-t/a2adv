@@ -1,0 +1,117 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: auto;
+  padding: 16px 24px;
+  box-sizing: border-box;
+  background: var(--mat-sys-surface-container-lowest, #f4f4f7);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.meta-card,
+.decl-card {
+  margin-bottom: 16px;
+  max-width: 980px;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem !important;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .f-title {
+    flex: 2 1 260px;
+  }
+  .f-author {
+    flex: 1 1 160px;
+  }
+  .f-start {
+    flex: 1 1 200px;
+  }
+}
+
+.card-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.decl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    opacity: 0.7;
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  td {
+    padding: 2px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .center {
+    text-align: center;
+  }
+}
+
+.cell {
+  font: inherit;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover,
+  &:focus {
+    border-color: rgba(0, 0, 0, 0.25);
+    background: #fff;
+  }
+
+  &.name {
+    font-family: monospace;
+    min-width: 140px;
+  }
+  &.label {
+    min-width: 160px;
+  }
+  &.num {
+    width: 64px;
+    text-align: right;
+  }
+  &.num.small {
+    width: 48px;
+  }
+}
+
+.empty {
+  opacity: 0.55;
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  opacity: 0.6;
+  max-width: 60em;
+}

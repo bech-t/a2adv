@@ -1,0 +1,78 @@
+<div class="adventure-tree">
+  <div class="adv-title">
+    <mat-icon>menu_book</mat-icon>
+    <span class="title-text">{{ doc().title || '(sans titre)' }}</span>
+  </div>
+
+  <mat-nav-list dense class="preamble-list">
+    <a mat-list-item class="section-item" [class.selected]="selectedIsPreamble()" (click)="selectPreamble.emit()">
+      <mat-icon matListItemIcon>settings</mat-icon>
+      <span matListItemTitle>Préambule</span>
+    </a>
+  </mat-nav-list>
+
+  <mat-accordion multi="true">
+    @for (chapter of doc().chapters; track $index) {
+      @if (chapter.sections.length || chapter.headerLine !== null) {
+        <mat-expansion-panel [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ chapterLabel($index, chapter.title) }}</mat-panel-title>
+            <mat-panel-description>
+              {{ chapter.sections.length }}
+              <span class="chapter-actions">
+                <button
+                  mat-icon-button
+                  class="mini-icon-btn"
+                  matTooltip="Ajouter une section à ce chapitre"
+                  (click)="addSection($index, $event)"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+                @if ($index > 0) {
+                  <button
+                    mat-icon-button
+                    class="mini-icon-btn"
+                    matTooltip="Fusionner avec le chapitre précédent"
+                    (click)="mergeChapter($index, $event)"
+                  >
+                    <mat-icon>merge</mat-icon>
+                  </button>
+                }
+              </span>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <mat-nav-list dense class="section-list">
+            @for (section of chapter.sections; track section.name) {
+              @let info = iconFor(section);
+              <a
+                mat-list-item
+                class="section-item"
+                [class.selected]="section.name === selected() && !selectedIsPreamble()"
+                [matTooltip]="info.label"
+                matTooltipPosition="right"
+                (click)="select.emit(section.name)"
+              >
+                <mat-icon matListItemIcon class="kind-icon" [class]="info.cls">{{ info.icon }}</mat-icon>
+                <span matListItemTitle>{{ section.name }}</span>
+                <button
+                  mat-icon-button
+                  class="mini-icon-btn delete-btn"
+                  matTooltip="Supprimer cette section"
+                  (click)="removeSection(section, $event)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </a>
+            }
+          </mat-nav-list>
+        </mat-expansion-panel>
+      }
+    }
+  </mat-accordion>
+
+  <button type="button" mat-stroked-button class="add-chapter-btn" (click)="addChapter()">
+    <mat-icon>add</mat-icon>
+    Nouveau chapitre
+  </button>
+</div>

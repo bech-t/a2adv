@@ -1,0 +1,35 @@
+@if (section(); as sec) {
+  <mat-card appearance="outlined" class="section-card">
+    <mat-card-header>
+      <mat-card-title>:: {{ sec.name }}</mat-card-title>
+      <span class="spacer"></span>
+      <button mat-flat-button color="primary" [disabled]="!dirty()" (click)="save()">
+        <mat-icon>save</mat-icon>
+        Enregistrer
+      </button>
+    </mat-card-header>
+
+    <mat-card-content class="card-body">
+      @if (choices().length) {
+        <div class="choices-summary">
+          <span class="label">Mène vers :</span>
+          @for (c of choices(); track c.lineIndex) {
+            <button mat-stroked-button class="choice-chip" (click)="jumpTo.emit(c.target)">
+              {{ c.label || '(sans libellé)' }} → {{ c.target }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="body">
+        <app-code-editor [value]="text()" (valueChange)="onEdit($event)" />
+      </div>
+
+      @if (dirty()) {
+        <p class="hint">Modifications non enregistrées — « Enregistrer » les répercute dans le document (aperçu et export).</p>
+      }
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <p class="empty">Choisissez une section dans la hiérarchie, ou le préambule.</p>
+}

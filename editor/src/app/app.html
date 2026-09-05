@@ -1,0 +1,61 @@
+<mat-toolbar color="primary" class="toolbar">
+  <mat-icon>auto_stories</mat-icon>
+  <span class="title">a2adv — éditeur</span>
+
+  <span class="spacer"></span>
+
+  <span class="filename">{{ fileName() }} · {{ sectionCount() }} section(s)</span>
+
+  <button mat-button (click)="fileInput.click()">
+    <mat-icon>folder_open</mat-icon>
+    Importer un .adv
+  </button>
+  <input #fileInput type="file" accept=".adv,text/plain" hidden (change)="onImport($event)" />
+
+  <button mat-flat-button (click)="onExport()">
+    <mat-icon>download</mat-icon>
+    Exporter
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container class="shell">
+  <mat-sidenav mode="side" [opened]="true" class="sidenav">
+    <app-adventure-tree
+      [doc]="doc()"
+      [selected]="selectedSection()"
+      [selectedIsPreamble]="selectedIsPreamble()"
+      (select)="onSelect($event)"
+      (selectPreamble)="onSelectPreamble()"
+      (docChanged)="onDocChanged($event)"
+    />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <mat-tab-group class="tabs" [selectedIndex]="activeTab()" (selectedIndexChange)="activeTab.set($event)">
+      <mat-tab label="Éditeur">
+        <div class="tab-body">
+          @if (selectedIsPreamble()) {
+            <app-preamble-editor [doc]="doc()" (changed)="onDocChanged($event)" />
+          } @else {
+            <app-section-editor
+              [doc]="doc()"
+              [sectionName]="selectedSection()"
+              (saved)="onSaved()"
+              (jumpTo)="onSelect($event)"
+            />
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Graphe">
+        <div class="tab-body graph-layout">
+          <p class="graph-hint">
+            Vue d'ensemble, en lecture seule — suit les choix (<code>-&gt;</code>), pas les chapitres. Cliquer
+            une section y bascule dans l'onglet Éditeur.
+          </p>
+          <app-scene-tree [doc]="doc()" [selected]="selectedSection()" (select)="onGraphSelect($event)" />
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-sidenav-content>
+</mat-sidenav-container>

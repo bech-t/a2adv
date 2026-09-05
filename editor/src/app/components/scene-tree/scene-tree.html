@@ -1,0 +1,48 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="scene-tree">
+  <!-- Feuille : section deja affichee ailleurs (carrefour), cible manquante,
+       ou section sans aucun choix (fin de partie). -->
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+    <button
+      type="button"
+      class="node-btn leaf"
+      [class.selected]="node.name === selected()"
+      [class.missing]="node.missing"
+      [class.cycle]="node.alreadyShown"
+      [matTooltip]="node.viaLabel ?? ''"
+      [matTooltipDisabled]="!node.viaLabel"
+      (click)="select.emit(node.name)"
+    >
+      @if (node.missing) {
+        <mat-icon>error_outline</mat-icon>
+      } @else if (node.alreadyShown) {
+        <mat-icon>subdirectory_arrow_right</mat-icon>
+      } @else {
+        <mat-icon>flag</mat-icon>
+      }
+      <span>{{ node.name }}</span>
+    </button>
+  </mat-tree-node>
+
+  <!-- Noeud avec enfants : une section qui propose des choix. -->
+  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+    <div class="node-row">
+      <button type="button" matTreeNodeToggle class="expand-btn" [attr.aria-label]="'Deplier ' + node.name">
+        <mat-icon>{{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="node-btn"
+        [class.selected]="node.name === selected()"
+        [matTooltip]="node.viaLabel ?? ''"
+        [matTooltipDisabled]="!node.viaLabel"
+        (click)="select.emit(node.name)"
+      >
+        <mat-icon>{{ node.viaLabel === null ? 'play_circle' : 'article' }}</mat-icon>
+        <span>{{ node.name }}</span>
+      </button>
+    </div>
+    <div class="children" [class.hidden]="!treeControl.isExpanded(node)">
+      <ng-container matTreeNodeOutlet></ng-container>
+    </div>
+  </mat-nested-tree-node>
+</mat-tree>

@@ -1,0 +1,75 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  background: var(--mat-sys-surface-container-lowest, #f4f4f7);
+}
+
+.section-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  ::ng-deep .mat-mdc-card-header {
+    align-items: center;
+  }
+}
+
+mat-card-title {
+  font-family: monospace;
+  font-size: 1rem !important;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.choices-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  .label {
+    font-size: 0.85rem;
+    opacity: 0.65;
+    margin-right: 4px;
+  }
+
+  .choice-chip {
+    font-size: 0.8rem;
+    line-height: 28px;
+  }
+}
+
+.body {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
+
+.empty {
+  opacity: 0.6;
+  margin: 40px;
+  text-align: center;
+}
