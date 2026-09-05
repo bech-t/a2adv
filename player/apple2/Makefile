@@ -98,12 +98,20 @@ all: $(BIN)
 # STORYnn.DAT restent plus recents que le .adv.
 # Les .lng sont en prerequis : traduire l'interface refait la disquette.
 LNGSRC   := $(wildcard ../../lang/*.lng)
+# Le COMPILATEUR est un prerequis, au meme titre que la source. Sans ca, changer
+# une regle d'encodage dans a2c ne refait rien : les STORYnn.DAT restent plus
+# recents que le .adv, make les croit a jour, et la disquette garde en silence
+# le rendu de l'ancien compilateur. C'est arrive avec le passage de la casse.
+A2CSRC   := $(wildcard ../../compiler/a2c/*.py)
+# Options supplementaires pour a2c. Ex. pour une disquette Apple II / II+, qui
+# n'ont aucun glyphe minuscule :  make dsk ADV=... A2CFLAGS=--majuscules
+A2CFLAGS ?=
 DATAOUT  := $(DATADIR)/$(STORY) $(DATADIR)/APP.LNG $(DATADIR)/ASSETS.IDX $(DATADIR)/IMAGES.MAP
 
 data: $(DATAOUT)
-$(DATAOUT) &: $(ADVSRC) $(LNGSRC)
+$(DATAOUT) &: $(ADVSRC) $(LNGSRC) $(A2CSRC)
 	( cd ../../compiler && python3 -m a2c ../adventures/$(ADV)/$(ADV).adv \
-	    -o ../adventures/$(ADV)/build )
+	    -o ../adventures/$(ADV)/build $(A2CFLAGS) )
 
 # Edition de liens -> binaire Apple II
 $(BIN): $(OBJECTS)
