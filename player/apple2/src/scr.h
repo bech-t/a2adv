@@ -21,6 +21,15 @@ void scr_puts(const char *s);
 void scr_revers(u8 on);           /* video inverse pour les caracteres suivants */
 void scr_gotoxy(u8 x, u8 y);      /* place le curseur */
 char scr_getkey(void);            /* attend une touche, renvoie l'ASCII (7 bits) */
+
+/* Appele en boucle pendant que scr_getkey attend le joueur. Sert a faire
+ * avancer un travail de fond sans interruptions -- aujourd'hui la musique
+ * Mockingboard. NULL par defaut : un portage n'a rien a implementer, et un
+ * player sans son n'y touche jamais.
+ *
+ * Contrat : la fonction doit etre BREVE et non bloquante. Elle est appelee des
+ * milliers de fois par seconde. */
+extern void (*scr_idle_hook)(void);
 char scr_poll(void);              /* touche si pressee (efface le strobe), sinon 0 */
 void scr_flush(void);             /* vide le verrou clavier (anti multi-appui) */
 void scr_backspace(void);         /* efface le dernier caractere affiche */

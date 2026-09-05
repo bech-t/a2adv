@@ -64,16 +64,25 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s)
 CFLAGS   := -t $(TARGET) -O -Cl
 LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 
+# --- Place code --------------------------------------------------------
+# Le player ne tient plus sous le __HIMEM__ par defaut de la cible apple2 : on
+# le releve a $B000 DANS TOUS LES CAS. C'etait auparavant conditionne a
+# MOCKINGBOARD=1, si bien que MOCKINGBOARD=0 ne liait plus -- le binaire
+# debordait de ~900 octets.
+# A $B000 il reste 3 buffers ProDOS ($B000-$BF00), suffisant : STORY ouvert (1)
+# + sauvegarde transitoire (1).
+LDFLAGS  += -Wl -D,__HIMEM__=0xB000
+
 # --- Son Mockingboard --------------------------------------------------
-# Active par defaut (phase de test emulateur). Desactivation : make dsk MOCKINGBOARD=0
-#   MOCKINGBOARD=1 -> compile snd_mb.c, definit A2ADV_MOCKINGBOARD, releve __HIMEM__
-#   a $B000 pour degager la place code. A $B000 il reste 3 buffers ProDOS
-#   ($B000-$BF00), suffisant : STORY ouvert (1) + sauvegarde transitoire (1).
-#   Detection auto au boot (snd_autodetect) ; repli haut-parleur si absente.
+# Active par defaut. Desactivation : make dsk MOCKINGBOARD=0 -- snd_mb.c n'est
+# alors ni compile ni lie, et seul le haut-parleur reste.
+#
+# Le slot se choisit A LA MAIN dans le menu Options : il n'y a AUCUNE detection
+# automatique, un balayage ecrirait dans sept cartes inconnues. Le slot designe
+# est en revanche verifie avant usage (cf. mb_probe).
 MOCKINGBOARD ?= 1
 ifeq ($(MOCKINGBOARD),1)
   CFLAGS  += -DA2ADV_MOCKINGBOARD
-  LDFLAGS += -Wl -D,__HIMEM__=0xB000
 else
   SOURCES := $(filter-out $(SRCDIR)/snd_mb.c,$(SOURCES))
 endif

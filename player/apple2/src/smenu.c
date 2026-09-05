@@ -152,7 +152,9 @@ static void build_choices(char *dst)
     strcat(dst, "  3) "); strcat(dst, ui_str[UI_MENU_OPTIONS]);
 }
 
-u8 run_menu(void)
+/* Boucle du menu. Encadree par run_menu, qui lui pose la musique autour --
+ * plus sur que de dupliquer un arret sur chacune de ses six sorties. */
+static u8 menu_loop(void)
 {
     char c;
     char line[64];
@@ -196,4 +198,13 @@ u8 run_menu(void)
             if (c == '3') { run_options(); break; }   /* -> redraw (boucle externe) */
         }
     }
+}
+
+u8 run_menu(void)
+{
+    u8 act;
+    snd_music(MUS_TITLE);     /* no-op si le backend est le haut-parleur */
+    act = menu_loop();
+    snd_music(MUS_NONE);      /* silence des qu'on entre dans l'aventure */
+    return act;
 }

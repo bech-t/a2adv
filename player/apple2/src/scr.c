@@ -30,6 +30,7 @@
 
 u8 scr_cols = 40;
 u16 scr_entropy;             /* accumulateur d'entropie (attentes clavier) */
+void (*scr_idle_hook)(void); /* travail de fond pendant l'attente (cf. scr.h) */
 
 static u8 mode80;             /* 1 si 80 colonnes actives */
 static u8 force40;            /* 1 : forcer l'ecriture texte en 40 col (mode mixte) */
@@ -189,8 +190,11 @@ void scr_gotoxy(u8 x, u8 y)
 char scr_getkey(void)
 {
     char c;
-    while ((SW(KBD) & 0x80) == 0)
+    while ((SW(KBD) & 0x80) == 0) {
         ++scr_entropy;                /* le temps de reaction humain sert d'entropie */
+        if (scr_idle_hook)
+            scr_idle_hook();          /* musique de fond, sans interruptions */
+    }
     c = (char)(SW(KBD) & 0x7F);
     SW(KBDSTRB) = 0;                  /* efface le strobe */
     return c;

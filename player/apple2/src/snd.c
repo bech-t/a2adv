@@ -6,6 +6,7 @@
  */
 
 #include "snd.h"
+#include "scr.h"   /* scr_idle_hook : la musique avance pendant l'attente */
 
 /* Backend Mockingboard : optionnel, active a la compilation par
  * -DA2ADV_MOCKINGBOARD (cf. Makefile MOCKINGBOARD=1). Sinon : haut-parleur seul,
@@ -23,10 +24,42 @@ u8 snd_mb_slot = 0;      /* slot Mockingboard actif (1..7), 0 = haut-parleur */
 void snd_use_mockingboard(u8 slot)
 {
 #if MB_ENABLED
-    if (slot) { mb_init(slot); snd_backend = 1; snd_mb_slot = slot; }
-    else      { snd_backend = 0; snd_mb_slot = 0; }
+    /* On SONDE le slot que le joueur vient de designer avant d'y ecrire pour
+     * de bon. Ce n'est pas la detection automatique qu'on refuse : celle-la
+     * balaierait sept slots inconnus. Ici on ne touche qu'a celui qu'il a
+     * choisi, et une faute de frappe retombe sur le haut-parleur au lieu de
+     * pousser des octets dans une carte quelconque.
+     *
+     * Le refus n'a pas besoin de message : le menu Options affiche la sortie
+     * courante, qui restera "HAUT-PARLEUR". C'est le retour. */
+    if (slot && mb_probe(slot)) {
+        mb_init(slot);
+        snd_backend = 1;
+        snd_mb_slot = slot;
+        /* La musique avancera desormais dans chaque attente clavier. */
+        scr_idle_hook = mb_music_tick;
+    } else {
+        mb_music_stop();
+        scr_idle_hook = 0;
+        snd_backend = 0;
+        snd_mb_slot = 0;
+    }
 #else
     (void)slot;
+#endif
+}
+
+void snd_music(u8 id)
+{
+#if MB_ENABLED
+    const MbTune *t;
+    if (!snd_backend)                  /* haut-parleur : pas de musique de fond */
+        return;
+    t = (id == MUS_NONE) ? 0 : mb_tune(id);
+    if (t) mb_music_play(t, 1);        /* en boucle */
+    else   mb_music_stop();
+#else
+    (void)id;
 #endif
 }
 

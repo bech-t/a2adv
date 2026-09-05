@@ -56,10 +56,13 @@ plancher imposé par ProDOS lui-même, qui ne démarre pas en dessous. Un Apple 
 avec 64 Ko suffit donc, mais un **//e est conseillé** pour deux raisons
 distinctes : le 80 colonnes est plus confortable à lire sur de longs
 paragraphes — le 40 reste pleinement géré — et surtout son générateur de
-caractères possède les **minuscules**, que les II et II+ n'ont pas. Pour ces
-dernières, compilez avec `--majuscules`. Les autres capacités — carte son
-Mockingboard, disque RAM sur 128 Ko — sont **détectées à l'exécution** et
-exploitées si présentes, jamais exigées.
+caractères possède les **minuscules**. N'importe quel //e les a, y compris le
+modèle nu à 64 Ko : c'est une ROM, pas une extension. Attention en revanche à
+ne pas confondre les deux critères — un II+ à carte langage atteint lui aussi
+64 Ko et démarre ProDOS, mais n'a aucun glyphe minuscule. Pour ces machines,
+compilez avec `--majuscules`. Les autres capacités — carte son Mockingboard,
+disque RAM sur 128 Ko — sont **détectées à l'exécution** et exploitées si
+présentes, jamais exigées.
 
 **Pas de limite de taille d'aventure.** Le moteur ne charge jamais l'histoire
 entière : chaque section est lue à la demande grâce à un index. L'aventure est
