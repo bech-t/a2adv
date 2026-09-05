@@ -24,6 +24,20 @@ et en assembleur 6502 les lit et joue l'histoire.
 
 ---
 
+## À quoi ça ressemble
+
+Quatre captures de *L'Homme en Costume Blanc*, prises sur la disquette produite
+par la chaîne d'outils.
+
+| | |
+|---|---|
+| <img src="docs/img/ecran-titre.png" width="400" alt="Écran-titre : un masque aztèque en HIRES, sous un menu à quatre entrées"> | <img src="docs/img/preface-80col.png" width="400" alt="Écran de préface, texte dense en 80 colonnes"> |
+| **Écran-titre.** Image HIRES plein écran et menu. Aucun de ces libellés n'est dans le moteur : ils viennent tous de l'aventure. | **Préface, en 80 colonnes.** Les passages en vidéo inverse sont écrits `*comme ça*` dans le source. |
+| <img src="docs/img/creation-personnage.png" width="400" alt="Écran de création de personnage avec bandeau d'état et trois choix"> | <img src="docs/img/scene-image-texte.png" width="400" alt="Scène en mode mixte : image HIRES en haut, texte et choix en bas"> |
+| **Bandeau d'état et choix.** Caractéristiques, score et mouvements en permanence ; les choix apparaissent selon leurs conditions. | **Mode image + texte.** Image HIRES en haut, narration et choix dans la fenêtre 40 colonnes du bas. |
+
+---
+
 ## Pourquoi
 
 Le livre-jeu et l'Apple II sont contemporains, et pourtant écrire l'un pour
