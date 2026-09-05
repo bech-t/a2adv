@@ -53,11 +53,13 @@ absorbées par le compilateur, pas subies par l'auteur.
 **Compatibilité maximale.** La machine de destination, c'est l'**Apple II** : le
 moteur vise le **6502** et tient dans les **64 Ko de RAM principale** — le
 plancher imposé par ProDOS lui-même, qui ne démarre pas en dessous. Un Apple II
-avec 64 Ko suffit donc, mais un **//e est conseillé** : le 40 colonnes est
-pleinement géré, le 80 colonnes est simplement bien plus confortable à lire sur
-de longs paragraphes. Les autres capacités — carte son Mockingboard, disque RAM
-sur 128 Ko — sont **détectées à l'exécution** et exploitées si présentes, jamais
-exigées.
+avec 64 Ko suffit donc, mais un **//e est conseillé** pour deux raisons
+distinctes : le 80 colonnes est plus confortable à lire sur de longs
+paragraphes — le 40 reste pleinement géré — et surtout son générateur de
+caractères possède les **minuscules**, que les II et II+ n'ont pas. Pour ces
+dernières, compilez avec `--majuscules`. Les autres capacités — carte son
+Mockingboard, disque RAM sur 128 Ko — sont **détectées à l'exécution** et
+exploitées si présentes, jamais exigées.
 
 **Pas de limite de taille d'aventure.** Le moteur ne charge jamais l'histoire
 entière : chaque section est lue à la demande grâce à un index. L'aventure est

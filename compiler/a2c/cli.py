@@ -33,7 +33,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="force tout le texte en MAJUSCULES (rendu d'origine, "
                          "affichable sur n'importe quel Apple II) ; par défaut "
                          "la casse du source est conservée, ce qui suppose un "
-                         "//e à carte 80 colonnes pour être lisible")
+                         "//e ou plus récent — les II et II+ n'ont aucun "
+                         "glyphe minuscule")
     ap.add_argument("--summary", action="store_true",
                     help="affiche un résumé de l'aventure compilée")
     ap.add_argument("--version", action="version",

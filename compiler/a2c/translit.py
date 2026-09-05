@@ -5,17 +5,18 @@ la ramène à l'ASCII, car le générateur de caractères des machines cibles n'
 **aucun glyphe accentué** — ni en 40, ni en 80 colonnes. Les diacritiques sont
 donc toujours retirés (`é` -> `e`).
 
-Reste le choix de la **casse**, et lui dépend de l'écran :
+Reste le choix de la **casse**, et lui dépend du générateur de caractères de
+la machine :
 
-- jeu de caractères **standard** (Apple II, II+, et //e tant que `ALTCHAR` est
-  éteint) : pas de minuscules du tout — tout s'affiche en capitales ;
-- jeu **alternatif** d'un //e à carte 80 colonnes : les minuscules existent, et
-  un texte en casse mixte est nettement plus confortable à lire.
+- **Apple II et II+** : 64 glyphes seulement, couvrant l'ASCII `$20-$5F`. Pas
+  de minuscules du tout — les codes `$E0-$FF` retombent sur les symboles ;
+- **//e et suivants** : `$A0-$FF` couvre l'ASCII `$20-$7F`, minuscules
+  comprises, en 40 comme en 80 colonnes. La largeur d'écran n'y joue aucun
+  rôle, c'est une question de générateur de caractères.
 
-D'où ``upper`` : ``False`` (défaut) conserve la casse du source — c'est le
-rendu visé, un //e en 80 colonnes ; ``True`` force les capitales, seul rendu
-affichable sur un Apple II à jeu de caractères standard (option ``--majuscules``
-de `a2c`).
+D'où ``upper`` : ``False`` (défaut) conserve la casse du source — le rendu visé
+sur //e ; ``True`` force les capitales, seul rendu affichable sur un II ou un
+II+ (option ``--majuscules`` de `a2c`).
 """
 
 from __future__ import annotations

@@ -16,7 +16,7 @@ Options :
 - `-o, --out DOSSIER` : dossier de sortie (défaut `build`).
 - `--majuscules` : force le texte en capitales (rendu d'origine, affichable
   sur tout Apple II). Par défaut la casse du source est conservée, ce qui
-  suppose un //e à carte 80 colonnes. Cf. `../docs/GUIDE-FORMAT-ADV.md` §2.
+  suppose un //e ou plus récent. Cf. `../docs/GUIDE-FORMAT-ADV.md` §2.
 - `--max-file OCTETS` : taille max d'un `STORYnn.DAT`, pour forcer le
   sous-découpage et tester le multi-fichiers.
 - `--summary` : résumé de l'aventure compilée.

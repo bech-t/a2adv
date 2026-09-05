@@ -111,17 +111,19 @@ Vous écrivez donc du français propre et lisible dans votre éditeur ; la
 machine affiche ce qu'elle peut afficher.
 
 **La casse, elle, se choisit à la compilation.** Par défaut `a2c` conserve la
-casse du source — c'est le rendu visé sur un //e à carte 80 colonnes, où les
-minuscules existent et rendent un long paragraphe bien plus confortable à lire.
+casse du source : sur un //e, les minuscules s'affichent — en 40 comme en 80
+colonnes — et rendent un long paragraphe bien plus confortable à lire.
 L'option `--majuscules` force tout en capitales :
 
 ```bash
 python3 -m a2c mon_aventure.adv -o build --majuscules
 ```
 
-C'est le rendu d'origine, et le seul affichable sur une machine à **jeu de
-caractères standard** (Apple II, II+, et //e tant que le jeu alternatif n'est
-pas activé) : ces machines n'ont tout simplement pas de glyphe minuscule.
+C'est le rendu d'origine, et le seul affichable sur un **Apple II ou II+** :
+leur générateur de caractères ne contient que 64 glyphes, couvrant l'ASCII
+`$20-$5F`. Il n'y a tout simplement pas de glyphe minuscule dedans. Le //e, lui,
+couvre l'ASCII `$20-$7F` — c'est une question de générateur de caractères, pas
+de largeur d'écran.
 
 Les réponses d'`@ask` échappent à ce choix : elles sont toujours normalisées en
 capitales, des deux côtés de la comparaison. La casse d'affichage ne décide
