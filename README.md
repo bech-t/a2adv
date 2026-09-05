@@ -83,9 +83,11 @@ requis mais jamais donnés.
 Non fait à ce jour : sauvegardes multi-emplacements, échange de disquettes réel,
 éditeur visuel.
 
-> **Rien de tout ceci n'a encore été validé sur matériel réel.** Le moteur
-> compile, la disquette se fabrique, les tests hôtes passent — mais le passage
-> sur émulateur puis sur machine physique reste à faire.
+> **Tout ceci tourne sur une machine réelle**, pas seulement sur émulateur : le
+> moteur boote et se joue sur un Apple //e physique. C'est d'ailleurs le //e qui
+> a eu le dernier mot sur des bugs qu'aucun test hôte n'aurait révélés — un jeu
+> de caractères alternatif laissé actif par la machine rendait toute vidéo
+> inverse illisible en 80 colonnes.
 
 ## Démarrage rapide
 

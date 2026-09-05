@@ -127,5 +127,7 @@ Adaptation d'un scénario de Cosmicsoap publié par Rolis, sous licence CC BY-SA
 Le moteur joue des aventures complètes, et le compilateur les vérifie avant de
 les livrer. Une aventure de soixante sections tourne de bout en bout.
 
-Prochaine étape : le passage sur émulateur, puis sur une machine physique. Tout
-est écrit — rien n'a encore chauffé un vrai tube cathodique.
+Et ça ne tourne pas que sur le papier : la disquette boote sur un Apple //e
+physique. C'est même cette machine qui a tranché plusieurs bugs que le PC ne
+pouvait pas voir — un registre vidéo qu'elle avait laissé dans un état qu'on
+n'avait pas prévu, et toute la vidéo inverse devenait illisible.
