@@ -1,5 +1,10 @@
 # a2adv — des livres-jeu qui tournent sur un vrai Apple II
 
+> **Une note d'honnêteté.** Ce projet est en partie écrit avec l'aide de l'IA.
+> Ça remplace la bonne équipe de quinquagénaires passionnés qu'il aurait fallu
+> pour le mener — mais si le sujet vous parle, n'hésitez surtout pas à vous
+> manifester : les vrais passionnés restent très largement les bienvenus.
+
 **a2adv** est une chaîne d'outils complète pour écrire des livres dont vous êtes
 le héros et les faire tourner sur un Apple II de 1979 — pas sur un émulateur qui
 fait semblant, mais sur une **disquette ProDOS bootable** qu'une machine
