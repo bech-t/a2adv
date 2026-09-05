@@ -47,9 +47,17 @@ static unsigned line_base(u8 r)
 static u8 encode(char c)
 {
     u8 a = (u8)c;
-    if (inv)
+    if (inv) {
+        /* $00-$3F ne couvre que l'ASCII $20-$5F : le jeu PRIMAIRE n'a pas
+         * d'inverse minuscule. Sans repli, un 'a' ($61 & 0x3F = $21) sortirait
+         * en '!' inverse. On replie donc en capitale — la mise en relief reste
+         * lisible, ce qui est tout ce qu'on lui demande. (L'inverse minuscule
+         * n'existe que dans le jeu ALTERNATIF, en $60-$7F ; cf. scr_init.) */
+        if (a >= 'a' && a <= 'z')
+            a -= 'a' - 'A';
         return (u8)(a & 0x3F);        /* video inverse ($00-$3F) */
-    return (u8)(a | 0x80);            /* video normale */
+    }
+    return (u8)(a | 0x80);            /* video normale : $A0-$FF = ASCII $20-$7F */
 }
 
 /* Ecrit un code ecran a (x,y), en gerant main/aux en mode 80 col. */
@@ -103,11 +111,14 @@ void scr_init(void)
     for (r = 0; r < 24; ++r)
         rowbase[r] = line_base(r);
 
-    /* Jeu de caracteres standard, jamais l'alternatif : cette aventure n'a
-     * ni minuscule ni MouseText, et le jeu alternatif redefinit les codes
-     * $00-$3F (glyphes MouseText au lieu de majuscules en video inverse),
-     * ce qui rendait tout texte en video inverse illisible sur un //e avec
-     * carte 80 colonnes. */
+    /* Jeu de caracteres PRIMAIRE, jamais l'alternatif, et fixe EXPLICITEMENT :
+     * on ne suppose jamais l'etat de ce registre au demarrage. Une carte 80
+     * colonnes peut laisser l'alternatif actif, ce qui avait rendu la video
+     * inverse illisible sur //e.
+     *
+     * Le primaire suffit a tout ce qu'on affiche : $A0-$FF couvre l'ASCII
+     * $20-$7F, minuscules comprises. Seul lui manque l'inverse minuscule
+     * (present en $60-$7F dans l'alternatif) ; encode() replie la casse. */
     SW(CLRALTCHAR) = 0;
 
     mode80 = detect_aux();
