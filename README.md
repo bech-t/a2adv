@@ -15,11 +15,11 @@ Un compilateur la transforme en données binaires compactes. Un moteur écrit en
 et en assembleur 6502 les lit et joue l'histoire.
 
 ```
-    aventure.adv          a2c (Python)          STORYnn.DAT        player 6502
-   ┌───────────────┐       ┌────────────┐       ┌─────────────┐      ┌──────────┐
-   │  texte, choix │ ───▶ │ compilateur│ ───▶  │  binaire    │ ──▶ │ Apple II │
-   │  conditions   │       │  + QA      │       │  + images   │      │  ProDOS  │
-   └───────────────┘       └────────────┘       └─────────────┘      └──────────┘
+      aventure.adv           a2c (Python)        STORYnn.DAT        player 6502
+   ┌────────────────┐     ┌───────────────┐     ┌────────────┐     ┌────────────┐
+   │  texte, choix  │ ──▶ │  compilateur  │ ──▶ │  binaire   │ ──▶ │  Apple II  │
+   │  conditions    │     │  + QA         │     │  + images  │     │  ProDOS    │
+   └────────────────┘     └───────────────┘     └────────────┘     └────────────┘
 ```
 
 ---
