@@ -142,5 +142,14 @@ Le code (compilateur `a2c` et player `player/apple2/`) est sous licence
 **[MIT](LICENSE)**.
 
 Les aventures livrées dans `adventures/` portent leurs propres licences de
-contenu — voir chacune. L'adaptation de *L'Homme en Costume Blanc* est sous
-**CC BY-SA 4.0**.
+contenu, une par dossier :
+
+- les quatre aventures de démonstration (`chateau_hante`, `combat_demo`,
+  `demo_simple`, `orbe_de_sortis`) sont en **CC0** — domaine public. Elles sont
+  faites pour être copiées comme point de départ : partez de l'une d'elles,
+  écrivez votre histoire par-dessus, publiez-la sous la licence que vous
+  voulez. Vous ne devez rien ;
+- *L'Homme en Costume Blanc* est sous **CC BY-SA 4.0**, licence héritée et non
+  choisie : le scénario original de Cosmicsoap publié par Rolis est lui-même
+  sous CC BY-SA, dont la clause de partage dans les mêmes conditions s'impose à
+  toute adaptation.
