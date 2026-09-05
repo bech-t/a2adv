@@ -10,16 +10,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from a2c import model as M              # noqa: E402
 from a2c.decode import decode           # noqa: E402
 from a2c.encoder import VERSION, encode_story    # noqa: E402
+from a2c.translit import transliterate           # noqa: E402
 from a2c.parser import parse            # noqa: E402
 from a2c.symbols import resolve         # noqa: E402
 
 DEMO = Path(__file__).resolve().parents[2] / "adventures" / "demo_simple" / "demo_simple.adv"
 
 
-def _compile():
+def _compile(upper: bool = False):
+    """Compile la demo. `upper` = l'option `--majuscules` du CLI."""
     story = parse(DEMO.read_text(encoding="utf-8"))
     resolve(story)
-    return story, decode(encode_story(story)[0])   # STORY0.DAT
+    return story, decode(encode_story(story, upper=upper)[0])   # STORY0.DAT
 
 
 def test_header_counts():
@@ -49,7 +51,7 @@ def test_default_state():
     # stat_table = (init, min, max) dans l'ordre VIE, OR, MORAL
     assert d["stat_table"] == [(10, 0, 10), (0, 0, 99), (5, 0, 10)]
     assert d["stat_names"] == ["VIE", "OR", "MORAL"]
-    assert d["item_labels"] == ["TORCHE"]
+    assert d["item_labels"] == ["Torche"]        # casse du source conservée
     # aucun objet/flag possédé au départ
     assert d["items_default"] == bytes([0])
     assert d["flags_default"] == bytes([0])
@@ -73,7 +75,7 @@ def test_conditional_choice_and_effect():
     assert (M.OP_GIVE_ITEM, 0, 0, 0) in effects      # give torche
     assert (M.OP_STAT_ADD, 2, 2, 0) in effects       # add MORAL(2) 2
     assert target == idx["lisiere"]
-    assert label == "RAMASSER LA TORCHE"
+    assert label == "Ramasser la torche"         # casse du source conservée
 
 
 def test_on_enter_effect():
@@ -118,3 +120,21 @@ if __name__ == "__main__":
         fn()
         print(f"ok  {fn.__name__}")
     print(f"\n{len(fns)} tests passés.")
+
+
+def test_majuscules_option():
+    """`--majuscules` : rendu d'origine, tout en capitales ASCII."""
+    story, d = _compile(upper=True)
+    idx = {s.name: i for i, s in enumerate(story.sections)}
+    assert d["item_labels"] == ["TORCHE"]
+    _cond, _eff, _tgt, label = d["sections"][idx["buissons"]].choices[0]
+    assert label == "RAMASSER LA TORCHE"
+
+
+def test_translit_accents_toujours_retires():
+    """Aucun glyphe accentué sur la machine cible : les deux modes sont ASCII."""
+    src = "Où est l'Œuf, Éléphant ?"
+    assert transliterate(src) == "Ou est l'Oeuf, Elephant ?"
+    assert transliterate(src, upper=True) == "OU EST L'OEUF, ELEPHANT ?"
+    for mode in (False, True):
+        transliterate(src, mode).encode("ascii")   # ne doit jamais lever

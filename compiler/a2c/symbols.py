@@ -160,8 +160,11 @@ def _resolve_section(sec: Section, sym: Symbols,
             if nm not in sym.sections:
                 raise A2Error(f"@ask: section inconnue '{nm}'", ip.line)
             setattr(ip, attr, sym.sections[nm])
-        # normalisation des réponses : sans accents, majuscules, sans espaces bord
-        ip.answers = [transliterate(a).upper().strip() for a in ip.answers]
+        # Normalisation des réponses : sans accents, MAJUSCULES, sans espaces
+        # de bord — indépendamment de --minuscules. Le player compare à une
+        # saisie que `norm_input` (sinput.c) met elle aussi en capitales : la
+        # casse d'affichage ne doit pas décider si une réponse est acceptée.
+        ip.answers = [transliterate(a, upper=True).strip() for a in ip.answers]
         for e in ip.correct_effects:
             _resolve_effect(e, sym)
         for e in ip.wrong_effects:
