@@ -1,7 +1,7 @@
 # a2c — compilateur d'aventures
 
-Compile le DSL `.adv` (cf. `../spec.md` §6.1) vers les données binaires lues par
-le player Apple II : `STORY.DAT` + `ASSETS.IDX` (format §7ter).
+Compile le DSL `.adv` (cf. `../docs/GUIDE-FORMAT-ADV.md`) vers les données
+binaires lues par le player Apple II : `STORY.DAT` + `ASSETS.IDX`.
 
 ## Utilisation
 

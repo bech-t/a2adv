@@ -31,11 +31,14 @@ absorbées par le compilateur, pas subies par l'auteur.
 
 ## Les objectifs qui gouvernent le projet
 
-**Compatibilité maximale.** Le moteur vise le **6502** et un budget de **64 Ko de
-RAM principale** : il tourne sur un Apple II tout court, pas seulement sur un
-//e. Les capacités supplémentaires — 80 colonnes, carte son Mockingboard,
-disque RAM sur 128 Ko — sont **détectées à l'exécution** et exploitées si
-présentes, jamais exigées.
+**Compatibilité maximale.** La machine de destination, c'est l'**Apple II** : le
+moteur vise le **6502** et tient dans les **64 Ko de RAM principale** — le
+plancher imposé par ProDOS lui-même, qui ne démarre pas en dessous. Un Apple II
+avec 64 Ko suffit donc, mais un **//e est conseillé** : le 40 colonnes est
+pleinement géré, le 80 colonnes est simplement bien plus confortable à lire sur
+de longs paragraphes. Les autres capacités — carte son Mockingboard, disque RAM
+sur 128 Ko — sont **détectées à l'exécution** et exploitées si présentes, jamais
+exigées.
 
 **Pas de limite de taille d'aventure.** Le moteur ne charge jamais l'histoire
 entière : chaque section est lue à la demande grâce à un index. L'aventure est
@@ -112,13 +115,16 @@ cd player/apple2 && make hosttest
 | `compiler/` | `a2c`, le compilateur Python — parseur, validation, encodeur, analyseur QA. Aucune dépendance externe. |
 | `player/apple2/` | Le moteur cc65 : pilote écran, streaming, combat, saisie, son, cache `/RAM`. |
 | `adventures/` | Une aventure par dossier : source `.adv`, images, disquette produite. |
-| `editor/` | Éditeur visuel — prévu bien plus tard, vide aujourd'hui. |
-| `spec.md` | La spécification technique complète : format binaire, carte mémoire, décisions d'architecture. |
+| `editor/` | Éditeur visuel `.adv` (Angular, v0) : hiérarchie, graphe des choix, import/export. |
+| `docs/` | La documentation du format `.adv` : référence, bonnes pratiques, présentation. |
 
 ## Écrire une aventure
 
-Le format source est décrit dans **[FORMAT-AVENTURE.md](FORMAT-AVENTURE.md)** —
-il s'apprend en une demi-heure et tient sur une page.
+Le format source est décrit de bout en bout dans **[la référence du format
+`.adv`](docs/GUIDE-FORMAT-ADV.md)** : chaque élément, sa syntaxe, ses limites.
+Une fois la syntaxe acquise, **[les bonnes
+pratiques](docs/BONNES-PRATIQUES-FORMAT-ADV.md)** montrent comment assembler
+tout cela en une aventure qui tient debout.
 
 Un exemple complet et jouable : **[L'Homme en Costume
 Blanc](adventures/homme_costume_blanc/)**, 60 sections, quatre chapitres.

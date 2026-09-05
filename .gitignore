@@ -38,6 +38,10 @@ __pycache__/
 *.pyc
 .venv/
 
-# Éditeur Angular (bien plus tard)
+# Éditeur Angular
 editor/node_modules/
 editor/dist/
+
+# Specification technique interne : document de travail, non distribue.
+# Reste en local ; la doc publique du format vit dans docs/.
+spec.md

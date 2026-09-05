@@ -94,20 +94,38 @@ imprévisible, donc autant les compter.
 ### Accents et jeu de caractères
 
 Écrivez votre français normalement dans le fichier source, avec tous ses
-accents. Le résultat affiché sur l'Apple II est en **majuscules ASCII sans
-diacritiques** — c'est la seule chose que la machine sache afficher de façon
-fiable. La conversion est automatique et couvre :
+accents. Le compilateur le ramène à l'**ASCII** : le générateur de caractères
+de l'Apple II n'a aucun glyphe accentué, ni en 40 ni en 80 colonnes. La
+conversion est automatique et couvre :
 
 - les voyelles accentuées (`é`, `è`, `ê`, `à`, `ù`, `ô`, `î`, `ï`, `â`, `û`…) →
   la lettre nue correspondante ;
-- `ç` → `C` ;
-- les ligatures : `œ` → `OE`, `æ` → `AE`, `ß` → `SS` ;
+- `ç` → `c` ;
+- les ligatures : `œ` → `oe`, `æ` → `ae`, `ß` → `ss` (en capitales si le mot
+  l'est : `ŒUVRE` → `OEUVRE`, mais `Œuf` → `Oeuf`) ;
 - les guillemets typographiques (`«`, `»`, guillemets courbes) → `"` droit ;
 - les tirets longs (`–`, `—`) → `-`, les points de suspension (`…`) → `...` ;
 - tout caractère qui resterait non-ASCII après ce traitement devient `?`.
 
 Vous écrivez donc du français propre et lisible dans votre éditeur ; la
 machine affiche ce qu'elle peut afficher.
+
+**La casse, elle, se choisit à la compilation.** Par défaut `a2c` conserve la
+casse du source — c'est le rendu visé sur un //e à carte 80 colonnes, où les
+minuscules existent et rendent un long paragraphe bien plus confortable à lire.
+L'option `--majuscules` force tout en capitales :
+
+```bash
+python3 -m a2c mon_aventure.adv -o build --majuscules
+```
+
+C'est le rendu d'origine, et le seul affichable sur une machine à **jeu de
+caractères standard** (Apple II, II+, et //e tant que le jeu alternatif n'est
+pas activé) : ces machines n'ont tout simplement pas de glyphe minuscule.
+
+Les réponses d'`@ask` échappent à ce choix : elles sont toujours normalisées en
+capitales, des deux côtés de la comparaison. La casse d'affichage ne décide
+jamais si une réponse est acceptée.
 
 ---
 

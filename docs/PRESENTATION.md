@@ -81,7 +81,9 @@ la mémoire de la machine, mais par la place sur la disquette.
 
 Il s'adapte aussi à ce qu'il trouve sous lui. Écran 80 colonnes, carte son,
 mémoire supplémentaire : s'ils sont là, il s'en sert ; sinon il fait sans, sans
-rien réclamer. Un Apple II de base suffit.
+rien réclamer. Un Apple II avec 64 Ko de RAM suffit — c'est ce que ProDOS
+réclame de toute façon. Un //e reste conseillé : le 40 colonnes fonctionne, mais
+lire de longs paragraphes en 80 colonnes est nettement plus agréable.
 
 Et le moteur ne contient **aucun mot d'anglais imposé** : menus, invites,
 messages de fin, tout vient du jeu lui-même. Traduire une aventure, c'est éditer

@@ -1,10 +1,10 @@
 # Écrire une aventure `.adv` — techniques et bonnes pratiques
 
 Ce document suppose que vous connaissez déjà la syntaxe du format `.adv`
-(sections, directives, conditions, effets — voir *Le format `.adv` :
-référence complète*). Il ne redéfinit rien : il montre comment combiner ces
-éléments pour écrire une aventure qui tient debout, et les pièges qui
-reviennent le plus souvent.
+(sections, directives, conditions, effets — voir [*Le format `.adv` :
+référence complète*](GUIDE-FORMAT-ADV.md)). Il ne redéfinit rien : il montre
+comment combiner ces éléments pour écrire une aventure qui tient debout, et
+les pièges qui reviennent le plus souvent.
 
 ---
 

@@ -1,4 +1,4 @@
-/* format.h -- constantes du format STORY.DAT (cf. spec.md §7ter).
+/* format.h -- constantes du format STORY.DAT (cf. spec §7ter).
  * Doit rester synchronisé avec compiler/a2c/model.py.
  */
 #ifndef A2ADV_FORMAT_H

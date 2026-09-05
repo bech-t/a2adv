@@ -185,7 +185,7 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) | $(BUILDDIR)
 	       "$$((budget/1024)) Ko disponibles sur $(notdir $(PRODOS_TPL))" \
 	       "($$(( (need-budget+1023)/1024 )) Ko de trop)."; \
 	  echo "  -> retirez des images/du texte, ou passez a un support plus" \
-	       "grand (voir spec.md, disque dur / sous-dossier ProDOS)."; \
+	       "grand (voir spec, disque dur / sous-dossier ProDOS)."; \
 	  exit 1; \
 	fi
 	cp $(PRODOS_TPL) $(DSK)
