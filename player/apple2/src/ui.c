@@ -322,12 +322,22 @@ void ui_center(const char *s, u8 y)
 void ui_progress(u16 done, u16 total)
 {
     u8 width = 20, filled, k;
+
     if (total == 0)
         total = 1;
-    filled = (u8)((unsigned long)done * width / total);
-    scr_gotoxy((u8)(scr_cols > width + 2 ? (scr_cols - (width + 2)) / 2 : 0), 12);
-    //scr_putc('-');
+    /* Ramene l'echelle sous 3000 pour que done*width tienne dans 16 bits :
+     * sans ca il faudrait passer par un long, et cc65 tirerait ses routines
+     * de multiplication/division 32 bits pour une simple barre. */
+    while (total > 3000) {
+        total >>= 1;
+        done  >>= 1;
+    }
+    filled = (u8)(done * width / total);
+
+    /* Centrage sur la LARGEUR REELLE de la barre. Elle etait autrefois
+     * encadree de deux tirets, et le calcul reservait encore width+2 : la
+     * barre tombait une colonne a gauche du titre centre par ui_center. */
+    scr_gotoxy((u8)(scr_cols > width ? (scr_cols - width) / 2 : 0), 12);
     for (k = 0; k < width; ++k)
-        scr_putc(k < filled ? '#' : '.');
-    //scr_putc('-');
+        scr_putc(k < filled ? '0' : 'O');
 }
