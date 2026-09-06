@@ -61,7 +61,10 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s)
 #   comme scr_progress_cb).
 #   Ne PAS ajouter -Oris : mesure a 26616 octets, soit +1600. Ni --codesize 40 :
 #   pire encore, le binaire ne rentre plus sous __HIMEM__.
-CFLAGS   := -t $(TARGET) -O -Cl
+# -Os : inline les fonctions standard courtes (strlen, memcpy...). Mesure a
+# 84 octets gagnes. --codesize, lui, fait GROSSIR le code dans les deux sens :
+# le defaut (100) est deja l'optimum ici.
+CFLAGS   := -t $(TARGET) -O -Os -Cl
 LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 
 # --- Place code --------------------------------------------------------
