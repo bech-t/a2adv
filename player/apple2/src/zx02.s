@@ -47,6 +47,46 @@ offset_hi       := ZP+0        ; 1 o
 ZX0_dst         := ZP+1        ; 2 o : pointeur de sortie (avance)
 bitr            := ZP+3        ; 1 o : reservoir de bits
 pntr            := ZP+4        ; 2 o : pointeur de recopie (offsets arriere)
+save_x          := ZP+6        ; 1 o : X sauvegarde autour d'un appel a _zx_getbyte
+save_y          := ZP+7        ; 1 o : Y, idem
+
+; get_cbyte : lit un octet compresse en preservant X, Y ET le drapeau carry,
+; que zx_getbyte() (code C compile par cc65) ne garantit AUCUN des trois --
+; verifie sur son propre assembleur genere. Dans le fichier d'origine, lire
+; un octet compresse etait une simple lecture indexee ("lda (ZX0_src),y / inc
+; / bne / inc") : aucun effet de bord sur aucun registre ni drapeau. Le reste
+; de l'algorithme s'est donc ecrit en supposant tout ca stable au travers
+; d'une lecture -- trois violations distinctes de cette hypothese, trouvees
+; sur MATERIEL REEL (l'emulation de test avait d'abord un bouchon trop
+; complaisant, qui ne reproduisait aucune des trois) :
+;   - X toujours ecrase a 0 -> le compteur "dex/bne" de cop0/cop1 ne retombe
+;     plus a zero au bon moment (boucle qui tourne des dizaines de fois de
+;     trop) ; et dans get_elias, la valeur elias-gamma accumulee via "tax" a
+;     l'iteration precedente est perdue avant le "txa" qui la relit ;
+;   - Y ecrase (chemin rapide : octet bas de l'adresse de zxbuf) -> cop0
+;     ecrivait a (ZX0_dst)+Y au lieu de (ZX0_dst)+0 ;
+;   - carry ecrase (comparaisons/soustractions internes a zx_getbyte) -> les
+;     deux "ror a"/"rol a" du decodage d'offset et du refill elias-gamma
+;     dependent explicitement du carry laisse par une instruction PLUS TOT
+;     (un "lsr a" quelques lignes avant, ou le "asl bitr" qui a determine
+;     qu'un refill etait necessaire -- cf. le commentaire d'origine "C=1
+;     guaranteed from last bit"), pas de celui, sans rapport, que
+;     zx_getbyte() laisse derriere lui.
+; D'ou ce point de passage unique plutot que des correctifs locaux au cas par
+; cas : plus sur de garantir "rien ne change a travers la lecture d'un
+; octet", comme le faisait l'original, que de re-verifier a chaque appelant
+; ce qui doit precisement survivre.
+get_cbyte:
+        stx     save_x
+        sty     save_y
+        php                     ; sauve les drapeaux D'AVANT l'appel (dont C)
+        jsr     _zx_getbyte     ; A = octet lu ; X, Y et les drapeaux peuvent
+                                ; changer -- A seul doit survivre a la suite
+        ldx     save_x
+        ldy     save_y
+        plp                     ; restaure les drapeaux d'avant l'appel ; ne
+                                ; touche pas A (l'octet lu reste en place)
+        rts
 
 .code
 
@@ -80,7 +120,7 @@ decode_literal:
         inx
         jsr     get_elias
 
-cop0:   jsr     _zx_getbyte
+cop0:   jsr     get_cbyte
         sta     (ZX0_dst), y
         inc     ZX0_dst
         bne     :+
@@ -129,7 +169,7 @@ dzx0s_new_offset:
         sta     offset_hi
 
         ; Get low part of offset, a literal 7 bits
-        jsr     _zx_getbyte
+        jsr     get_cbyte
 
         ; Divide by 2
         ror     a
@@ -157,7 +197,7 @@ get_elias:
         bne     elias_skip1
 
         ; Read new bit from stream
-        jsr     _zx_getbyte
+        jsr     get_cbyte
         ; sec ; not needed, C=1 guaranteed from last bit
         rol     a
         sta     bitr

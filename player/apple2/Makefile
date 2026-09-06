@@ -225,7 +225,16 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) $(ZX02_TOOL) | $(BU
 	@# Compresse chaque .HGR de $(ADVIMG) en .ZX2 -- SANS toucher au .HGR : deux
 	@# d'entre eux (BOOT00.HGR, MENU.HGR) sont des sources versionnees, pas des
 	@# artefacts jetables comme les IMGnn.HGR regeneres ci-dessus.
-	@python3 tools/zx02/pack_images.py $(ZX02_TOOL) $(ADVIMG)
+	@# NOCOMPRESS=1 : saute cette etape ET efface tout .ZX2 laisse par un build
+	@# precedent (sinon un .ZX2 perime, jamais nettoye par `make clean`,
+	@# resterait choisi ci-dessous) -- tout repart en .HGR brut. Outil de
+	@# bissection quand un probleme visible a l'ecran peut venir soit du
+	@# decodeur zx02, soit d'ailleurs.
+	@if [ "$(NOCOMPRESS)" = "1" ]; then \
+	  rm -f $(ADVIMG)/*.ZX2; \
+	else \
+	  python3 tools/zx02/pack_images.py $(ZX02_TOOL) $(ADVIMG); \
+	fi
 	@# Choisit, par nom, lequel des deux part sur la disquette (.ZX2 s'il est
 	@# plus petit, sinon .HGR), et fige la liste dans un fichier : le budget
 	@# et l'upload (blocs shell SEPARES, cf. recette Make) la relisent tous
