@@ -71,7 +71,28 @@ LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 # debordait de ~900 octets.
 # A $B000 il reste 3 buffers ProDOS ($B000-$BF00), suffisant : STORY ouvert (1)
 # + sauvegarde transitoire (1).
-LDFLAGS  += -Wl -D,__HIMEM__=0xB000
+# Chaque Ko rendu au code retire un tampon ProDOS ($B000 -> 3, $B400 -> 2).
+#
+# Pourquoi les tampons sont AU-DESSUS de HIMEM, et pas dans le tas C : la carte
+# du lieur place le tas entre la fin du BSS et le bas de la pile, ce qui ne
+# faisait que ~109 octets dans la version d'origine -- moins qu'UN tampon de
+# 1 Ko. Le jeu ouvrait pourtant ses fichiers. Les tampons occupent donc les
+# pages libres jusqu'a la page globale ProDOS ($BF00), et relever HIMEM en
+# retire bien un.
+#
+# DEUX suffisent, et c'est verifie et non suppose : tous les fopen du player
+# ont ete recenses, le maximum simultane est de 2 --
+#   STORY (story.c, ouvert en permanence) + image (scr_load_hgr) ;
+#   STORY + SAVE0.DAT (cf. main.c, "ouvert en + de STORY") ;
+#   source + destination pendant une copie en disque RAM, et la story.c ferme
+#   STORY exprès avant d'appeler ram_ensure.
+#
+# On est donc AU RAS du besoin : toute fonction future qui ouvrirait un
+# TROISIEME fichier en meme temps casserait ce reglage. Le symptome serait un
+# fopen qui echoue, pas un plantage -- mais il faudrait alors repasser a $B000
+# et rendre de la place ailleurs.
+HIMEM    ?= 0xB400
+LDFLAGS  += -Wl -D,__HIMEM__=$(HIMEM)
 
 # --- Son Mockingboard --------------------------------------------------
 # Active par defaut. Desactivation : make dsk MOCKINGBOARD=0 -- snd_mb.c n'est
