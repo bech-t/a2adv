@@ -4,6 +4,10 @@
 
 #include "format.h"
 
+/* Charge une image par son nom, via le cache en disque RAM (cf. ramdisk.h).
+ * Renvoie comme scr_load_hgr : 0 si l'image est en page HIRES. */
+signed char img_load(const char *name);
+
 /* Affiche l'image d'un asset puis revient en texte.
  * timed=1 : ~3 s ou touche ; timed=0 : attend une touche. Renvoie la touche. */
 char show_image(u16 asset, u8 timed);

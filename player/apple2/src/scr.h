@@ -46,4 +46,5 @@ typedef void (*scr_progress_cb)(u16 done, u16 total);
  * 0 = ok, <0 = erreur/fichier absent. */
 signed char scr_load_hgr(const char *name, scr_progress_cb cb);
 
+
 #endif /* A2ADV_SCR_H */
