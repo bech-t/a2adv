@@ -160,8 +160,14 @@ static u8 menu_loop(void)
     char line[64];
 
     for (;;) {                 /* boucle : redessine apres un retour d'Options */
+        /* (Re)lance le theme a CHAQUE dessin du menu, pas seulement a la
+         * premiere entree : choisir un slot dans les Options passe par
+         * mb_init, qui remet les deux AY a zero et coupe la musique. Sans ce
+         * rappel, on revenait des Options en silence. */
+        snd_music(MUS_TITLE);
+
         /* --- menu semi-graphique (image MENU.HGR + titre + choix en bas) --- */
-        if (scr_load_hgr("MENU.HGR", 0) == 0) {
+        if (img_load("MENU.HGR") == 0) {
             scr_gfx_mixed();                   /* image en haut, 4 lignes en bas */
             menu_center(g_title, 20, 1);       /* titre */
             build_choices(line);
@@ -202,9 +208,7 @@ static u8 menu_loop(void)
 
 u8 run_menu(void)
 {
-    u8 act;
-    snd_music(MUS_TITLE);     /* no-op si le backend est le haut-parleur */
-    act = menu_loop();
+    u8 act = menu_loop();     /* le theme est (re)lance a chaque dessin, dedans */
     snd_music(MUS_NONE);      /* silence des qu'on entre dans l'aventure */
     return act;
 }

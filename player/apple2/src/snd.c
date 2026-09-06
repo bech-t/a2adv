@@ -138,11 +138,10 @@ void snd_play(u8 id)
                      snd_tone(23, 90);          /* C6 final */
                      break;
 
-    /* Porte : grincement (glissando descendant lent) puis battant sourd. */
-    case SND_DOOR:   for (p = 100; p < 200; p = (u8)(p + 10))
-                         snd_tone(p, 16);
-                     snd_tone(250, 45);         /* ~100 Hz, coup mat */
-                     break;
+    /* Porte : un battant qui claque. Deux impulsions tres graves collees --
+     * c'est tout ce qu'un haut-parleur 1 bit peut faire passer pour un choc.
+     * Le grincement descendant d'avant durait trop et sonnait faux. */
+    case SND_DOOR:   snd_tone(230, 12); snd_tone(255, 30); break;
 
     /* Page : froissement bref (3 clics descendants, ~50 ms au total). */
     case SND_PAGE:   snd_tone(40, 14); snd_tone(64, 12); snd_tone(100, 10); break;

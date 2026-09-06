@@ -390,11 +390,29 @@ static void fx_note(u8 note, u8 amp, u8 ticks)
     mb_amp(MB_CH_FX, 0);
 }
 
-/* Un souffle de bruit blanc (percussif). */
+/* Un souffle de bruit blanc a amplitude constante. */
 static void fx_noise(u8 period, u8 amp, u8 ticks)
 {
     mb_noise(MB_CH_FX, period);
     mb_amp(MB_CH_FX, amp);
+    mb_mix(MB_CH_FX, 0, 1);
+    fx_wait(ticks);
+    mb_amp(MB_CH_FX, 0);
+    mb_mix(MB_CH_FX, 0, 0);
+}
+
+/* Un coup SEC : bruit attaque a fond puis eteint par l'enveloppe materielle.
+ * C'est l'enveloppe qui fait le "sec" -- a amplitude constante on obtient un
+ * souffle plat qui s'arrete net, ce qui sonne comme une coupure, pas comme un
+ * choc. `period` grave le bruit (0..31, grand = sourd), `decay` regle la
+ * vitesse d'extinction (grand = plus long).
+ *
+ * L'enveloppe est celle de l'AY #2 : la musique de l'AY #1 n'est pas touchee. */
+static void fx_knock(u8 period, u16 decay, u8 ticks)
+{
+    mb_noise(MB_CH_FX, period);
+    mb_env(MB_CH_FX, decay, MB_ENV_DECAY);
+    mb_amp(MB_CH_FX, MB_AMP_ENV);
     mb_mix(MB_CH_FX, 0, 1);
     fx_wait(ticks);
     mb_amp(MB_CH_FX, 0);
@@ -431,7 +449,7 @@ void mb_play(u8 id)
     case SND_LOSE:   fx_note(N_G4, 13, 4); fx_note(N_E4, 13, 4);
                      fx_note(N_C3, 13, 10); break;
     case SND_PICKUP: fx_note(N_E5, 12, 3); fx_note(N_G5, 12, 5); break;
-    case SND_HIT:    fx_noise(8, 13, 4); break;
+    case SND_HIT:    fx_knock(6, 250, 3); break;   /* claquement bref et clair */
 
     /* Scintillement : arpege montant + eclat aigu tenu. */
     case SND_MAGIC:  for (n = N_C4; n < N_C5; n = (u8)(n + 4))
@@ -439,11 +457,10 @@ void mb_play(u8 id)
                      fx_note(N_C5 + 11, 12, 6);
                      break;
 
-    /* Porte : grincement descendant puis battant. */
-    case SND_DOOR:   for (n = N_G3; n > 0; n = (u8)(n - 2))
-                         fx_note(n, 10, 2);
-                     fx_noise(16, 12, 5);
-                     break;
+    /* Porte : un battant qui claque. Un coup sourd et sec, plus juste que le
+     * grincement descendant d'avant -- lequel bouclait sans fin, `n` etant
+     * non signe : 1 - 2 valait 255, toujours > 0. */
+    case SND_DOOR:   fx_knock(24, 900, 6); break;
 
     /* Page : froissement bref et discret. */
     case SND_PAGE:   fx_noise(24, 6, 2); break;
