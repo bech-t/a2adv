@@ -46,5 +46,12 @@ typedef void (*scr_progress_cb)(u16 done, u16 total);
  * 0 = ok, <0 = erreur/fichier absent. */
 signed char scr_load_hgr(const char *name, scr_progress_cb cb);
 
+/* La page HIRES ou scr_load_hgr depose l'image, et sa taille. Exposees pour
+ * un appelant qui doit ecrire/decompresser DIRECTEMENT dedans (cf.
+ * simage.c:img_load_from_disk) plutot que passer par un fichier .HGR brut.
+ * Un portage rend l'adresse de sa propre page graphique. */
+#define SCR_HGR_SIZE 8192
+void *scr_hgr_page(void);
+
 
 #endif /* A2ADV_SCR_H */

@@ -24,6 +24,11 @@ adventures/*/img/src/
 # main. BOOT*.HGR et MENU.HGR restent versionnes (noms fixes, hors @image).
 adventures/*/img/IMG[0-9][0-9].HGR
 
+# *.ZX2 : version compressee d'une image (cf. player/apple2/tools/zx02),
+# toujours REGENEREE par `make dsk` a cote du .HGR correspondant -- jamais a
+# committer, meme pour BOOT00.ZX2/MENU.ZX2 dont le .HGR, lui, est versionne.
+adventures/*/img/*.ZX2
+
 # Materiel de reference tiers (scenario original, pas nos droits a redistribuer) :
 # a garder en local, jamais dans le depot public.
 adventures/*/*.pdf

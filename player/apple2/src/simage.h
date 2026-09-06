@@ -8,6 +8,13 @@
  * Renvoie comme scr_load_hgr : 0 si l'image est en page HIRES. */
 signed char img_load(const char *name);
 
+/* Charge `hgr_name` (ex: "IMG00.HGR") en page HIRES SANS passer par le cache
+ * /RAM : prefere "<meme base>.ZX2" sur la disquette (decompression en flux,
+ * cf. zx02_getbyte.c) si elle existe, sinon lit `hgr_name` telle quelle.
+ * Utilisee par img_load (repli quand rien n'est en cache) et par
+ * ram_boot_fill (cf. ramdisk.c, pour remplir precisement ce cache). */
+signed char img_load_from_disk(const char *hgr_name);
+
 /* Affiche l'image d'un asset puis revient en texte.
  * timed=1 : ~3 s ou touche ; timed=0 : attend une touche. Renvoie la touche. */
 char show_image(u16 asset, u8 timed);

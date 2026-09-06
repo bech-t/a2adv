@@ -98,13 +98,19 @@ HIMEM    ?= 0xB400
 LDFLAGS  += -Wl -D,__HIMEM__=$(HIMEM)
 
 # --- Son Mockingboard --------------------------------------------------
-# Active par defaut. Desactivation : make dsk MOCKINGBOARD=0 -- snd_mb.c n'est
-# alors ni compile ni lie, et seul le haut-parleur reste.
+# DESACTIVEE par defaut : rare sur //e (peu de machines en ont une), et son
+# tampon (~2,9 Ko) ne laisse plus assez de marge une fois les images
+# compressees (cf. tools/zx02) prises en compte -- les deux ne rentrent pas
+# ensemble. Activation : make dsk MOCKINGBOARD=1 -- snd_mb.c est alors compile
+# et lie ; sans elle, seul le haut-parleur reste, et le menu Options degrade
+# proprement (cf. OPT_MB dans smenu.c : plus de sous-menu slot, message
+# "MOCKINGBOARD NON COMPILEE" a la place -- l'entree Options elle-meme reste
+# toujours presente, le test des sons au haut-parleur y fonctionne).
 #
 # Le slot se choisit A LA MAIN dans le menu Options : il n'y a AUCUNE detection
 # automatique, un balayage ecrirait dans sept cartes inconnues. Le slot designe
 # est en revanche verifie avant usage (cf. mb_probe).
-MOCKINGBOARD ?= 1
+MOCKINGBOARD ?= 0
 ifeq ($(MOCKINGBOARD),1)
   CFLAGS  += -DA2ADV_MOCKINGBOARD
 else
@@ -189,7 +195,19 @@ dsk: $(DSK)
 # de $(ADVIMG) n'etant qu'une regeneration.
 ADVIMGS  := $(wildcard $(ADVIMG)/*.HGR) $(wildcard $(ADVIMG_NAMED)/*.HGR)
 
-$(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) | $(BUILDDIR)
+# --- Compression des images (disque uniquement, cf. player/apple2/src/zx02.s
+# pour ce que ca coute/rapporte cote RAM -- rien : le decodeur lit le fichier
+# .ZX2 par petits blocs, jamais entierement en memoire). Outil hote construit
+# une fois depuis les sources vendues (tools/zx02, licence MIT/BSD -- voir
+# tools/zx02/LICENSE*) ; jamais embarque dans le player.
+ZX02_TOOL := $(BUILDDIR)/zx02
+ZX02_SRC  := tools/zx02/compress.c tools/zx02/optimize.c tools/zx02/memory.c \
+             tools/zx02/zx02.c
+
+$(ZX02_TOOL): $(ZX02_SRC) | $(BUILDDIR)
+	$(CC) -O2 -o $@ $(ZX02_SRC)
+
+$(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) $(ZX02_TOOL) | $(BUILDDIR)
 	mkdir -p $(DATADIR)
 	@# IMGnn.HGR : toujours REGENERES depuis les fichiers NOMMES (img/named/),
 	@# jamais a la main. IMAGES.MAP (produit par a2c) donne l'index reel de
@@ -204,6 +222,24 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) | $(BUILDDIR)
 	  fi; \
 	  cp "$$src" $(ADVIMG)/IMG$$idx.HGR; \
 	done < $(DATADIR)/IMAGES.MAP
+	@# Compresse chaque .HGR de $(ADVIMG) en .ZX2 -- SANS toucher au .HGR : deux
+	@# d'entre eux (BOOT00.HGR, MENU.HGR) sont des sources versionnees, pas des
+	@# artefacts jetables comme les IMGnn.HGR regeneres ci-dessus.
+	@python3 tools/zx02/pack_images.py $(ZX02_TOOL) $(ADVIMG)
+	@# Choisit, par nom, lequel des deux part sur la disquette (.ZX2 s'il est
+	@# plus petit, sinon .HGR), et fige la liste dans un fichier : le budget
+	@# et l'upload (blocs shell SEPARES, cf. recette Make) la relisent tous
+	@# les deux sans reprendre cette decision chacun de leur cote.
+	@: > $(BUILDDIR)/.imgfiles; \
+	for h in $(ADVIMG)/*.HGR; do \
+	  [ -e "$$h" ] || continue; \
+	  b=$$(basename "$$h" .HGR); z="$(ADVIMG)/$$b.ZX2"; \
+	  if [ -e "$$z" ] && [ "$$(stat -c%s "$$z")" -lt "$$(stat -c%s "$$h")" ]; then \
+	    echo "$$z"; \
+	  else \
+	    echo "$$h"; \
+	  fi; \
+	done > $(BUILDDIR)/.imgfiles
 	@# Budget disque, verifie AVANT AppleCommander : sans ca, un depassement se
 	@# traduit par "Unable to locate a free block in the Volume Bitmap!" en
 	@# pleine ecriture (disquette a moitie remplie, message illisible). On
@@ -214,7 +250,7 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) | $(BUILDDIR)
 	@# ProDOS) : legerement pessimiste, jamais l'inverse.
 	@budget=$$(java -jar $(AC_JAR) -i $(PRODOS_TPL) | awk -F': ' '/Free Space \(bytes\)/{print $$2}'); \
 	need=0; \
-	for f in $(BIN) $(LOADER) $(DATADIR)/STORY*.DAT $(DATADIR)/ASSETS.IDX $(DATADIR)/APP.LNG $(ADVIMG)/*.HGR; do \
+	for f in $(BIN) $(LOADER) $(DATADIR)/STORY*.DAT $(DATADIR)/ASSETS.IDX $(DATADIR)/APP.LNG $$(cat $(BUILDDIR)/.imgfiles); do \
 	  [ -e "$$f" ] || continue; \
 	  sz=$$(stat -c%s "$$f"); \
 	  blocks=$$(( (sz + 511) / 512 )); \
@@ -244,11 +280,19 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) | $(BUILDDIR)
 	@# c'est une garantie de fabrication, pas un cas d'execution (spec §6.1).
 	@[ -e $(DATADIR)/APP.LNG ] || { echo "ERREUR: $(DATADIR)/APP.LNG absent"; exit 1; }
 	java -jar $(AC_JAR) -p  $(DSK) APP.LNG bin 0          < $(DATADIR)/APP.LNG
-	@for h in $(ADVIMG)/*.HGR; do \
-	  [ -e "$$h" ] || continue; \
-	  n=$$(basename $$h); \
+	@# .ZX2 en type bin/aux 0 (donnee brute a decompresser, pas une image a
+	@# charger telle quelle) ; .HGR (repli, non compresse) garde l'aux 0x2000
+	@# d'origine, purement informatif -- le player lit toujours dans son
+	@# propre tampon, cette metadonnee ne sert qu'aux outils qui inspectent
+	@# le catalogue ProDOS.
+	@for f in $$(cat $(BUILDDIR)/.imgfiles); do \
+	  [ -e "$$f" ] || continue; \
+	  n=$$(basename "$$f"); \
 	  echo "  + $$n"; \
-	  java -jar $(AC_JAR) -p $(DSK) $$n bin 0x2000 < $$h; \
+	  case "$$n" in \
+	    *.ZX2) java -jar $(AC_JAR) -p $(DSK) $$n bin 0      < $$f ;; \
+	    *)     java -jar $(AC_JAR) -p $(DSK) $$n bin 0x2000 < $$f ;; \
+	  esac; \
 	done
 	@echo "Disquette prete : $(DSK)  (volume /$(VOLNAME)/)"
 	java -jar $(AC_JAR) -l $(DSK)

@@ -13,6 +13,12 @@
 #include <stdio.h>
 #include "ramdisk.h"
 #include "story.h"
+#ifdef __CC65__
+#include "simage.h"      /* img_load_from_disk : decompression .ZX2 des images.
+                          * Pas cote hote : hosttest ne compile ni simage.c ni
+                          * le decodeur assembleur zx02.s (rien a y tester, le
+                          * banc hote ne rejoue que story/state/combat). */
+#endif
 
 #define RAM_MAX_FILES 100                        /* = MAX_FILES du format */
 #define COPY_CHUNK    SECTION_MAX                /* 1 Ko : on reutilise secbuf */
@@ -204,6 +210,78 @@ static signed char copy_best(u8 id, scr_progress_cb cb, u32 *done, u32 total)
 
 /* --- Fichiers quelconques (images) -------------------------------------- */
 
+/* Taille sur la disquette de ce que img_load_from_disk lira reellement pour
+ * `hgr_name` : celle du .ZX2 s'il existe (c'est lui qui sera lu), sinon celle
+ * du .HGR brut. 0 si aucun des deux n'existe. Sert a budgeter la barre de
+ * progression sur de vrais octets d'E/S disque, pas sur la taille
+ * decompressee -- qui, elle, ne varie jamais (8192 o) et ne dit rien du
+ * temps que ca va prendre. */
+static u32 img_disk_size(const char *hgr_name)
+{
+    char zx_name[11];        /* meme construction que img_load_from_disk */
+    u32  sz;
+    u8   i;
+
+    for (i = 0; hgr_name[i] != '\0' && hgr_name[i] != '.' && i < 6; ++i)
+        zx_name[i] = hgr_name[i];
+    zx_name[i++] = '.'; zx_name[i++] = 'Z'; zx_name[i++] = 'X'; zx_name[i++] = '2';
+    zx_name[i] = '\0';
+
+    sz = named_size(zx_name);
+    return (sz != 0) ? sz : named_size(hgr_name);
+}
+
+/* Decompresse (ou copie, en repli -- cf. img_load_from_disk) l'image
+ * `hgr_name` depuis la disquette, PUIS ecrit le resultat, toujours 8192 o
+ * decompresses, sur le premier volume qui l'accepte, sous ce MEME nom :
+ * c'est ainsi que ram_file_path la retrouvera ensuite, sans savoir qu'elle
+ * a jamais ete compressee. Renvoie le volume utilise dans *used.
+ *
+ * SANS DANGER pour un splash encore affiche : ce chemin n'est emprunte
+ * qu'APRES le premier appel a boot_progress (cf. main.c), qui bascule
+ * l'ecran en mode texte avant meme le premier octet copie -- la page HIRES
+ * qu'on remplit ici n'est donc jamais celle qu'on regarde a ce moment.
+ *
+ * 0 = ok, -1 = absente de la disquette (ni .ZX2 ni .HGR), -2 = aucun volume
+ * ne l'accepte. */
+#ifdef __CC65__
+static signed char img_preload_best(const char *hgr_name, u8 *used,
+                                    scr_progress_cb cb, u32 *done, u32 total)
+{
+    u8    vol;
+    FILE *dst;
+
+    if (img_load_from_disk(hgr_name) != 0)
+        return -1;
+
+    for (vol = 0; vol < NVOL; ++vol) {
+        if (!vol_ready(vol))
+            continue;
+        dst = fopen(gen_path(vol, hgr_name), "wb");
+        if (dst == NULL)
+            continue;
+        if (fwrite(scr_hgr_page(), 1, SCR_HGR_SIZE, dst) == SCR_HGR_SIZE) {
+            fclose(dst);
+            *used = vol;
+            *done += img_disk_size(hgr_name);
+            if (cb != NULL)
+                cb((u16)(*done >> 8), (u16)(total >> 8));
+            return 0;
+        }
+        fclose(dst);
+        remove(gen_path(vol, hgr_name));     /* jamais laisser un tronque */
+    }
+    return -2;
+}
+#else  /* hote : pas de page HIRES a remplir, cf. le commentaire d'inclusion */
+static signed char img_preload_best(const char *hgr_name, u8 *used,
+                                    scr_progress_cb cb, u32 *done, u32 total)
+{
+    (void)hgr_name; (void)used; (void)cb; (void)done; (void)total;
+    return -1;
+}
+#endif
+
 const char *ram_file_path(const char *name)
 {
     u8 vol;
@@ -298,10 +376,10 @@ void ram_boot_fill(u8 from, scr_progress_cb cb)
         u32 sz;
         if (nm == 0)
             break;
-        sz = named_size(nm);
+        sz = img_disk_size(nm);      /* .ZX2 s'il existe (c'est lui qui sera lu), sinon .HGR */
         if (sz == 0) {
             if (i == 0)
-                continue;            /* pas de MENU.HGR : les images restent */
+                continue;            /* pas de MENU : les images restent */
             break;
         }
         total += sz;
@@ -322,7 +400,7 @@ void ram_boot_fill(u8 from, scr_progress_cb cb)
         const char *nm = extra_name(i);
         if (nm == 0)
             break;
-        if (copy_named_best(nm, &vol, cb, &done, total) == -2)
+        if (img_preload_best(nm, &vol, cb, &done, total) == -2)
             break;                   /* plus de place : inutile d'insister */
     }
 }

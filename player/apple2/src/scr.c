@@ -307,6 +307,8 @@ void scr_gfx_off(void)
 #define HGR_BLK  512
 #define HGR_NBLK  (HGR_SIZE / HGR_BLK)   /* 16 blocs de 512 o */
 
+void *scr_hgr_page(void) { return HGR_PAGE; }
+
 signed char scr_load_hgr(const char *name, scr_progress_cb cb)
 {
     FILE *f = fopen(name, "rb");
