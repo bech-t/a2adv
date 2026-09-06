@@ -22,11 +22,11 @@ extern u8  cb_last_to;             /* 0=ennemi touche, 1=heros touche, 2=aucun *
 void combat_begin(u8 att, u8 hp, u8 dmg, u8 armor);
 
 /* Joue UN round (le heros frappe, l'ennemi riposte selon les scores).
- * Renvoie CB_CONTINUE, CB_VICTOIRE ou CB_DEFAITE. */
+ * Renvoie CB_CONTINUE, CB_WIN ou CB_LOSE. */
 u8 combat_attack(void);
 
 /* Fuite : l'ennemi place un coup gratuit (penalite).
- * Renvoie CB_FUITE, ou CB_DEFAITE si le coup est fatal. */
+ * Renvoie CB_FLEE, ou CB_LOSE si le coup est fatal. */
 u8 combat_flee(void);
 
 /* PV courants du heros (stat de PV de combat), 0 si non configuree. */

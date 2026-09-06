@@ -285,7 +285,7 @@ sentez que c'est ici, et nulle part ailleurs, que l'histoire doit s'achever.
 # ===========================================================================
 
 :: fin_victoire
-@ending victoire
+@ending win
 Les mots anciens roulent dans la nuit comme un tonnerre lointain. La poupee
 s'illumine de l'interieur, se fend, et une petite silhouette translucide s'en
 eleve. Pour la premiere fois depuis un siecle, le spectre de Ligeia sourit
@@ -295,13 +295,13 @@ s'eveille sans cauchemars — et l'on chantera longtemps le nom de celui qui osa
 franchir la grille.
 
 :: fin_chute
-@ending defaite
+@ending lose
 Le puits est plus profond que la nuit elle-meme. Vous tombez longtemps, tres
 longtemps, jusqu'a ce que le froid et le silence vous recoivent. Le chateau de
 Sombreveille garde un visiteur de plus, et le village, une esperance de moins.
 
 :: fin_folie
-@ending defaite
+@ending lose
 Le hurlement de l'enfant ne quitte plus votre tete. On vous retrouvera, bien
 des annees plus tard, cheveux blanchis, errant dans les couloirs du chateau, a
 bercer une poupee imaginaire en riant tout bas avec les portraits.

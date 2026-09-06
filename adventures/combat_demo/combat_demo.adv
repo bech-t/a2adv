@@ -26,17 +26,17 @@ Contre le mur, une *epee courte* est plantee dans un cadavre.
 
 :: combat_gobelin
 @combat "Gobelin" att=6 hp=9 dmg=3 armor=0
-@victoire sortie
+@win sortie
   ~ score 100
   ~ sound win
-@defaite  mort
-@fuite    entree
+@lose  mort
+@flee    entree
 Le gobelin bondit, dague au poing !
 
 :: sortie
-@ending victoire
+@ending win
 Le gobelin s'effondre. Tu enjambes sa carcasse et gagnes la sortie.
 
 :: mort
-@ending defaite
+@ending lose
 La dague du gobelin trouve ta gorge. Le noir t'engloutit.

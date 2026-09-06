@@ -124,7 +124,7 @@ def _resolve_section(sec: Section, sym: Symbols,
     if sec.combat is not None:
         cb = sec.combat
         if not cb.win or not cb.lose:
-            raise A2Error(f"@combat dans '{sec.name}': @victoire et @defaite "
+            raise A2Error(f"@combat dans '{sec.name}': @win et @lose "
                           "obligatoires", cb.line)
         for nm, attr in ((cb.win, "win_index"), (cb.lose, "lose_index")):
             if nm not in sym.sections:

@@ -171,7 +171,7 @@ Une section peut contenir, dans un ordre globalement libre :
 
 Une section **sans aucun choix écrit** est automatiquement une fin de partie.
 Sans `@ending`, le joueur voit l'écran générique `*** FIN ***` ; avec
-`@ending victoire` ou `@ending defaite`, il voit l'écran dédié (et le son de
+`@ending win` ou `@ending lose`, il voit l'écran dédié (et le son de
 victoire/défaite joue).
 
 Il existe une **troisième situation**, plus subtile : une section qui a bien
@@ -479,7 +479,7 @@ la directive `@on_enter` redirige explicitement les `~` qui suivent :
 ```
 
 Ce mécanisme d'« attache » (le prochain `~` va au dernier `@on_enter`,
-`@on_exit`, choix, `@victoire`/`@defaite`/`@fuite`, ou `@correct`/`@wrong`
+`@on_exit`, choix, `@win`/`@lose`/`@flee`, ou `@correct`/`@wrong`
 rencontré) est purement séquentiel — l'indentation visuelle n'y joue aucun
 rôle, elle ne fait qu'aider à la lecture.
 
@@ -490,11 +490,11 @@ rôle, elle ne fait qu'aider à la lecture.
 ```
 :: combat_gobelin
 @combat "Gobelin" att=6 hp=9 dmg=3 armor=0 image=gobelin
-@victoire sortie "Le gobelin s'effondre dans un dernier rale."
+@win sortie "Le gobelin s'effondre dans un dernier rale."
   ~ score 100
   ~ give tresor
-@defaite mort
-@fuite   entree
+@lose mort
+@flee entree
 Le gobelin bondit, dague au poing !
 
 * [Affronter] -> combat_gobelin
@@ -503,14 +503,14 @@ Le gobelin bondit, dague au poing !
 - `@combat "Nom" att=N hp=N dmg=N armor=N [image=id]` décrit l'adversaire.
   `hp` doit être **au moins 1** ; les autres valeurs vont de 0 à 255. `image`
   est optionnelle (portrait affiché ~3 secondes avant le premier round).
-- `@victoire` et `@defaite` sont **obligatoires** : chacune pointe vers une
+- `@win` et `@lose` sont **obligatoires** : chacune pointe vers une
   section, avec un texte d'issue optionnel entre guillemets (255 caractères
   max), affiché sur un écran dédié avant le saut. Les `~` indentés juste
   après s'appliquent avant de sauter.
-- `@fuite` est **optionnelle**. Si elle est présente, une option « FUIR »
+- `@flee` est **optionnelle**. Si elle est présente, une option « FUIR »
   apparaît à chaque round de combat : la fuite réussit **toujours**, mais
   l'adversaire porte un dernier coup gratuit au moment de fuir — un coup qui
-  peut être fatal (le joueur bascule alors sur `@defaite`, pas sur `@fuite`).
+  peut être fatal (le joueur bascule alors sur `@lose`, pas sur `@flee`).
 
 **Résolution d'un round** : le héros et l'adversaire lancent chacun 2d6 et y
 ajoutent leur score d'attaque (`@combat_attack` + bonus d'objets portés pour

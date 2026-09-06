@@ -28,11 +28,11 @@ Vous n'y voyez rien. Un bruit, tout pres.
 * [Reculer] -> depart
 
 :: fin_victoire
-@ending victoire
+@ending win
 Vous ressortez, le tresor sous le bras.
 
 :: fin_lache
-@ending defaite
+@ending lose
 Vous ne saurez jamais ce qu'il y avait derriere cette porte.
 `;
 

@@ -14,8 +14,8 @@ import { PromptDialog } from '../prompt-dialog/prompt-dialog';
  * un seul pictogramme est affiché). */
 function iconFor(s: AdvSection): { icon: string; label: string; cls: string } {
   if (s.kind.isStart) return { icon: 'play_circle', label: 'Départ', cls: 'k-start' };
-  if (s.kind.ending === 'victoire') return { icon: 'emoji_events', label: 'Fin — victoire', cls: 'k-victoire' };
-  if (s.kind.ending === 'defaite') return { icon: 'skull', label: 'Fin — défaite', cls: 'k-defaite' };
+  if (s.kind.ending === 'win') return { icon: 'emoji_events', label: 'Fin — victoire', cls: 'k-victoire' };
+  if (s.kind.ending === 'lose') return { icon: 'skull', label: 'Fin — défaite', cls: 'k-defaite' };
   if (s.kind.hasCombat) return { icon: 'swords', label: 'Combat', cls: 'k-combat' };
   if (s.kind.hasAsk) return { icon: 'quiz', label: 'Énigme (saisie)', cls: 'k-ask' };
   if (s.kind.hasImage) return { icon: 'image', label: 'Image', cls: 'k-image' };

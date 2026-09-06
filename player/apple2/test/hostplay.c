@@ -141,7 +141,7 @@ static u16 play_section(u16 idx)
                    cb_last_dmg, combat_hero_hp(), cb_enemy_hp);
             if (r != CB_CONTINUE) break;
         }
-        if (r == CB_VICTOIRE) {
+        if (r == CB_WIN) {
             b_seek(cb_winfx); state_apply_effects();     /* effets de victoire */
             printf("  >>> VICTOIRE -> %u\n", cb_win);
             return cb_win;

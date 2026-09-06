@@ -249,10 +249,10 @@ par votre lampe, coule vers vous, gueule ouverte.
 
 :: combat_anaconda
 @combat "Anaconda geant" att=6 hp=10 dmg=4 armor=1
-@victoire porte_scellee "L'anaconda se noue une derniere fois, puis retombe inerte en travers des marches. Vous enjambez la masse froide et poursuivez la descente."
+@win porte_scellee "L'anaconda se noue une derniere fois, puis retombe inerte en travers des marches. Vous enjambez la masse froide et poursuivez la descente."
   ~ score 15
-@defaite mort_jungle
-@fuite temple_couloir "Vous plongez sous les anneaux et devalez l'escalier quatre a quatre, le souffle court, la bete sifflant dans votre dos."
+@lose mort_jungle
+@flee temple_couloir "Vous plongez sous les anneaux et devalez l'escalier quatre a quatre, le souffle court, la bete sifflant dans votre dos."
 Deux cent cinquante kilos de muscle froid. S'il vous enserre, vous ne verrez
 jamais le tresor.
 
@@ -308,6 +308,7 @@ pleine de gravats jusqu'au bord. Autour de la margelle court une phrase, en
 glyphes que vous savez lire.
 
 >> JE SUIS CE QUE L'ON REVET QUAND ON L'A OTE. <<
+
 >> ON ME PORTE A L'ENVERS. QUI ME NOMME OUVRE. <<
 
 {flag fresques_lues} Vingt metres de paroi, la meme scene vingt fois : le dieu qui se depouille et endosse sa depouille a l'envers. Vous avez la reponse depuis tout a l'heure.
@@ -394,9 +395,10 @@ Aucun bas-relief ne nomme le dieu du lieu : on les a marteles, tous, avec soin.
 * {not flag dalle_ouverte} [Battre le joint a la machette, et forcer] -> dalle_forcee
 
 :: dalle_forcee
-Vous passez une heure a battre le joint, puis vous vous arc-boutez a deux sur la
+Vous passez une heure a battre le joint, puis vous vous arc-boutez sur la
 machette. La dalle cede d'un coup, de travers, et une moitie s'effondre a
 l'interieur. Vous avez ce que vous vouliez.
+
 Vous avez aussi reveille le temple : quelque part au-dessus, sur la pierre, des
 pieds nus se sont mis a courir.
 ~ set dalle_ouverte
@@ -412,6 +414,7 @@ De pres, ces cinq corps ne sont pas ceux de rois : ce sont des pretres, mains
 jointes autour de l'urne comme des geoliers autour d'une cellule. Leurs ongles,
 anormalement longs, ont creuse de fines rainures dans la pierre de l'autel —
 comme s'ils avaient, un jour, gratte pour retenir quelque chose *a l'interieur*.
+
 Ce n'est pas une sepulture. C'est une *geole*, et vous venez d'en briser le
 scelle.
 ~ set urne_geole
@@ -448,8 +451,9 @@ epargne le retour en camion : il n'y aura pas de place pour tout le monde. »
 ~ take urne
 ~ take emeraude
 
-* [Lever les mains et guetter une ouverture] -> embuscade_jean
 * [Degainer votre revolver immediatement] -> combat_ruffians
+* [Lever les mains et guetter une ouverture] -> embuscade_jean
+
 
 :: embuscade_jean
 Vous levez lentement les mains. Les ruffians commencent a vous depouiller de vos
@@ -463,10 +467,10 @@ Il y a une tension dans l'air, quelque chose qui ne va pas.
 
 :: combat_ruffians
 @combat "Hommes de main" att=6 hp=12 dmg=4 armor=0
-@victoire attaque_yaolt "Deux ruffians a terre, les autres hesitent — mais un cri monte de la jungle, et soudain ce ne sont plus eux, le danger."
+@win attaque_yaolt "Deux ruffians a terre, les autres hesitent — mais un cri monte de la jungle, et soudain ce ne sont plus eux, le danger."
   ~ set jean_fusillade
   ~ score 15
-@defaite mort_jungle
+@lose mort_jungle
 Votre premier coup de feu part avant leur surprise. Mais ils sont nombreux, et
 le couloir de fuite est mince.
 
@@ -488,7 +492,7 @@ Votre seule chance de le rattraper, c'est la jeep.
   ~ score 10
 
 :: course_poursuite
-La BMW bondit sur la route defoncee, chassant l'arriere dans la boue rouge. Le
+La JEEP bondit sur la route defoncee, chassant l'arriere dans la boue rouge. Le
 camion est lourd, vous gagnez metre par metre. Un homme des freres Jean se
 penche a l'arriere et vous ajuste au fusil.
 
@@ -498,9 +502,9 @@ penche a l'arriere et vous ajuste au fusil.
 
 :: combat_camion
 @combat "Homme des freres Jean" att=7 hp=10 dmg=4 armor=0
-@victoire reprise_butin "D'un coup d'epaule vous desarconnez le tireur, qui bascule dans les fougeres. Le camion est a vous."
+@win reprise_butin "D'un coup d'epaule vous desarconnez le tireur, qui bascule dans les fougeres. Le camion est a vous."
   ~ score 20
-@defaite mort_jungle
+@lose mort_jungle
 Accroche a la ridelle, dans les cahots, c'est vous ou lui.
 
 :: reprise_butin
@@ -515,7 +519,7 @@ carnet a la main : « On rentre, senor. Loin d'ici. »
 * [Charger le tresor et gagner la cote, direction New York] -> ny_arrivee
 
 :: mort_jungle
-@ending defaite
+@ending lose
 La jungle garde ce qu'on lui prend. On ne retrouvera de vous qu'une lampe
 eteinte au bord d'une route pavee — et, peut-etre, un jour, une momie de plus au
 fond d'un temple.
@@ -694,21 +698,21 @@ Et l'emeraude, deja, n'est plus dans son ecrin.
 
 :: combat_serviteur
 @combat "Serviteur de l'Ecorche" att=7 hp=8 dmg=4 armor=0
-@victoire apres_braquage "Le serviteur s'effondre sur l'urne qu'il defendait, un sourire de fievre encore aux levres. Sa dague d'obsidienne roule a vos pieds."
+@win apres_braquage "Le serviteur s'effondre sur l'urne qu'il defendait, un sourire de fievre encore aux levres. Sa dague d'obsidienne roule a vos pieds."
   ~ {not has dague} give dague
   ~ give urne
   ~ set momie_arretee
   ~ score 20
-@defaite mort_musee
+@lose mort_musee
 Corps peint de rouge et de noir, dague d'obsidienne au poing, un sourire de
 fievre : il meurt sans un cri, en serrant l'urne contre lui.
 
 :: combat_momie
 @combat "Momie de l'Ecorche" att=8 hp=12 dmg=3 armor=1
-@victoire apres_braquage "La momie se disloque enfin, membres epars sur le marbre, et cesse de bouger. Pour de bon, cette fois."
+@win apres_braquage "La momie se disloque enfin, membres epars sur le marbre, et cesse de bouger. Pour de bon, cette fois."
   ~ set momie_arretee
   ~ score 25
-@defaite mort_musee
+@lose mort_musee
 Elle court au plafond a quatre pattes, se laisse tomber griffes en avant. Elle
 est deja morte : la tuer une seconde fois demande de l'estomac.
 
@@ -721,7 +725,7 @@ d'un costume blanc entrevu une seconde pres du vestiaire.
 * [Attendre la fin du carnage] -> apres_braquage
 
 :: mort_musee
-@ending defaite
+@ending lose
 Une dague d'obsidienne trouve votre flanc dans la cohue, et le marbre monte a
 votre rencontre. La derniere image que vous emportez, c'est un costume blanc,
 trop propre pour un soir pareil, qui s'eloigne sans se presser.
@@ -1097,9 +1101,9 @@ sur la pierre tiede.
 
 :: combat_pretres
 @combat "Serviteurs de l'Ecorche" att=7 hp=10 dmg=4 armor=0
-@victoire salon_oeil "Les deux corps peints s'affaissent, dagues encore serrees. Entre vous et le dieu au masque de peau, il n'y a plus personne."
+@win salon_oeil "Les deux corps peints s'affaissent, dagues encore serrees. Entre vous et le dieu au masque de peau, il n'y a plus personne."
   ~ score 25
-@defaite fin_mort
+@lose fin_mort
 Les deux corps peints se jettent sur vous, dagues levees, prets a mourir pour
 leur dieu.
 
@@ -1129,22 +1133,22 @@ dans votre poche, et quelque chose, dans le salon, change de temperature.
 
 :: combat_xipe
 @combat "L'homme en costume blanc" att=9 hp=14 dmg=4 armor=1
-@victoire denouement
+@win denouement
   ~ score 60
   ~ {has dague} score 20
-@defaite fin_mort
+@lose fin_mort
 Prive de ses serviteurs, le dieu tire de sa manche une longue dague effilee. Le
 corps qu'il habite est plus fort, plus endurant qu'un homme — mais il saigne, et
 c'est deja beaucoup.
 
 :: fin_mort
-@ending defaite
+@ending lose
 La derniere chose que vous voyez, c'est le masque de peau se pencher sur vous, et
 ce sourire qui n'en finit pas. Cette nuit, l'Ecorcheur de New York fait une
 victime de plus — et pas la derniere.
 
 :: fin_possede
-@ending defaite
+@ending lose
 Vous vous relevez. Vous epoussetez votre veste. Vous regardez, avec un interet
 poli, l'homme au masque de peau s'affaisser sur le marbre, sa besogne faite —
 une depouille de plus, dont vous n'avez plus l'usage.
@@ -1168,7 +1172,7 @@ Le masque de peau glisse sur le marbre. La lueur verte s'eteint.
 ~ goto fin_amere
 
 :: fin_totale
-@ending victoire
+@ending win
 =! L'ECORCHEUR EST TOMBE
 Dans un coffret de cedre, pres de l'autel, l'*Oeil de Quetzalcoatl* bat encore.
 Vous le refermez sur sa lueur verte et vous l'emportez — la pierre qui tenait le
@@ -1179,7 +1183,7 @@ Les journaux inventent une histoire raisonnable ; vous les laissez faire. Vous
 savez ce que vous avez referme, et vous etes le seul.
 
 :: fin_amere
-@ending victoire
+@ending win
 =! L'ECORCHEUR EST TOMBE
 Au matin, les journaux inventent une histoire raisonnable : un tueur, un
 justicier, une ville sauvee. Vous les laissez faire. Vous goutez une celebrite
@@ -1192,7 +1196,7 @@ Mais il reste une sensation d'inacheve.
 Pour le moment...
 
 :: fin_creuse
-@ending victoire
+@ending win
 =! TROP TARD, ET QUAND MEME
 Vous avez gagne. La ville a paye le prix de votre lenteur : une nuit par piste
 ouverte, un corps par nuit, et autant de familles a qui l'on rendra des restes.

@@ -67,10 +67,10 @@ Un pas de trop : le sol se derobe. Vous chutez dans le vide...
 
 :: victoire
 @mode full_text
-@ending victoire
+@ending win
 Vous ressortez fortune faite. L'aventure est un succes !
 
 :: defaite
 @mode full_text
-@ending defaite
+@ending lose
 Les echos de la caverne resteront votre derniere compagnie.

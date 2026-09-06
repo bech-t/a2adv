@@ -63,11 +63,11 @@ u8 run_combat(u16 eimg, u8 att, u8 hp, u8 dmg, u8 armor,
         c = scr_getkey();
         if (c == '3' && can_flee) {
             r = combat_flee();
-            if (r == CB_DEFAITE) snd_play(SND_LOSE);  /* coup de fuite fatal */
-            return r;                                  /* CB_FUITE ou CB_DEFAITE */
+            if (r == CB_LOSE) snd_play(SND_LOSE);  /* coup de fuite fatal */
+            return r;                                  /* CB_FLEE ou CB_LOSE */
         }
         r = combat_attack();              /* toute autre touche = attaquer */
-        if (r == CB_VICTOIRE) { snd_play(SND_WIN);  return CB_VICTOIRE; }
-        if (r == CB_DEFAITE)  { snd_play(SND_LOSE); return CB_DEFAITE; }
+        if (r == CB_WIN) { snd_play(SND_WIN);  return CB_WIN; }
+        if (r == CB_LOSE)  { snd_play(SND_LOSE); return CB_LOSE; }
     }
 }

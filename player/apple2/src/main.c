@@ -93,9 +93,9 @@ static u8 confirm_quit(u16 section)
 
 static void ending_banner(u8 ending)
 {
-    if (ending == END_VICTOIRE)
+    if (ending == END_WIN)
         scr_puts(ui_str[UI_END_WIN]);
-    else if (ending == END_DEFAITE)
+    else if (ending == END_LOSE)
         scr_puts(ui_str[UI_END_LOSE]);
     else
         scr_puts(ui_str[UI_END_GENERIC]);
@@ -144,9 +144,9 @@ static u16 play_section(u16 idx)
         outcome = run_combat(h.cb_eimg != NO_IMAGE ? h.cb_eimg : h.image,
                              h.cb_att, h.cb_hp, h.cb_dmg, h.cb_armor, h.cb_name,
                              (u8)(h.cb_flee != NO_GOTO), body_start);
-        if (outcome == CB_VICTOIRE)   { target = h.cb_win;  fxpos = h.cb_winfx;
+        if (outcome == CB_WIN)   { target = h.cb_win;  fxpos = h.cb_winfx;
                                         omsg = h.cb_winmsg;  omlen = h.cb_winmsg_len; }
-        else if (outcome == CB_FUITE) { target = h.cb_flee; fxpos = h.cb_fleefx;
+        else if (outcome == CB_FLEE) { target = h.cb_flee; fxpos = h.cb_fleefx;
                                         omsg = h.cb_fleemsg; omlen = h.cb_fleemsg_len; }
         else                          { target = h.cb_lose; fxpos = h.cb_losefx;
                                         omsg = h.cb_losemsg; omlen = h.cb_losemsg_len; }
@@ -219,9 +219,9 @@ static u16 play_section(u16 idx)
         if (h.ending != END_NONE || n_choices == 0) {
             ui_newline();
             ending_banner(h.ending);
-            if (h.ending == END_VICTOIRE)
+            if (h.ending == END_WIN)
                 snd_play(SND_WIN);
-            else if (h.ending == END_DEFAITE)
+            else if (h.ending == END_LOSE)
                 snd_play(SND_LOSE);
             ui_wait_key(ui_str[UI_ANYKEY]);
             if (mixed) scr_gfx_off();

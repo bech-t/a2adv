@@ -14,8 +14,8 @@
 
 /* Fins */
 #define END_NONE      0
-#define END_VICTOIRE  1
-#define END_DEFAITE   2
+#define END_WIN       1
+#define END_LOSE      2
 
 /* Opcodes d'atomes de condition */
 #define OP_FLAG_SET   0x01
@@ -108,9 +108,9 @@ enum {
 #define PROMPT_LEN     40    /* invite de saisie */
 
 /* Resultats d'un combat */
-#define CB_VICTOIRE 0
-#define CB_DEFAITE  1
-#define CB_FUITE    2
+#define CB_WIN      0
+#define CB_LOSE     1
+#define CB_FLEE     2
 #define CB_CONTINUE 0xFF     /* combat en cours (round joué, personne à terre) */
 
 #define UI_STR_LEN    36     /* longueur max d'une chaine d'UI (tronquee sinon) */

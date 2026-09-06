@@ -16,8 +16,8 @@ class Mode(IntEnum):
 
 class Ending(IntEnum):
     NONE = 0
-    VICTOIRE = 1
-    DEFAITE = 2
+    WIN = 1
+    LOSE = 2
 
 
 class Cmp(IntEnum):

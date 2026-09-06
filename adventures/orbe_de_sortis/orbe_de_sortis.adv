@@ -626,55 +626,55 @@ gravats vous mordent les talons.
 # ===========================================================================
 
 :: fin_victoire_totale
-@ending victoire
+@ending win
 Guide par l'apprenti, vous jaillissez a l'air libre au moment ou la tour
 s'abat. L'Orbe de Sortis leve la malediction : Mornegarde vous acclame en
 heros, et les menestrels chanteront longtemps votre nom.
 
 :: fin_victoire
-@ending victoire
+@ending win
 Vous surgissez du donjon en ruines, l'Orbe serree contre vous. La contree est
 sauvee. Vous rentrez a Mornegarde, fourbu mais glorieux.
 
 :: fin_victoire_amere
-@ending victoire
+@ending win
 Vous rampez hors des decombres, a demi asphyxie, l'Orbe intacte. La victoire
 a un gout de cendre, mais la malediction est brisee. C'est l'essentiel.
 
 :: fin_noyade
-@ending defaite
+@ending lose
 La riviere ne vous a pas rendu. Votre quete s'acheve, emportee par le courant.
 
 :: fin_loup
-@ending defaite
+@ending lose
 Le loup gris a eu raison de vous parmi les ruines silencieuses. Nul ne saura.
 
 :: fin_troll
-@ending defaite
+@ending lose
 La massue du troll vous a brise. Votre aventure s'arrete dans la grotte obscure.
 
 :: fin_chute
-@ending defaite
+@ending lose
 Le pont a cede. Le gouffre brumeux vous a englouti sans un bruit.
 
 :: fin_garde
-@ending defaite
+@ending lose
 Le geolier de Malgarde se dresse, victorieux, au-dessus de votre corps.
 
 :: fin_pieges
-@ending defaite
+@ending lose
 Les lames de la salle piegee ont eu le dernier mot. Vous ne verrez jamais l'Orbe.
 
 :: fin_barriere
-@ending defaite
+@ending lose
 La barriere de sortilege vous a consume. De vous, il ne reste qu'une ombre sur
 les dalles.
 
 :: fin_archimage
-@ending defaite
+@ending lose
 La foudre de Malgarde a fait de vous un tas de cendres. L'Orbe demeure sienne.
 
 :: fin_epuise
-@ending defaite
+@ending lose
 Vos forces vous abandonnent au coeur du donjon. Vous vous effondrez, vaincu par
 vos blessures, si pres du but.

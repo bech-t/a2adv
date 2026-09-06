@@ -91,9 +91,9 @@ u8 combat_attack(void)
     }
 
     if (cb_enemy_hp == 0)
-        return CB_VICTOIRE;
+        return CB_WIN;
     if (combat_hero_hp() == 0)
-        return CB_DEFAITE;
+        return CB_LOSE;
     return CB_CONTINUE;
 }
 
@@ -103,5 +103,5 @@ u8 combat_flee(void)
     hero_take(d);
     cb_last_dmg = d;
     cb_last_to = 1;
-    return (combat_hero_hp() == 0) ? CB_DEFAITE : CB_FUITE;
+    return (combat_hero_hp() == 0) ? CB_LOSE : CB_FLEE;
 }

@@ -18,7 +18,7 @@ export interface AdvChoice {
 export interface SectionKind {
   isStart: boolean;
   isIntro: boolean;
-  ending: 'victoire' | 'defaite' | null;
+  ending: 'win' | 'lose' | null;
   hasCombat: boolean;
   hasAsk: boolean;
   hasImage: boolean;
@@ -294,8 +294,8 @@ export class AdvParser {
     const kind: SectionKind = { isStart, isIntro, ending: null, hasCombat: false, hasAsk: false, hasImage: false };
     for (let i = section.startLine; i < section.endLine; i++) {
       const t = this.stripComment(lines[i].trim());
-      if (/^@ending\s+victoire/.test(t)) kind.ending = 'victoire';
-      else if (/^@ending\s+defaite/.test(t)) kind.ending = 'defaite';
+      if (/^@ending\s+win\b/.test(t)) kind.ending = 'win';
+      else if (/^@ending\s+lose\b/.test(t)) kind.ending = 'lose';
       else if (/^@combat\b/.test(t)) kind.hasCombat = true;
       else if (/^@ask\b/.test(t)) kind.hasAsk = true;
       else if (/^@mode\s+(image_text|full_image)/.test(t)) kind.hasImage = true;

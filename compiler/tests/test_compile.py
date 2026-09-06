@@ -61,7 +61,7 @@ def test_ending_section():
     story, d = _compile()
     idx = {s.name: i for i, s in enumerate(story.sections)}
     victoire = d["sections"][idx["victoire"]]
-    assert victoire.ending == int(M.Ending.VICTOIRE)
+    assert victoire.ending == int(M.Ending.WIN)
     assert victoire.choices == []                    # section terminale
 
 

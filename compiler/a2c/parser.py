@@ -22,7 +22,13 @@ _CHOICE_RE = re.compile(
 )
 _MODES = {"full_text": Mode.FULL_TEXT, "image_text": Mode.IMAGE_TEXT,
           "full_image": Mode.FULL_IMAGE}
-_ENDINGS = {"victoire": Ending.VICTOIRE, "defaite": Ending.DEFAITE}
+_ENDINGS = {"win": Ending.WIN, "lose": Ending.LOSE}
+
+# Mots-cles francais des premieres versions du format. Le reste du format
+# etant en anglais, ils detonnaient ; on les reconnait encore pour rendre
+# une erreur qui dit quoi ecrire, plutot qu'un "directive inconnue" sec.
+_RENAMED = {"@victoire": "@win", "@defaite": "@lose", "@fuite": "@flee",
+            "victoire": "win", "defaite": "lose", "fuite": "flee"}
 
 
 def _strip_comment(line: str) -> str:
@@ -132,11 +138,11 @@ def parse(text: str) -> Story:
                 if cur is None:
                     raise A2Error("@on_exit hors d'une section", n)
                 attach = cur.on_exit
-            elif key0 == "@victoire":
+            elif key0 == "@win":
                 attach = cur.combat.win_effects
-            elif key0 == "@defaite":
+            elif key0 == "@lose":
                 attach = cur.combat.lose_effects
-            elif key0 == "@fuite":
+            elif key0 == "@flee":
                 attach = cur.combat.flee_effects
             elif key0 == "@correct":
                 attach = cur.input.correct_effects
@@ -265,7 +271,7 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
     elif key == "@combat":
         _require_section(cur, n)
         cur.combat = _parse_combat(body, n)
-    elif key in ("@victoire", "@defaite", "@fuite"):
+    elif key in ("@win", "@lose", "@flee"):
         _require_section(cur, n)
         if cur.combat is None:
             raise A2Error(f"{key} sans @combat dans la section", n)
@@ -278,9 +284,9 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
             raise A2Error(f"{key} attend un nom de section (+ texte optionnel \"...\")", n)
         if len(msg) > 255:
             raise A2Error(f"{key} : texte d'issue trop long (255 max)", n)
-        if key == "@victoire":
+        if key == "@win":
             cur.combat.win = targs[0]; cur.combat.win_msg = msg
-        elif key == "@defaite":
+        elif key == "@lose":
             cur.combat.lose = targs[0]; cur.combat.lose_msg = msg
         else:
             cur.combat.flee = targs[0]; cur.combat.flee_msg = msg
@@ -319,12 +325,19 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
     elif key == "@ending":
         _require_section(cur, n)
         if len(args) != 1 or args[0] not in _ENDINGS:
-            raise A2Error("@ending attend victoire | defaite", n)
+            if args and args[0] in _RENAMED:
+                raise A2Error(f"@ending {args[0]} a ete renomme en "
+                              f"@ending {_RENAMED[args[0]]}", n)
+            raise A2Error("@ending attend win | lose", n)
         cur.ending = _ENDINGS[args[0]]
     elif key == "@on_enter" or key == "@on_exit":
         _require_section(cur, n)
         # l'attache est réglée par l'appelant
     else:
+        if key in _RENAMED:
+            raise A2Error(f"{key} a ete renomme en {_RENAMED[key]} : le format "
+                          f"est en anglais, ces trois mots-cles y faisaient "
+                          f"exception", n)
         raise A2Error(f"directive inconnue: {key}", n)
 
 

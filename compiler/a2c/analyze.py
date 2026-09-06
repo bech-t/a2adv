@@ -207,9 +207,9 @@ def analyze(story: Story) -> int:
 
     # --- joignabilité des fins ----------------------------------------
     vic = [s.name for s in story.sections
-           if s.ending == Ending.VICTOIRE and s.name in seen]
+           if s.ending == Ending.WIN and s.name in seen]
     defeats = [s.name for s in story.sections
-           if s.ending == Ending.DEFAITE and s.name in seen]
+           if s.ending == Ending.LOSE and s.name in seen]
     if not vic:
         issues += 1
         print("[!] aucune fin VICTOIRE atteignable")
