@@ -12,6 +12,11 @@ player/apple2/build/
 *.po
 *.2mg
 
+# Exception : /build/ a la racine est le SEUL endroit ou un .dsk est committe --
+# des disquettes pretes a l'emploi (regenerees par `make dist`), pour tester
+# sans installer la chaine de build (cc65, AppleCommander, Java, Python...).
+!/build/*.dsk
+
 # Compilations d'aventures : regenerables via `make dsk ADV=...`, ne pas versionner
 # (sinon elles se perimment silencieusement des que la source .adv change).
 adventures/*/build/
