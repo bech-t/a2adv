@@ -1,0 +1,230 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  background: var(--mat-sys-surface-container-lowest, #f4f4f7);
+}
+
+.section-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  ::ng-deep .mat-mdc-card-header {
+    align-items: center;
+  }
+}
+
+mat-card-title {
+  font-family: monospace;
+  font-size: 1rem !important;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex: 0 0 auto;
+  max-height: 45%;
+  overflow-y: auto;
+
+  > .label {
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+}
+
+.choice-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background: var(--mat-sys-surface, #fff);
+}
+
+.f-label {
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+.f-target {
+  flex: 1 1 160px;
+  min-width: 120px;
+}
+.f-cond-raw {
+  flex: 1 1 260px;
+}
+
+.choice-cond {
+  flex: 1 1 100%;
+}
+
+.combat-block,
+.ask-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: var(--mat-sys-surface, #fff);
+  flex: 0 0 auto;
+
+  > .label {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .spacer {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+.kind-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.combat-fields,
+.ask-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.f-name {
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+.f-num {
+  flex: 0 0 70px;
+}
+.f-image {
+  flex: 1 1 160px;
+}
+.f-msg {
+  flex: 2 1 220px;
+}
+
+.outcome-block {
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+}
+
+.outcome-fields {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.answer-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .f-name {
+    flex: 1 1 auto;
+  }
+}
+
+.empty.small {
+  opacity: 0.55;
+  font-size: 0.78rem;
+  margin: 2px 0;
+  text-align: left;
+}
+
+.entry-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex: 0 0 auto;
+
+  > .label {
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+}
+
+.choice-effects {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+
+  .sublabel {
+    font-size: 0.72rem;
+    opacity: 0.6;
+  }
+}
+
+.effect-raw-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .f-cond-raw {
+    flex: 1 1 auto;
+  }
+}
+
+.add {
+  align-self: flex-start;
+  font-size: 0.8rem;
+}
+
+.body {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
+
+.empty {
+  opacity: 0.6;
+  margin: 40px;
+  text-align: center;
+}

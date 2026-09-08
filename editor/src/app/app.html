@@ -6,6 +6,18 @@
 
   <span class="filename">{{ fileName() }} · {{ sectionCount() }} section(s)</span>
 
+  <button mat-icon-button [disabled]="!canUndo()" (click)="undo()" matTooltip="Annuler (Ctrl+Z)">
+    <mat-icon>undo</mat-icon>
+  </button>
+  <button mat-icon-button [disabled]="!canRedo()" (click)="redo()" matTooltip="Rétablir (Ctrl+Maj+Z)">
+    <mat-icon>redo</mat-icon>
+  </button>
+
+  <button mat-button (click)="onNew()">
+    <mat-icon>note_add</mat-icon>
+    Nouveau
+  </button>
+
   <button mat-button (click)="fileInput.click()">
     <mat-icon>folder_open</mat-icon>
     Importer un .adv
@@ -40,8 +52,9 @@
             <app-section-editor
               [doc]="doc()"
               [sectionName]="selectedSection()"
-              (saved)="onSaved()"
+              (saved)="onSaved($event)"
               (jumpTo)="onSelect($event)"
+              (docTouched)="onDocTouched($event)"
             />
           }
         </div>
@@ -54,6 +67,18 @@
             une section y bascule dans l'onglet Éditeur.
           </p>
           <app-scene-tree [doc]="doc()" [selected]="selectedSection()" (select)="onGraphSelect($event)" />
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          Problèmes
+          @if (errorCount() > 0) {
+            <span class="issue-badge">{{ errorCount() }}</span>
+          }
+        </ng-template>
+        <div class="tab-body">
+          <app-validation-panel [issues]="issues()" (select)="onGraphSelect($event)" />
         </div>
       </mat-tab>
     </mat-tab-group>

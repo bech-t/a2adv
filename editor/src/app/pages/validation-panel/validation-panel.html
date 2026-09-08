@@ -1,0 +1,45 @@
+@if (!issues().length) {
+  <div class="ok">
+    <mat-icon>check_circle</mat-icon>
+    <p>Aucun problème détecté par les vérifications en direct.</p>
+    <p class="hint">
+      Ceci reste un sous-ensemble d'`a2c analyze` (pas les objets/drapeaux jamais utilisés, ni les bornes de
+      caractéristique inatteignables) — passez le compilateur avant de publier.
+    </p>
+  </div>
+} @else {
+  <div class="list">
+    @if (errors().length) {
+      <h3><mat-icon>error</mat-icon> {{ errors().length }} erreur(s)</h3>
+      @for (issue of errors(); track $index) {
+        <button
+          class="issue error"
+          [class.clickable]="issue.sectionName"
+          [disabled]="!issue.sectionName"
+          (click)="issue.sectionName && select.emit(issue.sectionName)"
+        >
+          @if (issue.sectionName) {
+            <code>:: {{ issue.sectionName }}</code>
+          }
+          <span>{{ issue.message }}</span>
+        </button>
+      }
+    }
+    @if (warnings().length) {
+      <h3><mat-icon>warning</mat-icon> {{ warnings().length }} avertissement(s)</h3>
+      @for (issue of warnings(); track $index) {
+        <button
+          class="issue warning"
+          [class.clickable]="issue.sectionName"
+          [disabled]="!issue.sectionName"
+          (click)="issue.sectionName && select.emit(issue.sectionName)"
+        >
+          @if (issue.sectionName) {
+            <code>:: {{ issue.sectionName }}</code>
+          }
+          <span>{{ issue.message }}</span>
+        </button>
+      }
+    }
+  </div>
+}

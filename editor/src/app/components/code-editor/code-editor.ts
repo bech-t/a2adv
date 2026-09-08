@@ -80,6 +80,11 @@ export class CodeEditor implements AfterViewInit, OnDestroy {
           syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
           keymap.of([...defaultKeymap, ...historyKeymap]),
           EditorView.lineWrapping,
+          // Contrairement au reste des defauts CodeMirror (penses pour du
+          // code), ce champ porte du texte narratif en francais : on
+          // reactive ce que CodeMirror desactive par defaut sur son
+          // contenteditable (@codemirror/view, updateAttrs).
+          EditorView.contentAttributes.of({ spellcheck: 'true', autocorrect: 'on', autocapitalize: 'on' }),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               this.lastEmitted = update.state.doc.toString();

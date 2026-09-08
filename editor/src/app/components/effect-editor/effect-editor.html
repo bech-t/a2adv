@@ -1,0 +1,51 @@
+<div class="effect-row">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-verb">
+    <mat-select [value]="effect().op" (selectionChange)="setOp($event.value)">
+      @for (v of verbs; track v.op) {
+        <mat-option [value]="v.op">{{ v.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (shape.name === 'sound') {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+      <mat-select [value]="effect().name" (selectionChange)="setName($event.value)">
+        @for (s of soundNames; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  } @else if (shape.name !== 'none') {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+      <input
+        matInput
+        [value]="effect().name"
+        (change)="setName($any($event.target).value)"
+        [attr.list]="listId"
+        placeholder="nom"
+      />
+    </mat-form-field>
+    <datalist [id]="listId">
+      @for (n of nameOptions; track n) {
+        <option [value]="n"></option>
+      }
+    </datalist>
+  }
+
+  @if (shape.value) {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-value">
+      <input matInput type="number" [value]="effect().value" (change)="setValue($any($event.target).value)" [placeholder]="valueLabel" />
+    </mat-form-field>
+  }
+
+  @if (removable()) {
+    <button mat-icon-button (click)="remove.emit()" matTooltip="Retirer cet effet">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+</div>
+
+<div class="guard">
+  <span class="guard-label">sous condition (optionnelle) :</span>
+  <app-condition-editor [condition]="effect().cond" [flags]="flags()" [items]="items()" [stats]="stats()" (conditionChange)="setGuard($event)" />
+</div>

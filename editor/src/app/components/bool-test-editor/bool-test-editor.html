@@ -1,0 +1,43 @@
+<div class="atom-row">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-kind">
+    <mat-select [value]="atom().kind" (selectionChange)="setKind($event.value)">
+      @for (k of kinds; track k.value) {
+        <mat-option [value]="k.value">{{ k.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+    <input
+      matInput
+      [value]="atom().name"
+      (change)="setName($any($event.target).value)"
+      [attr.list]="listId"
+      [placeholder]="namePlaceholder"
+    />
+  </mat-form-field>
+  <datalist [id]="listId">
+    @for (n of nameOptions; track n) {
+      <option [value]="n"></option>
+    }
+  </datalist>
+
+  @if (atom().kind === 'stat') {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cmp">
+      <mat-select [value]="atom().cmp" (selectionChange)="setCmp($event.value)">
+        @for (op of cmpOps; track op) {
+          <mat-option [value]="op">{{ op }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-value">
+      <input matInput type="number" [value]="atom().value" (change)="setValue($any($event.target).value)" />
+    </mat-form-field>
+  }
+
+  @if (removable()) {
+    <button mat-icon-button (click)="remove.emit()" matTooltip="Retirer ce test">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+</div>

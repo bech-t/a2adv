@@ -1,0 +1,38 @@
+<div class="condition">
+  @if (condition().atoms.length > 1) {
+    <mat-button-toggle-group
+      class="connective"
+      [value]="condition().connective"
+      (change)="setConnective($event.value)"
+      matTooltip="Un seul connecteur par condition (pas de parenthèses)"
+    >
+      <mat-button-toggle value="and">ET</mat-button-toggle>
+      <mat-button-toggle value="or">OU</mat-button-toggle>
+    </mat-button-toggle-group>
+  }
+
+  <div class="atoms">
+    @for (a of condition().atoms; track $index) {
+      @if ($index > 0) {
+        <span class="connector">{{ condition().connective === 'or' ? 'ou' : 'et' }}</span>
+      }
+      <app-bool-test-editor
+        [atom]="a"
+        [flags]="flags()"
+        [items]="items()"
+        [stats]="stats()"
+        (atomChange)="updateAtom($index, $event)"
+        (remove)="removeAtom($index)"
+      />
+    }
+  </div>
+
+  @if (!condition().atoms.length) {
+    <p class="empty">Toujours vraie (aucun test).</p>
+  }
+
+  <button mat-stroked-button class="add" (click)="addAtom()">
+    <mat-icon>add</mat-icon>
+    Ajouter un test
+  </button>
+</div>

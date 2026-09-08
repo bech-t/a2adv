@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.condition {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.connective {
+  align-self: flex-start;
+  height: 28px;
+
+  ::ng-deep .mat-button-toggle-label-content {
+    line-height: 26px;
+    font-size: 0.72rem;
+    padding: 0 10px;
+  }
+}
+
+.atoms {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.connector {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  font-style: italic;
+  margin-left: 2px;
+}
+
+.empty {
+  opacity: 0.55;
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.add {
+  align-self: flex-start;
+  font-size: 0.8rem;
+}

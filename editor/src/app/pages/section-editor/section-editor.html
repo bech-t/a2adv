@@ -1,0 +1,347 @@
+@if (section(); as sec) {
+  <mat-card appearance="outlined" class="section-card">
+    <mat-card-header>
+      <mat-card-title>:: {{ sec.name }}</mat-card-title>
+      <span class="spacer"></span>
+      <button mat-flat-button color="primary" [disabled]="!dirty()" (click)="save()">
+        <mat-icon>save</mat-icon>
+        Enregistrer
+      </button>
+    </mat-card-header>
+
+    <mat-card-content class="card-body">
+      @if (!combat() && !ask()) {
+        <div class="kind-toolbar">
+          <button mat-stroked-button (click)="addCombat()">
+            <mat-icon>swords</mat-icon>
+            Ajouter un combat
+          </button>
+          <button mat-stroked-button (click)="addAsk()">
+            <mat-icon>quiz</mat-icon>
+            Ajouter une énigme
+          </button>
+        </div>
+      }
+
+      @if (combat(); as cb) {
+        <div class="combat-block">
+          <span class="label">
+            <mat-icon inline>swords</mat-icon> Combat
+            <span class="spacer"></span>
+            <button mat-button color="warn" (click)="removeCombat()">
+              <mat-icon>delete</mat-icon>
+              Retirer le combat
+            </button>
+          </span>
+          <div class="combat-fields">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+              <mat-label>Adversaire</mat-label>
+              <input matInput [value]="cb.name" (change)="setCombat({ name: $any($event.target).value })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-num">
+              <mat-label>Attaque</mat-label>
+              <input matInput type="number" [value]="cb.att" (change)="setCombat({ att: toNum($any($event.target).value) })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-num">
+              <mat-label>PV</mat-label>
+              <input matInput type="number" [value]="cb.hp" (change)="setCombat({ hp: toNum($any($event.target).value) })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-num">
+              <mat-label>Dégâts</mat-label>
+              <input matInput type="number" [value]="cb.dmg" (change)="setCombat({ dmg: toNum($any($event.target).value) })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-num">
+              <mat-label>Armure</mat-label>
+              <input matInput type="number" [value]="cb.armor" (change)="setCombat({ armor: toNum($any($event.target).value) })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-image">
+              <mat-label>Image (optionnelle)</mat-label>
+              <input matInput [value]="cb.image ?? ''" (change)="setCombat({ image: $any($event.target).value || null })" />
+            </mat-form-field>
+          </div>
+
+          @for (pair of [{ key: 'win', title: 'Victoire', outcome: cb.win }, { key: 'lose', title: 'Défaite', outcome: cb.lose }, { key: 'flee', title: 'Fuite', outcome: cb.flee }]; track pair.key) {
+            <div class="outcome-block">
+              <span class="sublabel">{{ pair.title }} ({{ '@' + pair.key }}) :</span>
+              @if (pair.outcome; as oc) {
+                <div class="outcome-fields">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-target">
+                    <mat-label>Cible</mat-label>
+                    <input matInput [value]="oc.target" (change)="setCombatOutcome(oc, { target: $any($event.target).value })" [attr.list]="'section-names-' + sectionName()" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-msg">
+                    <mat-label>Message d'issue (optionnel)</mat-label>
+                    <input matInput [value]="oc.msg" (change)="setCombatOutcome(oc, { msg: $any($event.target).value })" />
+                  </mat-form-field>
+                  <button mat-icon-button (click)="jumpTo.emit(oc.target)" matTooltip="Aller à cette section">
+                    <mat-icon>arrow_forward</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="removeCombatOutcome(pair.key)" matTooltip="Retirer cette issue">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <div class="choice-effects">
+                  @for (ref of oc.effects; track ref.lineIndex) {
+                    @if (effectFor(ref); as eff) {
+                      <app-effect-editor
+                        [effect]="eff"
+                        [flags]="flagNames()"
+                        [items]="itemNames()"
+                        [stats]="statNames()"
+                        [sections]="sectionNames()"
+                        (effectChange)="setEffect(ref, $event)"
+                        (remove)="removeEffect(ref)"
+                      />
+                    } @else {
+                      <div class="effect-raw-row">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cond-raw">
+                          <mat-label>Effet (texte brut, non reconnu)</mat-label>
+                          <input matInput [value]="ref.raw" (change)="setEffectRaw(ref, $any($event.target).value)" />
+                        </mat-form-field>
+                        <button mat-icon-button (click)="removeEffect(ref)" matTooltip="Retirer cet effet">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </div>
+                    }
+                  }
+                  <button mat-stroked-button class="add" (click)="addOutcomeEffect(oc)">
+                    <mat-icon>add</mat-icon>
+                    Ajouter un effet
+                  </button>
+                </div>
+              } @else {
+                <p class="empty small">
+                  {{ pair.key === 'flee' ? '(optionnelle, absente)' : '(manquante — obligatoire pour @combat)' }}
+                  <button mat-button (click)="addCombatOutcome(pair.key)">
+                    <mat-icon>add</mat-icon>
+                    Ajouter {{ '@' + pair.key }}
+                  </button>
+                </p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (ask(); as ak) {
+        <div class="ask-block">
+          <span class="label">
+            <mat-icon inline>quiz</mat-icon> Énigme (saisie clavier)
+            <span class="spacer"></span>
+            <button mat-button color="warn" (click)="removeAsk()">
+              <mat-icon>delete</mat-icon>
+              Retirer l'énigme
+            </button>
+          </span>
+          <div class="ask-fields">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+              <mat-label>Invite</mat-label>
+              <input matInput [value]="ak.prompt" (change)="setAsk({ prompt: $any($event.target).value })" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-num">
+              <mat-label>Longueur max</mat-label>
+              <input matInput type="number" [value]="ak.maxlen" (change)="setAsk({ maxlen: toNum($any($event.target).value) })" />
+            </mat-form-field>
+          </div>
+
+          <div class="answers">
+            <span class="sublabel">Réponses acceptées :</span>
+            @for (a of ak.answers; track a.lineIndex) {
+              <div class="answer-row">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-name">
+                  <input matInput [value]="a.text" (change)="setAnswer(a, $any($event.target).value)" />
+                </mat-form-field>
+                <button mat-icon-button (click)="removeAnswer(a)" matTooltip="Retirer cette réponse">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+            <button mat-stroked-button class="add" (click)="addAnswer()">
+              <mat-icon>add</mat-icon>
+              Ajouter une réponse
+            </button>
+          </div>
+
+          @for (pair of [{ key: 'correct', title: 'Bonne réponse', outcome: ak.correct }, { key: 'wrong', title: 'Mauvaise réponse', outcome: ak.wrong }]; track pair.key) {
+            <div class="outcome-block">
+              <span class="sublabel">{{ pair.title }} ({{ '@' + pair.key }}) :</span>
+              @if (pair.outcome; as oc) {
+                <div class="outcome-fields">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-target">
+                    <mat-label>Cible</mat-label>
+                    <input matInput [value]="oc.target" (change)="setAskOutcome(oc, $any($event.target).value)" [attr.list]="'section-names-' + sectionName()" />
+                  </mat-form-field>
+                  <button mat-icon-button (click)="jumpTo.emit(oc.target)" matTooltip="Aller à cette section">
+                    <mat-icon>arrow_forward</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="removeAskOutcome(pair.key)" matTooltip="Retirer cette issue">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <div class="choice-effects">
+                  @for (ref of oc.effects; track ref.lineIndex) {
+                    @if (effectFor(ref); as eff) {
+                      <app-effect-editor
+                        [effect]="eff"
+                        [flags]="flagNames()"
+                        [items]="itemNames()"
+                        [stats]="statNames()"
+                        [sections]="sectionNames()"
+                        (effectChange)="setEffect(ref, $event)"
+                        (remove)="removeEffect(ref)"
+                      />
+                    } @else {
+                      <div class="effect-raw-row">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cond-raw">
+                          <mat-label>Effet (texte brut, non reconnu)</mat-label>
+                          <input matInput [value]="ref.raw" (change)="setEffectRaw(ref, $any($event.target).value)" />
+                        </mat-form-field>
+                        <button mat-icon-button (click)="removeEffect(ref)" matTooltip="Retirer cet effet">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </div>
+                    }
+                  }
+                  <button mat-stroked-button class="add" (click)="addOutcomeEffect(oc)">
+                    <mat-icon>add</mat-icon>
+                    Ajouter un effet
+                  </button>
+                </div>
+              } @else {
+                <p class="empty small">
+                  (manquante — obligatoire pour @ask)
+                  <button mat-button (click)="addAskOutcome(pair.key)">
+                    <mat-icon>add</mat-icon>
+                    Ajouter {{ '@' + pair.key }}
+                  </button>
+                </p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="entry-effects">
+        <span class="label">Effets d'entrée (à l'arrivée sur cette section) :</span>
+        @for (ref of entryEffects(); track ref.lineIndex) {
+          @if (effectFor(ref); as eff) {
+            <app-effect-editor
+              [effect]="eff"
+              [flags]="flagNames()"
+              [items]="itemNames()"
+              [stats]="statNames()"
+              [sections]="sectionNames()"
+              (effectChange)="setEffect(ref, $event)"
+              (remove)="removeEffect(ref)"
+            />
+          } @else {
+            <div class="effect-raw-row">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cond-raw">
+                <mat-label>Effet (texte brut, non reconnu)</mat-label>
+                <input matInput [value]="ref.raw" (change)="setEffectRaw(ref, $any($event.target).value)" />
+              </mat-form-field>
+              <button mat-icon-button (click)="removeEffect(ref)" matTooltip="Retirer cet effet">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+        }
+        <button mat-stroked-button class="add" (click)="addEntryEffect()">
+          <mat-icon>add</mat-icon>
+          Ajouter un effet d'entrée
+        </button>
+      </div>
+
+      @if (choices().length) {
+        <div class="choices-list">
+          <span class="label">Choix de cette section :</span>
+          @for (c of choices(); track c.lineIndex) {
+            <div class="choice-row">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-label">
+                <mat-label>Libellé</mat-label>
+                <input matInput [value]="c.label" (change)="setChoiceLabel(c, $any($event.target).value)" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-target">
+                <mat-label>Cible</mat-label>
+                <input
+                  matInput
+                  [value]="c.target"
+                  (change)="setChoiceTarget(c, $any($event.target).value)"
+                  [attr.list]="'section-names-' + sectionName()"
+                />
+              </mat-form-field>
+              <datalist [id]="'section-names-' + sectionName()">
+                @for (n of sectionNames(); track n) {
+                  <option [value]="n"></option>
+                }
+              </datalist>
+
+              <button mat-icon-button (click)="jumpTo.emit(c.target)" matTooltip="Aller à cette section">
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+
+              <div class="choice-cond">
+                @if (choiceCondition(c); as cond) {
+                  <app-condition-editor
+                    [condition]="cond"
+                    [flags]="flagNames()"
+                    [items]="itemNames()"
+                    [stats]="statNames()"
+                    (conditionChange)="setChoiceCondition(c, $event)"
+                  />
+                } @else {
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cond-raw">
+                    <mat-label>Condition (texte brut, non reconnu)</mat-label>
+                    <input matInput [value]="c.cond ?? ''" (change)="setChoiceCondText(c, $any($event.target).value)" />
+                  </mat-form-field>
+                }
+              </div>
+
+              <div class="choice-effects">
+                <span class="sublabel">Si ce choix est pris :</span>
+                @for (ref of c.effects; track ref.lineIndex) {
+                  @if (effectFor(ref); as eff) {
+                    <app-effect-editor
+                      [effect]="eff"
+                      [flags]="flagNames()"
+                      [items]="itemNames()"
+                      [stats]="statNames()"
+                      [sections]="sectionNames()"
+                      (effectChange)="setEffect(ref, $event)"
+                      (remove)="removeEffect(ref)"
+                    />
+                  } @else {
+                    <div class="effect-raw-row">
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="f-cond-raw">
+                        <mat-label>Effet (texte brut, non reconnu)</mat-label>
+                        <input matInput [value]="ref.raw" (change)="setEffectRaw(ref, $any($event.target).value)" />
+                      </mat-form-field>
+                      <button mat-icon-button (click)="removeEffect(ref)" matTooltip="Retirer cet effet">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                  }
+                }
+                <button mat-stroked-button class="add" (click)="addChoiceEffect(c)">
+                  <mat-icon>add</mat-icon>
+                  Ajouter un effet
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="body">
+        <app-code-editor [value]="text()" (valueChange)="onEdit($event)" />
+      </div>
+
+      @if (dirty()) {
+        <p class="hint">Modifications non enregistrées — « Enregistrer » les répercute dans le document (aperçu et export).</p>
+      }
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <p class="empty">Choisissez une section dans la hiérarchie, ou le préambule.</p>
+}
