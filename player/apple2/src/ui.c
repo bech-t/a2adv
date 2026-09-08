@@ -339,5 +339,5 @@ void ui_progress(u16 done, u16 total)
      * barre tombait une colonne a gauche du titre centre par ui_center. */
     scr_gotoxy((u8)(scr_cols > width ? (scr_cols - width) / 2 : 0), 12);
     for (k = 0; k < width; ++k)
-        scr_putc(k < filled ? 'O' : '.');
+        scr_putc(k < filled ? '*' : '.');
 }
