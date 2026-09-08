@@ -5,6 +5,10 @@
 > pour le mener — mais si le sujet vous parle, n'hésitez surtout pas à vous
 > manifester : les vrais passionnés restent très largement les bienvenus.
 
+> L'IA a permis de faire des outils de conversion en python et de verifier les timings,
+> un retravaille pour factoriser et optimiser le code, tout en ajoutant des commentaires,
+> pour le rendre plus lisible ... bref c'est criticable ou non, votre choix, c'est le miens en tout cas !
+
 **a2adv** est une chaîne d'outils complète pour écrire des livres dont vous êtes
 le héros et les faire tourner sur un Apple II de 1979 — pas sur un émulateur qui
 fait semblant, mais sur une **disquette ProDOS bootable** qu'une machine

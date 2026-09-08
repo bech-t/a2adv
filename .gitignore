@@ -4,6 +4,8 @@ player/apple2/build/
 *.d
 *.map
 
+*.jar
+
 # Sorties / images disque
 *.dsk
 *.DSK
