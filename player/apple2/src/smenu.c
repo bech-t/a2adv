@@ -16,14 +16,18 @@
 #define OPT_MB 0
 #endif
 
-/* Ecrit une chaine centree sur 40 col (fenetre mixte) a la ligne y. */
-static void menu_center(const char *s, u8 y, u8 inverse)
+/* Ecrit une chaine centree sur `width` colonnes a la ligne y. `width` = 40
+ * pour le menu semi-graphique (fenetre mixte, toujours 40 col qu'importe
+ * scr_cols) ; `width` = scr_cols pour le repli texte plein ecran -- sans
+ * quoi ce dernier reste cale sur 40 meme en 80 colonnes (bug reel, constate
+ * en pratique le 2026-09-09 en portant sur Atari ST, corrige ici aussi). */
+static void menu_center(const char *s, u8 y, u8 inverse, u8 width)
 {
     u8 len = 0;
     const char *p = s;
     while (*p++)
         ++len;
-    scr_gotoxy((u8)(len < 40 ? (40 - len) / 2 : 0), y);
+    scr_gotoxy((u8)(len < width ? (width - len) / 2 : 0), y);
     if (inverse)
         scr_revers(1);
     scr_puts(s);
@@ -169,12 +173,12 @@ static u8 menu_loop(void)
         /* --- menu semi-graphique (image MENU.HGR + titre + choix en bas) --- */
         if (img_load("MENU.HGR") == 0) {
             scr_gfx_mixed();                   /* image en haut, 4 lignes en bas */
-            menu_center(g_title, 20, 1);       /* titre */
+            menu_center(g_title, 20, 1, 40);   /* titre */
             build_choices(line);
-            menu_center(line, 22, 0);          /* 1) 2) 3) */
+            menu_center(line, 22, 0, 40);       /* 1) 2) 3) */
             line[0] = '\0';
             strcat(line, "Q) "); strcat(line, ui_str[UI_MENU_QUIT]);
-            menu_center(line, 23, 0);          /* Q) quitter, ligne centree */
+            menu_center(line, 23, 0, 40);       /* Q) quitter, ligne centree */
             scr_flush();               /* le chargement de MENU.HGR peut etre long */
             for (;;) {
                 c = scr_getkey();
@@ -190,12 +194,12 @@ static u8 menu_loop(void)
         scr_gfx_off();
         for (;;) {
             ui_clear();
-            menu_center(g_title, 3, 1);
+            menu_center(g_title, 3, 1, scr_cols);
             build_choices(line);
-            menu_center(line, 6, 0);
+            menu_center(line, 6, 0, scr_cols);
             line[0] = '\0';
             strcat(line, "Q) "); strcat(line, ui_str[UI_MENU_QUIT]);
-            menu_center(line, 8, 0);
+            menu_center(line, 8, 0, scr_cols);
             scr_flush();
             c = scr_getkey();
             if (c == '1') return ACT_NEW;
