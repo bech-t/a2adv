@@ -66,3 +66,6 @@ editor/dist/
 # Reste en local ; la doc publique du format vit dans docs/.
 spec.md
 spec-atarist.md
+
+# Instructions Claude Code specifiques a ce depot 
+CLAUDE.md
