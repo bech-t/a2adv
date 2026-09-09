@@ -4,6 +4,11 @@ player/apple2/build/
 *.d
 *.map
 
+# Player Atari ST : ROM TOS tierce (EmuTOS, GPL mais a recuperer soi-meme,
+# meme logique que prodos.dsk cote Apple II) + .PRG compiles.
+player/atarist/**/*.img
+player/atarist/**/AUTO/
+
 *.jar
 
 # Sorties / images disque
