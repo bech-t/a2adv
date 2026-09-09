@@ -1,4 +1,4 @@
-/* ramdisk.c -- cache des STORYnn.DAT dans /RAM (cf. spec §7quater).
+/* ramdisk.c -- cache des STORYnn.DAT dans /RAM.
  *
  * Politique (mono-disquette) :
  *   - au boot, AVANT story_open() : remplissage maximal vers l'avant, barre de

@@ -14,9 +14,6 @@ Produit `../build/STORY.DAT` et `../build/ASSETS.IDX`.
 
 Options :
 - `-o, --out DOSSIER` : dossier de sortie (défaut `build`).
-- `--majuscules` : force le texte en capitales (rendu d'origine, affichable
-  sur tout Apple II). Par défaut la casse du source est conservée, ce qui
-  suppose un //e ou plus récent. Cf. `../docs/GUIDE-FORMAT-ADV.md` §2.
 - `--max-file OCTETS` : taille max d'un `STORYnn.DAT`, pour forcer le
   sous-découpage et tester le multi-fichiers.
 - `--summary` : résumé de l'aventure compilée.
@@ -54,7 +51,7 @@ python3 tests/test_compile.py       # ou: pytest
 | `a2c/parser.py`  | DSL `.adv` -> modèle (orienté lignes) |
 | `a2c/model.py`   | dataclasses + constantes du format (opcodes) |
 | `a2c/symbols.py` | validation + résolution des noms en indices |
-| `a2c/translit.py`| accents -> majuscules ASCII Apple II |
+| `a2c/translit.py`| normalisation du texte : ligatures/typographie aplaties, accents/casse conservés (Latin-1) |
 | `a2c/encoder.py` | modèle -> `STORY0.DAT` / `ASSETS.IDX` (little-endian) |
 | `a2c/decode.py`  | relecture du binaire (tests + dump) |
 | `a2c/analyze.py` | analyse de graphe / QA (reachabilité, culs-de-sac, objets morts) |

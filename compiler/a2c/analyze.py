@@ -182,7 +182,7 @@ def analyze(story: Story) -> int:
         return any(e.op == "goto" and (not only_unconditional or not e.cond.atoms)
                    for e in sec.on_enter)
 
-    # Une section d'AIGUILLAGE (que des `~ goto` en @on_enter, cf. spec §6.1)
+    # Une section d'AIGUILLAGE (que des `~ goto` en @on_enter)
     # n'est pas un cul-de-sac : son `goto` est sa sortie.
     dead = [s.name for s in story.sections
             if not s.choices and s.ending == Ending.NONE

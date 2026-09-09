@@ -1,4 +1,4 @@
-"""Table de symboles, validation et résolution en indices (spec §6.1, §7ter).
+"""Table de symboles, validation et résolution en indices.
 
 Vérifie les déclarations obligatoires (stats/items/flags), l'existence des
 sections cibles, la cohérence des modes/images, et affecte les indices utilisés
@@ -10,7 +10,7 @@ from __future__ import annotations
 from . import model as M
 from .errors import A2Error
 from .model import Atom, Condition, Effect, Mode, Section, Story
-from .translit import transliterate
+from .translit import to_match_key
 
 
 class Symbols:
@@ -161,10 +161,12 @@ def _resolve_section(sec: Section, sym: Symbols,
                 raise A2Error(f"@ask: section inconnue '{nm}'", ip.line)
             setattr(ip, attr, sym.sections[nm])
         # Normalisation des réponses : sans accents, MAJUSCULES, sans espaces
-        # de bord — indépendamment de --minuscules. Le player compare à une
-        # saisie que `norm_input` (sinput.c) met elle aussi en capitales : la
-        # casse d'affichage ne doit pas décider si une réponse est acceptée.
-        ip.answers = [transliterate(a, upper=True).strip() for a in ip.answers]
+        # de bord — indépendamment de la casse/accentuation affichée. Le
+        # player compare à une saisie que `norm_input` (sinput.c) met elle
+        # aussi en capitales ASCII (un clavier Apple II ne tape pas d'accent) :
+        # la casse/accentuation d'affichage ne doit pas décider si une
+        # réponse est acceptée.
+        ip.answers = [to_match_key(a).strip() for a in ip.answers]
         for e in ip.correct_effects:
             _resolve_effect(e, sym)
         for e in ip.wrong_effects:

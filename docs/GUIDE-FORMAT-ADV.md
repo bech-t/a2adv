@@ -94,36 +94,25 @@ imprévisible, donc autant les compter.
 ### Accents et jeu de caractères
 
 Écrivez votre français normalement dans le fichier source, avec tous ses
-accents. Le compilateur le ramène à l'**ASCII** : le générateur de caractères
-de l'Apple II n'a aucun glyphe accentué, ni en 40 ni en 80 colonnes. La
-conversion est automatique et couvre :
+accents et sa casse habituelle : `a2c` les conserve tels quels dans
+`STORY.DAT` (encodage Latin-1). Le compilateur n'aplatit que ce qu'**aucune**
+police cible ne sait rendre, quelle que soit la machine :
 
-- les voyelles accentuées (`é`, `è`, `ê`, `à`, `ù`, `ô`, `î`, `ï`, `â`, `û`…) →
-  la lettre nue correspondante ;
-- `ç` → `c` ;
 - les ligatures : `œ` → `oe`, `æ` → `ae`, `ß` → `ss` (en capitales si le mot
   l'est : `ŒUVRE` → `OEUVRE`, mais `Œuf` → `Oeuf`) ;
 - les guillemets typographiques (`«`, `»`, guillemets courbes) → `"` droit ;
-- les tirets longs (`–`, `—`) → `-`, les points de suspension (`…`) → `...` ;
-- tout caractère qui resterait non-ASCII après ce traitement devient `?`.
+- les tirets longs (`–`, `—`) → `-`, les points de suspension (`…`) → `...`.
 
-Vous écrivez donc du français propre et lisible dans votre éditeur ; la
-machine affiche ce qu'elle peut afficher.
-
-**La casse, elle, se choisit à la compilation.** Par défaut `a2c` conserve la
-casse du source : sur un //e, les minuscules s'affichent — en 40 comme en 80
-colonnes — et rendent un long paragraphe bien plus confortable à lire.
-L'option `--majuscules` force tout en capitales :
-
-```bash
-python3 -m a2c mon_aventure.adv -o build --majuscules
-```
-
-C'est le rendu d'origine, et le seul affichable sur un **Apple II ou II+** :
-leur générateur de caractères ne contient que 64 glyphes, couvrant l'ASCII
-`$20-$5F`. Il n'y a tout simplement pas de glyphe minuscule dedans. Le //e, lui,
-couvre l'ASCII `$20-$7F` — c'est une question de générateur de caractères, pas
-de largeur d'écran.
+Les lettres accentuées elles-mêmes (`é`, `è`, `ç`…) et la casse restent
+intactes dans le fichier compilé — c'est le **player**, pas le compilateur,
+qui adapte à l'écran de sa machine. Sur Apple
+II/II+ (`player/apple2/src/scr.c`), aucun glyphe accentué n'existe sur aucun
+modèle : les accents sont toujours retirés à l'affichage. La casse, elle,
+dépend du modèle détecté **à l'exécution** (`get_ostype()`) : un II ou II+ n'a
+aucune minuscule (64 glyphes seulement, ASCII `$20-$5F`) et le texte s'affiche
+replié en capitales ; un //e ou plus récent couvre l'ASCII `$20-$7F` et
+affiche la casse du source telle quelle. Une même disquette s'affiche donc
+correctement sur les deux, sans recompilation ni option à choisir.
 
 Les réponses d'`@ask` échappent à ce choix : elles sont toujours normalisées en
 capitales, des deux côtés de la comparaison. La casse d'affichage ne décide

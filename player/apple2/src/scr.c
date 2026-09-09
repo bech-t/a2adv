@@ -2,6 +2,7 @@
 
 #include <stdio.h>    /* fopen/fread : chargement d'une page HIRES */
 #include <string.h>   /* memset : boucle STA optimisee en asm par cc65 */
+#include <apple2.h>   /* get_ostype() : II/II+ (aucune minuscule) vs //e+ */
 #include "scr.h"
 
 #define SCR_SPACE  0xA0   /* espace video normale ($20 | $80) */
@@ -36,7 +37,42 @@ static u8 mode80;             /* 1 si 80 colonnes actives */
 static u8 force40;            /* 1 : forcer l'ecriture texte en 40 col (mode mixte) */
 static u8 cx, cy;            /* curseur */
 static u8 inv;              /* video inverse */
+static u8 has_lower;         /* 1 si le generateur de caracteres a des minuscules */
 static unsigned rowbase[24];
+
+/* Table de repli du haut de Latin-1 (0x80-0xFF) -> ASCII nu, indexee par
+ * (octet - 0x80). Aucune machine cible n'a de glyphe accentue (cf.
+ * translit.py cote compilateur, qui ne fait plus QUE aplatir ligatures/
+ * typographie desormais : le Latin-1 arrive tel quel dans STORY.DAT).
+ * Casse preservee sur les lettres ; '?' par defaut pour tout le reste
+ * (symboles, codes de controle C1 0x80-0x9F qui ne devraient jamais
+ * apparaitre) -- c'est le filet de securite qu'assurait avant la
+ * translitteration cote compilateur ("tout non-ASCII devient '?'"), a
+ * reconduire ici puisque le compilateur ne le fait plus. */
+static const char accent_fold[128] = {
+    /* 0x80 */ '?','?','?','?','?','?','?','?', '?','?','?','?','?','?','?','?',
+    /* 0x90 */ '?','?','?','?','?','?','?','?', '?','?','?','?','?','?','?','?',
+    /* 0xA0 */ '?','?','?','?','?','?','?','?', '?','?','a','?','?','-','?','?',
+    /* 0xB0 */ 'o','?','2','3','\'','u','?','.', '?','1','o','?','?','?','?','?',
+    /* 0xC0 */ 'A','A','A','A','A','A','A','C', 'E','E','E','E','I','I','I','I',
+    /* 0xD0 */ 'D','N','O','O','O','O','O','?', 'O','U','U','U','U','Y','T','s',
+    /* 0xE0 */ 'a','a','a','a','a','a','a','c', 'e','e','e','e','i','i','i','i',
+    /* 0xF0 */ 'd','n','o','o','o','o','o','?', 'o','u','u','u','u','y','t','y',
+};
+
+/* Ramene un octet Latin-1 a ce que l'ecran materiel courant sait rendre :
+ * accents toujours retires (aucune machine cible n'a le glyphe) ; casse
+ * repliee en MAJUSCULE en plus sur II/II+ (aucune minuscule, meme en
+ * video normale -- cf. has_lower, scr_init). */
+static char to_screen_ascii(char c)
+{
+    u8 a = (u8)c;
+    if (a >= 0x80)
+        a = (u8)accent_fold[a - 0x80];
+    if (!has_lower && a >= 'a' && a <= 'z')
+        a -= 'a' - 'A';
+    return (char)a;
+}
 
 /* Adresse de base d'une ligne texte (agencement entrelace Apple II). */
 static unsigned line_base(u8 r)
@@ -122,6 +158,14 @@ void scr_init(void)
      * (present en $60-$7F dans l'alternatif) ; encode() replie la casse. */
     SW(CLRALTCHAR) = 0;
 
+    /* get_ostype() est fiable ici : contrairement au test ID-ROM ($FBB3)
+     * abandonne dans detect_aux() (ROM F8 banquee par la carte langage sous
+     * ProDOS), la routine cc65 gere elle-meme le banking le temps de sa
+     * lecture. II et II+ seuls n'ont aucune minuscule, meme en video
+     * normale (cf. to_screen_ascii) -- inconnu = repli prudent (majuscules). */
+    has_lower = (get_ostype() != APPLE_II && get_ostype() != APPLE_IIPLUS
+                 && get_ostype() != APPLE_UNKNOWN);
+
     mode80 = detect_aux();
     if (mode80) {
         SW(SET80VID) = 0;             /* affichage 80 colonnes */
@@ -165,7 +209,7 @@ void scr_putc(char c)
 {
     if (c == '\r') { cx = 0; return; }
     if (c == '\n') { newline(); return; }
-    put_at(cx, cy, encode(c));
+    put_at(cx, cy, encode(to_screen_ascii(c)));
     if (++cx >= scr_cols)
         newline();
 }

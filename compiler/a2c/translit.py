@@ -1,22 +1,22 @@
-"""Translittération : texte source (avec accents) -> ASCII sûr pour l'Apple II.
+"""Normalisation du texte source avant encodage.
 
-Cf. spec §6.1 : la source `.adv` s'écrit avec les vrais accents ; le compilateur
-la ramène à l'ASCII, car le générateur de caractères des machines cibles n'a
-**aucun glyphe accentué** — ni en 40, ni en 80 colonnes. Les diacritiques sont
-donc toujours retirés (`é` -> `e`).
+Le format binaire stocke le texte en Latin-1 (ISO-8859-1) — accents et casse
+conservés tels quels dans le source. C'est chaque player (scr.c) qui adapte
+à l'affichage selon les capacités de son écran matériel : aucune machine
+cible n'a de glyphe accentué, et l'Apple II/II+ n'a même aucune minuscule
+(cf. player/apple2/src/scr.c).
 
-Reste le choix de la **casse**, et lui dépend du générateur de caractères de
-la machine :
+``normalize_display`` ne touche donc qu'à ce qu'AUCUNE police cible ne sait
+rendre, quelle que soit la machine : ligatures (Œ/œ), ponctuation
+"typographique" (guillemets courbes, tirets demi/cadratin, points de
+suspension), espace insécable. Les lettres accentuées, elles, passent telles
+quelles — elles seront transformées à l'affichage si besoin.
 
-- **Apple II et II+** : 64 glyphes seulement, couvrant l'ASCII `$20-$5F`. Pas
-  de minuscules du tout — les codes `$E0-$FF` retombent sur les symboles ;
-- **//e et suivants** : `$A0-$FF` couvre l'ASCII `$20-$7F`, minuscules
-  comprises, en 40 comme en 80 colonnes. La largeur d'écran n'y joue aucun
-  rôle, c'est une question de générateur de caractères.
-
-D'où ``upper`` : ``False`` (défaut) conserve la casse du source — le rendu visé
-sur //e ; ``True`` force les capitales, seul rendu affichable sur un II ou un
-II+ (option ``--majuscules`` de `a2c`).
+``to_match_key`` reste la version ASCII majuscule sans accent d'origine :
+utilisée uniquement pour comparer une réponse tapée au clavier (@ask) à la
+réponse attendue, indépendamment de l'affichage — un clavier Apple II ne
+produit jamais de caractère accentué, la comparaison doit donc rester en
+ASCII pur quelle que soit la machine.
 """
 
 from __future__ import annotations
@@ -26,11 +26,12 @@ import unicodedata
 
 # Ligatures capitales : leur expansion dépend de ce qui suit. `ŒUVRE` donne
 # `OEUVRE`, mais `Œuf` doit donner `Oeuf` et non `OEuf`. On regarde donc la
-# lettre suivante ; en mode tout-capitales la question ne se pose pas.
+# lettre suivante.
 _LIGATURES = {"Œ": ("OE", "Oe"), "Æ": ("AE", "Ae")}
 _LIGATURE_RE = re.compile("([ŒÆ])(?=(.?))")
 
-# Cas particuliers non résolus par la décomposition Unicode
+# Cas particuliers qu'aucune police cible ne sait rendre, quelle que soit la
+# machine (contrairement aux lettres accentuées simples, cf. docstring).
 _SPECIALS = {
     "œ": "oe",
     "æ": "ae",
@@ -43,24 +44,21 @@ _SPECIALS = {
 }
 
 
-def transliterate(text: str, upper: bool = False) -> str:
-    """Renvoie une version ASCII de ``text``, sûre pour l'écran Apple II.
-
-    ``upper`` force les capitales ; par défaut la casse du source est
-    conservée. Dans les deux cas les accents sont retirés et tout caractère
-    non-ASCII restant devient ``?``.
-    """
+def normalize_display(text: str) -> str:
+    """Aplati ligatures et ponctuation typographique ; conserve accents et casse."""
     def _ligature(m: re.Match) -> str:
         caps, mixed = _LIGATURES[m.group(1)]
-        return caps if upper or m.group(2).isupper() else mixed
+        return caps if m.group(2).isupper() else mixed
 
     text = _LIGATURE_RE.sub(_ligature, text)
     for src, dst in _SPECIALS.items():
         text = text.replace(src, dst)
-    # décompose puis retire les marques diacritiques (é -> e)
+    return text
+
+
+def to_match_key(text: str) -> str:
+    """Version ASCII majuscule sans accent, pour comparer une saisie clavier."""
+    text = normalize_display(text)
     text = unicodedata.normalize("NFD", text)
     text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
-    if upper:
-        text = text.upper()
-    # tout caractère non-ASCII restant devient '?'
-    return text.encode("ascii", "replace").decode("ascii")
+    return text.upper().encode("ascii", "replace").decode("ascii")

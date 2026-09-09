@@ -1,4 +1,4 @@
-"""Modèle de données de l'aventure + constantes du format binaire (spec §7ter)."""
+"""Modèle de données de l'aventure + constantes du format binaire."""
 
 from __future__ import annotations
 
