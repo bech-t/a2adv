@@ -1,6 +1,6 @@
 /* save.h -- sauvegarde/chargement de l'etat joueur dans un fichier ProDOS.
  *
- * Bloc sauve (cf. spec §9) : section_courante (2 o) + stats[] + bitset objets
+ * Bloc sauve : section_courante (2 o) + stats[] + bitset objets
  * + bitset flags. L'appelant doit fermer STORY0.DAT avant (un seul fichier
  * ouvert a la fois) puis le rouvrir apres.
  */

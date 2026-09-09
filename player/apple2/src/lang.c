@@ -1,4 +1,4 @@
-/* lang.c -- lecture de APP.LNG (cf. lang.h, spec §6.1).
+/* lang.c -- lecture de APP.LNG (cf. lang.h).
  *
  * Disposition du fichier (offsets dans secbuf apres la lecture) :
  *   0-3  "A2LG"

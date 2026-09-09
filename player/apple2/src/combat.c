@@ -10,6 +10,14 @@
 #include "state.h"
 
 /* --- PRNG xorshift 16 bits --------------------------------------------- */
+
+/* Le PRNG est initialisé par le seed du jeu (ou 0xACE1 par défaut). Il est
+ * utilisé pour les jets de d6 du combat, et pour le tirage des cartes dans
+ * le mini-jeu de cartes. Il n'est pas utilisé pour la génération de la map.
+ * Le PRNG est volontairement simple et rapide, pas cryptographique.
+ * Il est donc possible de prédire les jets de d6 si on connait l'état du PRNG.
+ * C'est plus sur que de dupliquer un arret sur chacune de ses six sorties. */
+
 static u16 rng_state = 0xACE1;
 
 void rng_seed(u16 s) { rng_state = s ? s : 0xACE1; }
@@ -24,13 +32,15 @@ static u16 rng_next(void)
     return x;
 }
 
+/* simule un jet de d6 */
 u8 rng_d6(void) { return (u8)(rng_next() % 6) + 1; }
 
 /* --- Etat --------------------------------------------------------------- */
-u16 cb_enemy_hp;
-u8  cb_e_att, cb_e_dmg, cb_e_armor;
-u8  cb_pscore, cb_escore, cb_last_dmg, cb_last_to;
+u16 cb_enemy_hp; // PV de l'ennemi, 0 = mort
+u8  cb_e_att, cb_e_dmg, cb_e_armor; // stats de l'ennemi, 0xFF = pas de stat declaree
+u8  cb_pscore, cb_escore, cb_last_dmg, cb_last_to; // score du heros, score de l'ennemi, degats infliges, 0=heros,1=ennemi,2=egalite
 
+/* initialise le combat */
 void combat_begin(u8 att, u8 hp, u8 dmg, u8 armor)
 {
     cb_e_att = att;
@@ -41,11 +51,13 @@ void combat_begin(u8 att, u8 hp, u8 dmg, u8 armor)
     cb_last_to = 2;
 }
 
+/* retourne les PV du heros */
 u8 combat_hero_hp(void)
 {
     return (g_combat_hp == 0xFF) ? 0 : stat_val[g_combat_hp];
 }
 
+/* fait subir des degats au heros */
 static void hero_take(u8 d)
 {
     u8 h;
@@ -62,6 +74,7 @@ static u8 damage(int base, int armor)
     return (d < 1) ? 1 : (u8)d;
 }
 
+/* effectue une attaque en combat */
 u8 combat_attack(void)
 {
     int patt = (g_combat_att == 0xFF ? 0 : stat_val[g_combat_att]) + gear_atk();
@@ -97,6 +110,7 @@ u8 combat_attack(void)
     return CB_CONTINUE;
 }
 
+/* fait fuir le heros */
 u8 combat_flee(void)
 {
     u8 d = damage(cb_e_dmg, gear_armor());   /* coup gratuit de l'ennemi */

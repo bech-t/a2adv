@@ -20,15 +20,37 @@
 static const char *script[32];   /* arguments bruts : choix (nombre) ou saisie (texte) */
 static int  n_script, s_idx;
 
+/* STORY.DAT porte le texte en Latin-1 (cf. compiler/a2c/translit.py) ; un
+ * terminal hote attend de l'UTF-8, d'ou la reconversion a l'affichage.
+ * Sans rapport avec l'Apple II (qui, lui, lit ces memes octets Latin-1
+ * directement -- cf. player/apple2/src/scr.c:to_screen_ascii). */
+static void putc_latin1(unsigned char c)
+{
+    if (c < 0x80) {
+        putchar((int)c);
+    } else {
+        putchar((int)(0xC0 | (c >> 6)));
+        putchar((int)(0x80 | (c & 0x3F)));
+    }
+}
+
+static void print_latin1(const char *s)
+{
+    while (*s) putc_latin1((unsigned char)*s++);
+}
+
 static void print_state(void)
 {
     u8 i;
     printf("    [");
-    for (i = 0; i < g_nstats; ++i)
-        printf("%s%s=%u", i ? " " : "", stat_name[i], stat_val[i]);
+    for (i = 0; i < g_nstats; ++i) {
+        if (i) putchar(' ');
+        print_latin1(stat_name[i]);
+        printf("=%u", stat_val[i]);
+    }
     printf(" | sac:");
     for (i = 0; i < g_nitems; ++i)
-        if (item_get(i)) printf(" %s", item_label[i]);
+        if (item_get(i)) { putchar(' '); print_latin1(item_label[i]); }
     if (g_score_on) printf(" | score=%u", g_score);
     if (g_moves_on) printf(" | moves=%u", g_moves);
     printf("]\n");
@@ -38,7 +60,7 @@ static void print_text(const char *s, u16 len)
 {
     u16 i;
     printf("  ");
-    for (i = 0; i < len; ++i) putchar(s[i]);
+    for (i = 0; i < len; ++i) putc_latin1((unsigned char)s[i]);
     putchar('\n');
 }
 
@@ -130,7 +152,7 @@ static u16 play_section(u16 idx)
     if (has_cb) {
         u8 r;
         printf("  --- COMBAT : ");
-        for (i = 0; i < cb_namelen; ++i) putchar(cb_name[i]);
+        for (i = 0; i < cb_namelen; ++i) putc_latin1((unsigned char)cb_name[i]);
         printf(" (att=%u pv=%u dmg=%u arm=%u) ---\n", cb_att, cb_hp, cb_dmg, cb_armor);
         combat_begin(cb_att, cb_hp, cb_dmg, cb_armor);
         for (;;) {
@@ -165,7 +187,9 @@ static u16 play_section(u16 idx)
         ans[i2] = '\0';
         blen = i2;
         while (blen && ans[blen - 1] == ' ') ans[--blen] = '\0';
-        printf("  ? %.*s\n  > %s\n", (int)ip_plen, ip_prompt, ans);
+        printf("  ? ");
+        for (i2 = 0; i2 < ip_plen; ++i2) putc_latin1((unsigned char)ip_prompt[i2]);
+        printf("\n  > %s\n", ans);
         b_seek(ip_anspos);
         for (i2 = 0; i2 < ip_nans; ++i2) {
             u8 al, k, same = 1;
@@ -214,7 +238,7 @@ static u16 play_section(u16 idx)
     for (i = 0; i < visible; ++i) {
         u8 k;
         printf("  %u) ", i + 1);
-        for (k = 0; k < v_llen[i]; ++k) putchar(v_label[i][k]);
+        for (k = 0; k < v_llen[i]; ++k) putc_latin1((unsigned char)v_label[i][k]);
         putchar('\n');
     }
 

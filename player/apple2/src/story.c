@@ -181,7 +181,7 @@ static void set_path(const char *path)
 }
 
 /* Ouvre le fichier STORYnn.DAT (remplace les 2 chiffres dans g_path).
- * Cache /RAM d'abord (cf. spec §7quater.6), repli disquette sinon. */
+ * Cache /RAM d'abord, repli disquette sinon. */
 static signed char open_file(u8 id)
 {
     if (fp != NULL) {
@@ -304,7 +304,7 @@ signed char story_open(const char *path)
         intro_idx[i] = f_u16();
 
     /* SURCHARGES de chaines d'UI (v5) : couples (index de cle, texte), poses
-     * par-dessus le socle deja charge depuis APP.LNG (cf. spec §6.1). Une
+     * par-dessus le socle deja charge depuis APP.LNG. Une
      * aventure qui ne surcharge rien n'a rien ici. */
     {
         u8 nover = f_u8();
@@ -370,7 +370,7 @@ signed char story_load_section(u16 idx)
             fclose(fp);                  /* a besoin de 2 tampons ProDOS libres  */
             fp = NULL;
         }
-        ram_ensure(f);                   /* fenetre glissante (cf. spec §7quater.4) */
+        ram_ensure(f);                   /* fenetre glissante */
         if (open_file(f) != 0)
             return -1;
         if (load_local(f) != 0)

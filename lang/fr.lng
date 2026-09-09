@@ -1,6 +1,6 @@
-# fr.lng -- chaines d interface du player a2adv (socle APP.LNG).
+# fr.lng -- chaines d'interface du player a2adv (socle APP.LNG).
 # Traduire le player = copier ce fichier et traduire les textes ;
-# aucune aventure n a besoin d etre modifiee.
+# aucune aventure n'a besoin d'etre modifiee.
 # Les 46 cles sont OBLIGATOIRES : un socle incomplet laisse le player muet.
 
 @lang fr
@@ -11,13 +11,13 @@
 @ui inv_hud      "INV:"
 @ui hints        "I=INV S=SAUVE L=CHARGE Q=MENU"
 @ui anykey       "APPUYEZ SUR UNE TOUCHE..."
-@ui intro_hint   "ESPACE OU ENTREE POUR CONTINUER"
+@ui intro_hint   "ESPACE OU ENTRÉE POUR CONTINUER"
 @ui end_win      "*** VICTOIRE ***"
-@ui end_lose     "*** DEFAITE ***"
+@ui end_lose     "*** DÉFAITE ***"
 @ui end_generic  "*** FIN ***"
-@ui saved        "PARTIE SAUVEGARDEE."
-@ui save_fail    "ECHEC DE LA SAUVEGARDE."
-@ui no_save      "AUCUNE SAUVEGARDE TROUVEE."
+@ui saved        "PARTIE SAUVEGARDÉE."
+@ui save_fail    "ÉCHEC DE LA SAUVEGARDE."
+@ui no_save      "AUCUNE SAUVEGARDE TROUVÉE."
 @ui inventory    "INVENTAIRE"
 @ui inv_empty    "(INVENTAIRE VIDE)"
 @ui no_exit      "(AUCUNE ISSUE POSSIBLE)"
@@ -46,7 +46,7 @@
 @ui opt_mb       "MOCKINGBOARD"
 @ui opt_slot     "SLOT"
 @ui opt_mb_slots "MOCKINGBOARD (NO DE SLOT)"
-@ui opt_no_mb    "MOCKINGBOARD NON COMPILEE"
+@ui opt_no_mb    "MOCKINGBOARD NON COMPILÉE"
 @ui opt_test     "TESTER LES SONS"
 @ui opt_back     "RETOUR"
 @ui snd_title    "TEST DES SONS"

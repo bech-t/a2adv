@@ -1,10 +1,10 @@
-# L'Homme en Costume Blanc — adaptation FIDELE (scenario 1/3 de la campagne
-# "Notre Seigneur l'Ecorche" de Cosmicsoap, ed. Rolis, CC BY-SA 4.0).
-# Prose de a2adv, reecrite pour le format livre-jeu mais fidele au fil original.
-# Mode texte (+ 2 images de scene : urne, musee).
+# L'Homme en Costume Blanc — adaptation FIDÈLE (scénario 1/3 de la campagne
+# "Notre Seigneur l'Écorché" de Cosmicsoap, éd. Rolis, CC BY-SA 4.0).
+# Prose de a2adv, réécrite pour le format livre-jeu mais fidèle au fil original.
+# Mode texte (+ 2 images de scène : urne, musée).
 
 @title  L'Homme en Costume Blanc
-@author a2adv (d'apres Cosmicsoap)
+@author a2adv (d'après Cosmicsoap)
 @start  perso
 @intro  intro_preface intro_legende intro_heros intro_situation
 
@@ -25,11 +25,11 @@
 
 @item machette "Machette"          on atk=1 dmg=3
 @item revolver "Revolver"          on dmg=4
-@item lampe    "Lampe a huile"     on
+@item lampe    "Lampe à huile"     on
 @item carnet   "Carnet de fouilles" on
 @item dague    "Dague d'obsidienne" dmg=3
 @item urne     "Urne rituelle"
-@item emeraude "Oeil de Quetzalcoatl"
+@item emeraude "Œil de Quetzalcoatl"
 
 @flag vu_blanc_jungle     # on a apercu la silhouette blanche en haut de la piste
 @flag jean_fusillade      # on a ouvert le feu sur les freres Jean, au chantier
@@ -49,8 +49,8 @@
 @flag dalle_brisee        # on a force la dalle : le temple sait qu'on est la
 @flag mot_de_passe        # on sait prononcer le nom que repetent les serviteurs
 
-# Flags LOCAUX : remis a 0 a chaque chapitre. Servent aux carrefours (gala,
-# enquete) pour retirer une option deja epuisee, sans polluer l'etat global.
+# Flags LOCAUX : remis à 0 à chaque chapitre. Servent aux carrefours (gala,
+# enquête) pour retirer une option déjà épuisée, sans polluer l'état global.
 @flag q_gala       local
 @flag q_vitrine    local
 @flag q_serveurs   local
@@ -74,41 +74,41 @@
 
 :: intro_preface
 @mode full_text
-=! PREFACE
+=! PRÉFACE
 
-Cette aventure est une adaptation du scenario *L'Homme en Costume Blanc*
-(campagne « Notre Seigneur l'Ecorche », 1/3), ecrit par *Cosmicsoap* et publie
+Cette aventure est une adaptation du scénario *L'Homme en Costume Blanc*
+(campagne « Notre Seigneur l'Écorché », 1/3), écrit par *Cosmicsoap* et publié
 sur Rolis :
 
 rolis.net/scenarios/scenarioWeb/43/l-homme-en-costume-blanc
 
-Scenario original et adaptation sous licence *Creative Commons BY-SA 4.0* :
-reutilisation et modification libres, a condition de crediter l'auteur et de
-partager sous la meme licence.
+Scénario original et adaptation sous licence *Creative Commons BY-SA 4.0* :
+réutilisation et modification libres, à condition de créditer l'auteur et de
+partager sous la même licence.
 
 
 Niveau adaptation... pour tester les fonctions de ce moteur de jeu, on s'éloigne parfois
 de l'histoire ! Mais je pense que l'idée et l'ambiance restent entières.
-A vous de voir, et surtout de *jouer*...
+À vous de voir, et surtout de *jouer*...
 
 :: intro_legende
 @mode full_text
 =! L'HOMME EN COSTUME BLANC
 
 Avant les conquistadors, avant la Croix, le Mexique redoutait un dieu entre
-tous : *Xipe Totec*, l'Ecorche, Notre Seigneur l'Ecorche.
+tous : *Xipe Totec*, l'Écorché, Notre Seigneur l'Écorché.
 
-La legende dit qu'il s'arrachait lui-meme la peau, chaque printemps, pour
-renaitre neuf sous la vieille depouille — comme le mais creve sa gaine, comme le
-serpent quitte son etui. On lui devait les recoltes ; il exigeait, en retour, la
-peau et le sang des vivants, le coeur arrache et le corps vide.
+La légende dit qu'il s'arrachait lui-même la peau, chaque printemps, pour
+renaître neuf sous la vieille dépouille — comme le maïs crève sa gaine, comme le
+serpent quitte son étui. On lui devait les récoltes ; il exigeait, en retour, la
+peau et le sang des vivants, le cœur arraché et le corps vide.
 
-Puis vinrent les galions. Les conquistadors debarquerent la croix dans une main
+Puis vinrent les galions. Les conquistadors débarquèrent la croix dans une main
 et l'arquebuse dans l'autre, et virent dans ces autels ruisselants une
-abomination a extirper du monde. Au nom d'un autre Dieu, et par le fer et le feu,
+abomination à extirper du monde. Au nom d'un autre Dieu, et par le fer et le feu,
 ils entreprirent d'effacer les anciens.
 
-On brula ses temples, on pendit ses pretres, on martela son nom sur chaque pierre
+On brûla ses temples, on pendit ses prêtres, on martela son nom sur chaque pierre
 et on le raya des calendriers. On le crut mort avec son monde.
 
 On avait tort.
@@ -116,31 +116,31 @@ On avait tort.
 :: intro_heros
 @mode full_text
 
-Vous, on ne vous a jamais rien donne : ni chaire, ni titre, ni heritage. Rien
-que le gout de la poussiere et des langues mortes, et l'idee tetue que les
-grandes reponses dorment sous la boue, la ou les gens raisonnables ne creusent
+Vous, on ne vous a jamais rien donné : ni chaire, ni titre, ni héritage. Rien
+que le goût de la poussière et des langues mortes, et l'idée têtue que les
+grandes réponses dorment sous la boue, là où les gens raisonnables ne creusent
 jamais.
 
-Le Musee d'Histoire naturelle de New York a fini par miser sur vous — faute de
-mieux, et sans grand espoir. Il vous a envoye au fond du golfe du Mexique, avec
+Le Musée d'Histoire naturelle de New York a fini par miser sur vous — faute de
+mieux, et sans grand espoir. Il vous a envoyé au fond du golfe du Mexique, avec
 des ouvriers, une jeep et un camion, chercher un temple dont personne ne croyait
 qu'il existait.
 
-Voila des semaines que vous fouillez l'enfer vert. Les telegrammes du musee se
-font secs. Et puis, hier, la pioche a sonne creux.
+Voilà des semaines que vous fouillez l'enfer vert. Les télégrammes du musée se
+font secs. Et puis, hier, la pioche a sonné creux.
 
 :: intro_situation
 @mode full_text
 
-Sous la colline que vous eventrez depuis un mois, ce n'etait pas de la roche :
-c'etait une *ziggourat*, un temple entier enfoui sous la terre et la jungle. Vos
-ouvriers ont degage une route pavee, puis un petit sanctuaire au sommet — la
-pointe emergee d'une montagne de pierre.
+Sous la colline que vous éventrez depuis un mois, ce n'était pas de la roche :
+c'était une *ziggourat*, un temple entier enfoui sous la terre et la jungle. Vos
+ouvriers ont dégagé une route pavée, puis un petit sanctuaire au sommet — la
+pointe émergée d'une montagne de pierre.
 
-Ce matin, l'entree est ouverte. L'excitation coule dans vos veines : dans
+Ce matin, l'entrée est ouverte. L'excitation coule dans vos veines : dans
 quelques jours vous repartirez les mains pleines, et votre nom, enfin, comptera.
 
-Vous ne savez pas encore ce que trois siecles de jungle ont si bien garde !
+Vous ne savez pas encore ce que trois siècles de jungle ont si bien gardé !
 
 # ===========================================================================
 @chapter "La Jungle"
@@ -148,12 +148,12 @@ Vous ne savez pas encore ce que trois siecles de jungle ont si bien garde !
 
 :: perso
 @mode full_text
-=! QUI ETES-VOUS ?
+=! QUI ÊTES-VOUS ?
 
-Avant de pousser la premiere marche du temple, dites-moi quel homme vous etes.
-Votre passe decide de vos forces — et des portes qui s'ouvriront a vous.
+Avant de pousser la première marche du temple, dites-moi quel homme vous êtes.
+Votre passé décide de vos forces — et des portes qui s'ouvriront à vous.
 
-* [L'ERUDIT : l'oeil et les nerfs, mais peu de muscle] -> perso_erudit
+* [L'ÉRUDIT : l'œil et les nerfs, mais peu de muscle] -> perso_erudit
 * [LE BAROUDEUR : le poing et le souffle, mais l'esprit lent] -> perso_baroudeur
 * [L'AVENTURIER : bon partout, exceptionnel nulle part] -> perso_equilibre
 
@@ -166,9 +166,9 @@ Votre passe decide de vos forces — et des portes qui s'ouvriront a vous.
 ~ set SANG_FROID 12
 ~ setmax PERCEPTION 12
 ~ set PERCEPTION 11
-Vous avez use plus de fauteuils de bibliotheque que de semelles. Vous lisez une
+Vous avez usé plus de fauteuils de bibliothèque que de semelles. Vous lisez une
 salle comme d'autres un grimoire, et rien ne vous fait ciller bien longtemps —
-mais vos poings, eux, n'ont jamais impressionne personne.
+mais vos poings, eux, n'ont jamais impressionné personne.
 
 * [Descendre au chantier] -> chantier
 * [Changer de personnage] -> perso
@@ -182,8 +182,8 @@ mais vos poings, eux, n'ont jamais impressionne personne.
 ~ set SANG_FROID 9
 ~ setmax PERCEPTION 9
 ~ set PERCEPTION 6
-Trois guerres, deux naufrages, une balle encore logee quelque part : vous
-encaissez, vous cognez, vous ne lachez jamais. Les details subtils, en revanche,
+Trois guerres, deux naufrages, une balle encore logée quelque part : vous
+encaissez, vous cognez, vous ne lâchez jamais. Les détails subtils, en revanche,
 vous filent entre les doigts, et les livres vous tombent des mains.
 
 * [Descendre au chantier] -> chantier
@@ -198,81 +198,81 @@ vous filent entre les doigts, et les livres vous tombent des mains.
 ~ set SANG_FROID 10
 ~ setmax PERCEPTION 12
 ~ set PERCEPTION 8
-Ni tout a fait savant, ni tout a fait brute : un aventurier complet, qui se tire
-de presque tout sans jamais briller. C'est peut-etre la meilleure des
+Ni tout à fait savant, ni tout à fait brute : un aventurier complet, qui se tire
+de presque tout sans jamais briller. C'est peut-être la meilleure des
 assurances-vie.
 
 * [Descendre au chantier] -> chantier
 * [Changer de personnage] -> perso
 
 :: chantier
-Le camp fume sous une pluie tiede. Les ouvriers chargent deja le camion des
-premieres caisses ; la jeep attend, capot brulant.
-Devant vous, l'entree degagee du temple plonge dans un noir que le soleil de
-midi n'entame pas. L'air qui en monte est froid, mineral : une haleine de
+Le camp fume sous une pluie tiède. Les ouvriers chargent déjà le camion des
+premières caisses ; la jeep attend, capot brûlant.
+Devant vous, l'entrée dégagée du temple plonge dans un noir que le soleil de
+midi n'entame pas. L'air qui en monte est froid, minéral : une haleine de
 tombeau.
 Personne n'ose y descendre avant vous. C'est votre trouvaille ; c'est votre
 droit, et votre risque.
 
 * [Allumer la lampe et descendre dans le temple] -> temple_couloir
-* [Verifier d'abord le chargement du camion] -> chantier_camion
+* [Vérifier d'abord le chargement du camion] -> chantier_camion
 
 :: chantier_camion
 ~ {stat PERCEPTION >= 8} set vu_blanc_jungle
 ~ {stat PERCEPTION >= 8} sub SANG_FROID 1
 ~ {stat PERCEPTION >= 8} score 10
 Vous inspectez les caisses : poteries, statuettes, tablettes de glyphes. Un bon
-premier voyage. Le contremaitre s'essuie le front : « Les hommes n'aiment pas ce
-trou, senor. Ils disent qu'il respire. » Vous haussez les epaules — mais vous
-avez remarque, vous aussi, que la lampe-tempete a faibli en approchant du seuil.
+premier voyage. Le contremaître s'essuie le front : « Les hommes n'aiment pas ce
+trou, señor. Ils disent qu'il respire. » Vous haussez les épaules — mais vous
+avez remarqué, vous aussi, que la lampe-tempête a faibli en approchant du seuil.
 
-En vous redressant, votre regard remonte la piste jusqu'a la trouee ou elle
-disparait sous les arbres. Quelqu'un s'y tient.
+En vous redressant, votre regard remonte la piste jusqu'à la trouée où elle
+disparaît sous les arbres. Quelqu'un s'y tient.
 
-{stat PERCEPTION >= 8} Cela n'a aucun sens : un homme en *costume blanc*, immobile, tourne vers le chantier. Pas un ouvrier, pas un chasseur. Le tissu est impeccable — pas une trace de la boue rouge qui vous monte aux genoux. Vous clignez des yeux : la trouee est vide. Le contremaitre, a un metre de vous, n'a rien vu.
-{stat PERCEPTION < 8} Une tache claire entre deux troncs — du linge mis a secher, ou la brume qui monte. Quand vous regardez a nouveau, il n'y a plus rien.
+{stat PERCEPTION >= 8} Cela n'a aucun sens : un homme en *costume blanc*, immobile, tourné vers le chantier. Pas un ouvrier, pas un chasseur. Le tissu est impeccable — pas une trace de la boue rouge qui vous monte aux genoux. Vous clignez des yeux : la trouée est vide. Le contremaître, à un mètre de vous, n'a rien vu.
+{stat PERCEPTION < 8} Une tache claire entre deux troncs — du linge mis à sécher, ou la brume qui monte. Quand vous regardez à nouveau, il n'y a plus rien.
 
-* [Assez tergiverse : descendre dans le temple] -> temple_couloir
+* [Assez tergiversé : descendre dans le temple] -> temple_couloir
 
 :: temple_couloir
-La petite piece du sommet donne sur un escalier qui s'enfonce vers l'etage des
-chambres funeraires. Vos pas resonnent dans un silence total, sans un insecte,
-sans un souffle. Les murs suintent ; des bas-reliefs a demi effaces montrent des
-processions d'ecorches.
-A mi-hauteur, une des colonnes n'en est pas une : elle se deroule lentement,
-epaisse comme votre cuisse. Un *anaconda* geant, tire de son sommeil de pierre
+La petite pièce du sommet donne sur un escalier qui s'enfonce vers l'étage des
+chambres funéraires. Vos pas résonnent dans un silence total, sans un insecte,
+sans un souffle. Les murs suintent ; des bas-reliefs à demi effacés montrent des
+processions d'écorchés.
+À mi-hauteur, une des colonnes n'en est pas une : elle se déroule lentement,
+épaisse comme votre cuisse. Un *anaconda* géant, tiré de son sommeil de pierre
 par votre lampe, coule vers vous, gueule ouverte.
 
 * [Faire front, machette au poing] -> combat_anaconda
-* {stat ADRESSE >= 9} [Plonger sous ses anneaux et devaler l'escalier] -> porte_scellee
+* {stat ADRESSE >= 9} [Plonger sous ses anneaux et dévaler l'escalier] -> porte_scellee
   ~ score 5
 
 :: combat_anaconda
-@combat "Anaconda geant" att=6 hp=10 dmg=4 armor=1
-@win porte_scellee "L'anaconda se noue une derniere fois, puis retombe inerte en travers des marches. Vous enjambez la masse froide et poursuivez la descente."
+@combat "Anaconda géant" att=6 hp=10 dmg=4 armor=1
+@win porte_scellee "L'anaconda se noue une dernière fois, puis retombe inerte en travers des marches. Vous enjambez la masse froide et poursuivez la descente."
   ~ score 15
 @lose mort_jungle
-@flee temple_couloir "Vous plongez sous les anneaux et devalez l'escalier quatre a quatre, le souffle court, la bete sifflant dans votre dos."
+@flee temple_couloir "Vous plongez sous les anneaux et dévalez l'escalier quatre à quatre, le souffle court, la bête sifflant dans votre dos."
 Deux cent cinquante kilos de muscle froid. S'il vous enserre, vous ne verrez
-jamais le tresor.
+jamais le trésor.
 
 :: porte_scellee
-La descente bute sur une lourde dalle de pierre : ni poignee, ni serrure — rien
-que trois symboles en creux, alignes a hauteur d'homme, qu'une paume peut
-enfoncer. Au-dessus, la seule fresque que les marteaux ont epargnee montre un
-dieu qui se depouille de sa propre peau. Sous elle, une
-sentence gravee : « Seul entre celui qui nomme le Renouveau. »
-Trois glyphes s'offrent a vous : un *crane* aux orbites vides, un *epi de mais*
-qui creve sa gaine, un *jaguar* bondissant.
+La descente bute sur une lourde dalle de pierre : ni poignée, ni serrure — rien
+que trois symboles en creux, alignés à hauteur d'homme, qu'une paume peut
+enfoncer. Au-dessus, la seule fresque que les marteaux ont épargnée montre un
+dieu qui se dépouille de sa propre peau. Sous elle, une
+sentence gravée : « Seul entre celui qui nomme le Renouveau. »
+Trois glyphes s'offrent à vous : un *crâne* aux orbites vides, un *épi de maïs*
+qui crève sa gaine, un *jaguar* bondissant.
 
-* [Enfoncer le crane] -> porte_ratee
-* [Enfoncer l'epi de mais] -> porte_reussie
+* [Enfoncer le crâne] -> porte_ratee
+* [Enfoncer l'épi de maïs] -> porte_reussie
 * [Enfoncer le jaguar] -> porte_ratee
 
 :: porte_reussie
-Le mais : le grain qui renait de sa gaine, comme le dieu renait de sa peau.
-Sous votre paume, le glyphe s'enfonce avec un declic profond ; la dalle coulisse
-dans un grondement de pierre et libere un souffle glace, charge de myrrhe.
+Le maïs : le grain qui renaît de sa gaine, comme le dieu renaît de sa peau.
+Sous votre paume, le glyphe s'enfonce avec un déclic profond ; la dalle coulisse
+dans un grondement de pierre et libère un souffle glacé, chargé de myrrhe.
 ~ score 20
 ~ sound hit
 
@@ -283,10 +283,10 @@ dans un grondement de pierre et libere un souffle glace, charge de myrrhe.
 # donnent l'indice de l'enigme du chapitre 3 ; la niche est un pari.
 
 :: temple_paliers
-{not flag lampe_perdue} Derriere la dalle, l'escalier s'elargit en un palier. Votre lampe-tempete tire de l'ombre quatre ouvertures : la descente qui continue, une longue paroi couverte de bas-reliefs, une niche basse ou quelque chose accroche la lumiere, et la gueule noire d'un puits.
-{flag lampe_perdue} Sans lampe, le palier n'est qu'une geometrie devinee au toucher. Vous suivez le mur du plat de la main : une paroi gravee que vous ne pouvez pas lire, un renfoncement noir, un puits d'ou monte un air froid, et le vide de l'escalier qui continue.
+{not flag lampe_perdue} Derrière la dalle, l'escalier s'élargit en un palier. Votre lampe-tempête tire de l'ombre quatre ouvertures : la descente qui continue, une longue paroi couverte de bas-reliefs, une niche basse où quelque chose accroche la lumière, et la gueule noire d'un puits.
+{flag lampe_perdue} Sans lampe, le palier n'est qu'une géométrie devinée au toucher. Vous suivez le mur du plat de la main : une paroi gravée que vous ne pouvez pas lire, un renfoncement noir, un puits d'où monte un air froid, et le vide de l'escalier qui continue.
 
-* {not flag lampe_perdue and not flag q_fresques} [Lire la longue paroi gravee] -> temple_fresques
+* {not flag lampe_perdue and not flag q_fresques} [Lire la longue paroi gravée] -> temple_fresques
   ~ set q_fresques
 * {not flag q_niche} [Fouiller la niche basse] -> temple_niche
   ~ set q_niche
@@ -303,28 +303,28 @@ dans un grondement de pierre et libere un souffle glace, charge de myrrhe.
   ~ score 25
 @wrong anneau_rate
 Ce n'est pas une niche : c'est un puits. Dedans pend un contrepoids de pierre au
-bout d'une chaine taillee d'un seul bloc, et une bassine de granit le retient,
+bout d'une chaîne taillée d'un seul bloc, et une bassine de granit le retient,
 pleine de gravats jusqu'au bord. Autour de la margelle court une phrase, en
 glyphes que vous savez lire.
 
->> JE SUIS CE QUE L'ON REVET QUAND ON L'A OTE. <<
+>> JE SUIS CE QUE L'ON REVÊT QUAND ON L'A ÔTÉ. <<
 
->> ON ME PORTE A L'ENVERS. QUI ME NOMME OUVRE. <<
+>> ON ME PORTE À L'ENVERS. QUI ME NOMME OUVRE. <<
 
-{flag fresques_lues} Vingt metres de paroi, la meme scene vingt fois : le dieu qui se depouille et endosse sa depouille a l'envers. Vous avez la reponse depuis tout a l'heure.
-{not flag fresques_lues} Rien de ce que vous avez vu ici ne vous souffle la reponse.
+{flag fresques_lues} Vingt mètres de paroi, la même scène vingt fois : le dieu qui se dépouille et endosse sa dépouille à l'envers. Vous avez la réponse depuis tout à l'heure.
+{not flag fresques_lues} Rien de ce que vous avez vu ici ne vous souffle la réponse.
 
 :: anneau_ok
-Vous videz la bassine a pleines mains. C'est l'inverse qu'il fallait faire —
-toujours l'inverse. Le contrepoids tombe dans le puits, la chaine file en
-sifflant, et trois etages plus bas quelque chose de tres lourd se souleve en
+Vous videz la bassine à pleines mains. C'est l'inverse qu'il fallait faire —
+toujours l'inverse. Le contrepoids tombe dans le puits, la chaîne file en
+sifflant, et trois étages plus bas quelque chose de très lourd se soulève en
 grondant.
 ~ sound magic
 
 * [Redescendre] -> temple_paliers
 
 :: anneau_rate
-Vous tentez l'evidence : vous ajoutez des pierres dans la bassine. Le puits
+Vous tentez l'évidence : vous ajoutez des pierres dans la bassine. Le puits
 avale un bruit sec et rien ne bouge — sinon, tout en bas, un glissement qui va
 dans le mauvais sens.
 ~ sub SANG_FROID 1
@@ -332,75 +332,75 @@ dans le mauvais sens.
 * [Revenir au palier] -> temple_paliers
 
 :: temple_fresques
-La paroi raconte, sur vingt metres, la meme scene repetee : un dieu qui se
-depouille de sa peau et l'endosse a l'envers, ruisselante, pendant qu'a ses
+La paroi raconte, sur vingt mètres, la même scène répétée : un dieu qui se
+dépouille de sa peau et l'endosse à l'envers, ruisselante, pendant qu'à ses
 pieds on ouvre des poitrines. Sous chaque tableau, un cartouche — et sous chaque
 cartouche, les traces de marteau de ceux qui ont voulu l'effacer.
-Un seul a survecu, protege par un eboulis : trois signes, nets.
+Un seul a survécu, protégé par un éboulis : trois signes, nets.
 ~ set fresques_lues
 ~ score 15
 ~ sub SANG_FROID 1
 
 {has carnet} Vous les relevez au crayon dans votre carnet de fouilles, trait pour trait. Vous ne savez pas encore les lire. Un jour, quelqu'un saura.
-{not has carnet} Vous les fixez longuement pour les graver dans votre memoire. Sans carnet, il faudra que ca suffise.
+{not has carnet} Vous les fixez longuement pour les graver dans votre mémoire. Sans carnet, il faudra que ça suffise.
 
 * [Revenir au palier] -> temple_paliers
 
 :: temple_niche
 Vous vous accroupissez et glissez le bras dans le renfoncement. Vos doigts
-rencontrent de la poussiere, un os, puis du metal froid.
+rencontrent de la poussière, un os, puis du métal froid.
 ~ score 10
 ~ {not has dague} give dague
 ~ {stat PERCEPTION < 8} sub ENDURANCE 4
 ~ {stat PERCEPTION < 8} sub SANG_FROID 1
 ~ sound pickup
 
-{stat PERCEPTION >= 8} Vous retirez la main juste avant : une lame de silex montee sur ressort claque a l'endroit exact ou etait votre poignet. Vous degagez l'objet a la machette — un couteau ceremoniel d'obsidienne, encore tranchant apres six siecles.
-{stat PERCEPTION < 8} Une lame de silex claque dans le noir et vous ouvre l'avant-bras jusqu'au coude. Vous jurez, vous arrachez le bras du trou — et avec lui, quand meme, un couteau ceremoniel d'obsidienne.
+{stat PERCEPTION >= 8} Vous retirez la main juste avant : une lame de silex montée sur ressort claque à l'endroit exact où était votre poignet. Vous dégagez l'objet à la machette — un couteau cérémoniel d'obsidienne, encore tranchant après six siècles.
+{stat PERCEPTION < 8} Une lame de silex claque dans le noir et vous ouvre l'avant-bras jusqu'au coude. Vous jurez, vous arrachez le bras du trou — et avec lui, quand même, un couteau cérémoniel d'obsidienne.
 
 * [Revenir au palier] -> temple_paliers
 
 :: porte_ratee
-Mauvais signe. Un mecanisme claque au coeur de la roche : une volee d'aiguilles
-jaillit des joints de la dalle. Vous vous jetez de cote, mais l'une d'elles vous
+Mauvais signe. Un mécanisme claque au cœur de la roche : une volée d'aiguilles
+jaillit des joints de la dalle. Vous vous jetez de côté, mais l'une d'elles vous
 mord le bras avant le silence.
 ~ sub ENDURANCE 3
 ~ sub SANG_FROID 1
 
-{not flag lampe_perdue} La lampe-tempete, elle, n'a pas eu votre chance : elle s'est fracassee sur les marches. L'huile brule une seconde en flaque bleue, puis plus rien. Vous acheverez la descente a l'aveugle.
-{flag lampe_perdue} Dans le noir, vous cherchez la dalle a tatons et recommencez.
+{not flag lampe_perdue} La lampe-tempête, elle, n'a pas eu votre chance : elle s'est fracassée sur les marches. L'huile brûle une seconde en flaque bleue, puis plus rien. Vous achèverez la descente à l'aveugle.
+{flag lampe_perdue} Dans le noir, vous cherchez la dalle à tâtons et recommencez.
 
 @on_exit
   ~ {has lampe} take lampe
   ~ set lampe_perdue
 
-* [Reprendre votre souffle et reexaminer la porte] -> porte_scellee
+* [Reprendre votre souffle et réexaminer la porte] -> porte_scellee
 
 :: chambre_funeraire
 De hautes colonnes encadrent une large salle basse. Sur des dalles, cinq corps
-momifies reposent, allonges, si bien conserves qu'on les dirait endormis d'hier.
-Aucun bas-relief ne nomme le dieu du lieu : on les a marteles, tous, avec soin.
+momifiés reposent, allongés, si bien conservés qu'on les dirait endormis d'hier.
+Aucun bas-relief ne nomme le dieu du lieu : on les a martelés, tous, avec soin.
 ~ sub SANG_FROID 1
 
 {not flag dalle_ouverte} Ils entourent un vide. Au centre, une dalle de granit ferme le sol au ras des autres, sans prise ni joint : ce qu'ils gardent est dessous.
-{flag dalle_ouverte} Ils entourent une *urne* de bonne taille, scellee, hissee hors du sol par la chaine du puits. Ses glyphes sont plus anciens que tout ce que vous connaissez. Sertie dans le couvercle, une emeraude grosse comme un oeuf de pigeon bat d'une lueur verte, lente, comme un coeur : *l'Oeil de Quetzalcoatl*.
+{flag dalle_ouverte} Ils entourent une *urne* de bonne taille, scellée, hissée hors du sol par la chaîne du puits. Ses glyphes sont plus anciens que tout ce que vous connaissez. Sertie dans le couvercle, une émeraude grosse comme un œuf de pigeon bat d'une lueur verte, lente, comme un cœur : *l'Œil de Quetzalcoatl*.
 
-* {flag dalle_ouverte and stat PERCEPTION >= 8} [Examiner de plus pres les cinq momies] -> momies_examen
-* {flag dalle_ouverte} [Emporter l'urne et l'Oeil au camp] -> img_urne
+* {flag dalle_ouverte and stat PERCEPTION >= 8} [Examiner de plus près les cinq momies] -> momies_examen
+* {flag dalle_ouverte} [Emporter l'urne et l'Œil au camp] -> img_urne
   ~ give urne
   ~ give emeraude
   ~ score 25
   ~ sound pickup
-* {not flag dalle_ouverte} [Remonter : quelque chose, la-haut, commande cette dalle] -> temple_paliers
-* {not flag dalle_ouverte} [Battre le joint a la machette, et forcer] -> dalle_forcee
+* {not flag dalle_ouverte} [Remonter : quelque chose, là-haut, commande cette dalle] -> temple_paliers
+* {not flag dalle_ouverte} [Battre le joint à la machette, et forcer] -> dalle_forcee
 
 :: dalle_forcee
-Vous passez une heure a battre le joint, puis vous vous arc-boutez sur la
-machette. La dalle cede d'un coup, de travers, et une moitie s'effondre a
-l'interieur. Vous avez ce que vous vouliez.
+Vous passez une heure à battre le joint, puis vous vous arc-boutez sur la
+machette. La dalle cède d'un coup, de travers, et une moitié s'effondre à
+l'intérieur. Vous avez ce que vous vouliez.
 
-Vous avez aussi reveille le temple : quelque part au-dessus, sur la pierre, des
-pieds nus se sont mis a courir.
+Vous avez aussi réveillé le temple : quelque part au-dessus, sur la pierre, des
+pieds nus se sont mis à courir.
 ~ set dalle_ouverte
 ~ set dalle_brisee
 ~ sub ENDURANCE 4
@@ -410,18 +410,18 @@ pieds nus se sont mis a courir.
 * [Se retourner vers l'urne] -> chambre_funeraire
 
 :: momies_examen
-De pres, ces cinq corps ne sont pas ceux de rois : ce sont des pretres, mains
-jointes autour de l'urne comme des geoliers autour d'une cellule. Leurs ongles,
-anormalement longs, ont creuse de fines rainures dans la pierre de l'autel —
-comme s'ils avaient, un jour, gratte pour retenir quelque chose *a l'interieur*.
+De près, ces cinq corps ne sont pas ceux de rois : ce sont des prêtres, mains
+jointes autour de l'urne comme des geôliers autour d'une cellule. Leurs ongles,
+anormalement longs, ont creusé de fines rainures dans la pierre de l'autel —
+comme s'ils avaient, un jour, gratté pour retenir quelque chose *à l'intérieur*.
 
-Ce n'est pas une sepulture. C'est une *geole*, et vous venez d'en briser le
-scelle.
+Ce n'est pas une sépulture. C'est une *geôle*, et vous venez d'en briser le
+sceau.
 ~ set urne_geole
 ~ score 10
 ~ sub SANG_FROID 1
 
-* [Observer l'urne et l'Oeil] -> img_urne
+* [Observer l'urne et l'Œil] -> img_urne
 
 
 :: img_urne
@@ -429,45 +429,45 @@ scelle.
 @image urne
 l'urne surmontée de l'émeraude
 
-* [emporter l'urne et l'Oeil, et remonter] -> chargement
+* [emporter l'urne et l'Œil, et remonter] -> chargement
   ~ give urne
   ~ give emeraude
   ~ score 25
   ~ sound pickup
 
 :: chargement
-Vos ouvriers hissent l'urne et les momies dans le camion sous une bache. Le
+Vos ouvriers hissent l'urne et les momies dans le camion sous une bâche. Le
 dernier caisson claque en place. Vous vous autorisez enfin un sourire : c'est
-gagne, c'est enorme.
+gagné, c'est énorme.
 
 C'est alors que, du camion, un homme jaillit, fusil au poing — et que d'autres
-sortent des fourres tout autour du camp, une douzaine, encerclant vos ouvriers
+sortent des fourrés tout autour du camp, une douzaine, encerclant vos ouvriers
 sous la menace. Deux silhouettes en tenue de safari s'avancent, tranquilles.
 
-Vous les reconnaissez : *les freres Jean*. Chasseurs de tresors, voleurs de
-gloire. « Beau travail, mes amis », lance l'aine, goguenard. « Vraiment. On vous
-epargne le retour en camion : il n'y aura pas de place pour tout le monde. »
+Vous les reconnaissez : *les frères Jean*. Chasseurs de trésors, voleurs de
+gloire. « Beau travail, mes amis », lance l'aîné, goguenard. « Vraiment. On vous
+épargne le retour en camion : il n'y aura pas de place pour tout le monde. »
 
 ~ take urne
 ~ take emeraude
 
-* [Degainer votre revolver immediatement] -> combat_ruffians
+* [Dégainer votre revolver immédiatement] -> combat_ruffians
 * [Lever les mains et guetter une ouverture] -> embuscade_jean
 
 
 :: embuscade_jean
-Vous levez lentement les mains. Les ruffians commencent a vous depouiller de vos
-armes, confiants, pendant que les freres Jean grimpent dans le camion.
+Vous levez lentement les mains. Les ruffians commencent à vous dépouiller de vos
+armes, confiants, pendant que les frères Jean grimpent dans le camion.
 Il y a une tension dans l'air, quelque chose qui ne va pas.
 
-{stat PERCEPTION >= 8} Vous le sentez avant de le voir : des dizaines d'ombres a moitie nues, tapies dans la vegetation tout autour, pretes a fondre. La tribu Yaolt. Vous plongez au sol une seconde avant l'enfer.
-{stat PERCEPTION < 8} Vous n'avez rien vu venir quand la jungle, d'un coup, se met a hurler.
+{stat PERCEPTION >= 8} Vous le sentez avant de le voir : des dizaines d'ombres à moitié nues, tapies dans la végétation tout autour, prêtes à fondre. La tribu Yaolt. Vous plongez au sol une seconde avant l'enfer.
+{stat PERCEPTION < 8} Vous n'avez rien vu venir quand la jungle, d'un coup, se met à hurler.
 
 * [Profiter du chaos] -> attaque_yaolt
 
 :: combat_ruffians
 @combat "Hommes de main" att=6 hp=12 dmg=4 armor=0
-@win attaque_yaolt "Deux ruffians a terre, les autres hesitent — mais un cri monte de la jungle, et soudain ce ne sont plus eux, le danger."
+@win attaque_yaolt "Deux ruffians à terre, les autres hésitent — mais un cri monte de la jungle, et soudain ce ne sont plus eux, le danger."
   ~ set jean_fusillade
   ~ score 15
 @lose mort_jungle
@@ -475,133 +475,133 @@ Votre premier coup de feu part avant leur surprise. Mais ils sont nombreux, et
 le couloir de fuite est mince.
 
 :: attaque_yaolt
-La tribu Yaolt jaillit de partout — gardiens du temple, decides a ce qu'aucune
-momie n'en sorte. Fleches, sarbacanes, couteaux d'obsidienne : ils frappent
-ruffians, ouvriers et freres Jean sans distinction. Un homme de main s'ecroule ;
+La tribu Yaolt jaillit de partout — gardiens du temple, décidés à ce qu'aucune
+momie n'en sorte. Flèches, sarbacanes, couteaux d'obsidienne : ils frappent
+ruffians, ouvriers et frères Jean sans distinction. Un homme de main s'écroule ;
 le camion, moteur hurlant, force le barrage et s'arrache vers la piste, votre
-tresor sous la bache.
+trésor sous la bâche.
 
 Votre seule chance de le rattraper, c'est la jeep.
 ~ sub SANG_FROID 1
 ~ {flag dalle_brisee} sub ENDURANCE 3
 
-{flag dalle_brisee} Ils etaient prets. C'est vous qui les avez appeles, en brisant la dalle : ils frappent plus vite, et ils frappent d'abord sur vous.
+{flag dalle_brisee} Ils étaient prêts. C'est vous qui les avez appelés, en brisant la dalle : ils frappent plus vite, et ils frappent d'abord sur vous.
 
 * [Foncer vers la jeep] -> course_poursuite
-* {stat ADRESSE >= 8} [Vous frayer un passage a la machette, puis la voiture] -> course_poursuite
+* {stat ADRESSE >= 8} [Vous frayer un passage à la machette, puis la voiture] -> course_poursuite
   ~ score 10
 
 :: course_poursuite
-La JEEP bondit sur la route defoncee, chassant l'arriere dans la boue rouge. Le
-camion est lourd, vous gagnez metre par metre. Un homme des freres Jean se
-penche a l'arriere et vous ajuste au fusil.
+La JEEP bondit sur la route défoncée, chassant l'arrière dans la boue rouge. Le
+camion est lourd, vous gagnez mètre par mètre. Un homme des frères Jean se
+penche à l'arrière et vous ajuste au fusil.
 
-* {has revolver} [Tirer dans ses pneus / le desarconner au revolver] -> reprise_butin
+* {has revolver} [Tirer dans ses pneus / le désarçonner au revolver] -> reprise_butin
   ~ score 10
 * [Se rabattre contre le camion et sauter dessus] -> combat_camion
 
 :: combat_camion
-@combat "Homme des freres Jean" att=7 hp=10 dmg=4 armor=0
-@win reprise_butin "D'un coup d'epaule vous desarconnez le tireur, qui bascule dans les fougeres. Le camion est a vous."
+@combat "Homme des frères Jean" att=7 hp=10 dmg=4 armor=0
+@win reprise_butin "D'un coup d'épaule vous désarçonnez le tireur, qui bascule dans les fougères. Le camion est à vous."
   ~ score 20
 @lose mort_jungle
-Accroche a la ridelle, dans les cahots, c'est vous ou lui.
+Accroché à la ridelle, dans les cahots, c'est vous ou lui.
 
 :: reprise_butin
-Le camion verse dans le fosse, roues en l'air, intact sous la bache. Les freres
-Jean, eux, ont file a pied dans la jungle en jurant vengeance — mais l'urne, les
-momies et l'Oeil sont a vous. Diego surgit enfin du sous-bois, indemne, votre
-carnet a la main : « On rentre, senor. Loin d'ici. »
+Le camion verse dans le fossé, roues en l'air, intact sous la bâche. Les frères
+Jean, eux, ont filé à pied dans la jungle en jurant vengeance — mais l'urne, les
+momies et l'Œil sont à vous. Diego surgit enfin du sous-bois, indemne, votre
+carnet à la main : « On rentre, señor. Loin d'ici. »
 ~ give urne
 ~ give emeraude
 ~ score 15
 
-* [Charger le tresor et gagner la cote, direction New York] -> ny_arrivee
+* [Charger le trésor et gagner la côte, direction New York] -> ny_arrivee
 
 :: mort_jungle
 @ending lose
 La jungle garde ce qu'on lui prend. On ne retrouvera de vous qu'une lampe
-eteinte au bord d'une route pavee — et, peut-etre, un jour, une momie de plus au
+éteinte au bord d'une route pavée — et, peut-être, un jour, une momie de plus au
 fond d'un temple.
 
 # ===========================================================================
-@chapter "Le Musee"
+@chapter "Le Musée"
 # ===========================================================================
 
 :: ny_arrivee
 ~ restore ENDURANCE
 ~ take urne
 ~ take emeraude
-New York, trois semaines plus tard. Le paquebot glisse sous une foret de
-gratte-ciel ; klaxons, vapeur, neons. Sur les colonnes Morris, votre nom cotoie
-celui du Musee d'Histoire naturelle : *L'OR DES DIEUX PERDUS*, grande soiree
+New York, trois semaines plus tard. Le paquebot glisse sous une forêt de
+gratte-ciel ; klaxons, vapeur, néons. Sur les colonnes Morris, votre nom côtoie
+celui du Musée d'Histoire naturelle : *L'OR DES DIEUX PERDUS*, grande soirée
 d'exposition, ce soir.
 
-Le conservateur vous recoit avec effusion : vous etes l'invite d'honneur, charge
-de presenter votre decouverte au Tout New York. Le temple reconstitue, les
-momies, l'urne ouverte, et sous un ecrin de verre blinde garde par deux hommes,
-l'*Oeil de Quetzalcoatl*.
+Le conservateur vous reçoit avec effusion : vous êtes l'invité d'honneur, chargé
+de présenter votre découverte au Tout New York. Le temple reconstitué, les
+momies, l'urne ouverte, et sous un écrin de verre blindé gardé par deux hommes,
+l'*Œil de Quetzalcoatl*.
 
-* [Se rendre a la soiree] -> img_musee
+* [Se rendre à la soirée] -> img_musee
 
 :: img_musee
 @mode image_text
 @image musee
-Le Musee d'Histoire naturelle, sous ses lustres : votre soiree de gloire.
+Le Musée d'Histoire naturelle, sous ses lustres : votre soirée de gloire.
 
 * [Entrer] -> musee_expo
 
 :: musee_expo
-{not flag q_gala} Smokings, flashs de magnesium, serveurs grimes en Azteques. Le gratin est la : politiques, journalistes, gens du spectacle.
-{not flag q_gala and not flag jean_fusillade} Dans un coin, deux visages connus vous saluent, narquois : les freres Jean, tires a quatre epingles.
-{not flag q_gala and flag jean_fusillade} Dans un coin, deux visages connus qui ne vous saluent pas : les freres Jean. Vous leur avez tire dessus.
+{not flag q_gala} Smokings, flashs de magnésium, serveurs grimés en Aztèques. Le gratin est là : politiques, journalistes, gens du spectacle.
+{not flag q_gala and not flag jean_fusillade} Dans un coin, deux visages connus vous saluent, narquois : les frères Jean, tirés à quatre épingles.
+{not flag q_gala and flag jean_fusillade} Dans un coin, deux visages connus qui ne vous saluent pas : les frères Jean. Vous leur avez tiré dessus.
 {not flag q_gala} Une heure avant le discours — pour serrer des mains, ou regarder ce que personne d'autre ne regarde.
-{flag q_gala} Le brouhaha vous recouvre a nouveau. Il vous reste un peu de temps avant l'estrade.
+{flag q_gala} Le brouhaha vous recouvre à nouveau. Il vous reste un peu de temps avant l'estrade.
 
 @on_exit
   ~ set q_gala
 
 * {not flag q_photographe} [Poser pour les photographes] -> gala_photographe
   ~ set q_photographe
-* {not flag q_invites} [Detailler les invites] -> gala_invites
+* {not flag q_invites} [Détailler les invités] -> gala_invites
   ~ set q_invites
-* {not flag q_serveurs} [Ecouter les serveurs « azteques »] -> gala_serveurs
+* {not flag q_serveurs} [Écouter les serveurs « aztèques »] -> gala_serveurs
   ~ set q_serveurs
-* {not flag q_rival} [Subir les compliments d'une douairiere] -> gala_rival
+* {not flag q_rival} [Subir les compliments d'une douairière] -> gala_rival
   ~ set q_rival
-* {not flag q_vitrine} [Vous approcher de la vitrine de l'Oeil] -> gala_vitrine
+* {not flag q_vitrine} [Vous approcher de la vitrine de l'Œil] -> gala_vitrine
   ~ set q_vitrine
-* {not flag q_jean} [Aller saluer les freres Jean] -> jean_gala
+* {not flag q_jean} [Aller saluer les frères Jean] -> jean_gala
   ~ set q_jean
 * {not flag q_assistant} [Coincer l'assistant du conservateur] -> gala_assistant
   ~ set q_assistant
-* {not flag q_ole} [Lancer un « Ole ! » sonore, sans raison] -> gala_ole
+* {not flag q_ole} [Lancer un « Olé ! » sonore, sans raison] -> gala_ole
   ~ set q_ole
-* [Monter a l'estrade pour le discours du conservateur] -> discours
+* [Monter à l'estrade pour le discours du conservateur] -> discours
 
 :: gala_photographe
 Un photographe de presse vous saisit par le bras avant que vous ayez pu
-refuser : « Un sourire, docteur, pour le Herald ! » Le magnesium vous laisse
+refuser : « Un sourire, docteur, pour le Herald ! » Le magnésium vous laisse
 une tache violette au centre de la vision une bonne minute. Demain, votre
-photo cotoiera celle du maire a un diner de charite. Personne ne se souviendra
-laquelle des deux legendes est la bonne.
+photo côtoiera celle du maire à un dîner de charité. Personne ne se souviendra
+laquelle des deux légendes est la bonne.
 
 * [Continuer votre tour de salle] -> musee_expo
 
 :: gala_rival
-Une douairiere en soie vous coince pres du vestiaire pour vous feliciter de
+Une douairière en soie vous coince près du vestiaire pour vous féliciter de
 votre « petite trouvaille ». Elle a, dit-elle, un neveu qui « a fait de
-l'archeologie, lui aussi, en Egypte, l'an dernier » — dix jours de croisiere et
-un scarabee achete au marche. Vous hochez la tete cinq minutes qui vous
+l'archéologie, lui aussi, en Égypte, l'an dernier » — dix jours de croisière et
+un scarabée acheté au marché. Vous hochez la tête cinq minutes qui vous
 paraissent durer une saison.
 
 * [Continuer votre tour de salle] -> musee_expo
 
 :: gala_invites
-Vous laissez trainer l'oeil. Une dizaine d'invites detonnent : costumes trop
-etroits aux epaules, regards qui balaient les sorties au lieu des robes, et pas
-un seul verre entame. Ils ne sont pas venus pour l'archeologie.
-Un maitre d'hotel vous glisse, gene, que ces noms-la figuraient bien sur la
+Vous laissez traîner l'œil. Une dizaine d'invités détonnent : costumes trop
+étroits aux épaules, regards qui balaient les sorties au lieu des robes, et pas
+un seul verre entamé. Ils ne sont pas venus pour l'archéologie.
+Un maître d'hôtel vous glisse, gêné, que ces noms-là figuraient bien sur la
 liste officielle. Fournie par le conservateur.
 ~ set lead_moretti
 ~ score 15
@@ -609,8 +609,8 @@ liste officielle. Fournie par le conservateur.
 * [Continuer votre tour de salle] -> musee_expo
 
 :: gala_serveurs
-Deux serveurs grimes en Azteques echangent a voix basse pres de l'office. Ce
-n'est pas de l'espagnol. Vous avez passe six mois a fouiller le golfe : vous
+Deux serveurs grimés en Aztèques échangent à voix basse près de l'office. Ce
+n'est pas de l'espagnol. Vous avez passé six mois à fouiller le golfe : vous
 reconnaissez du *nahuatl*, et une langue morte ne se parle pas entre deux
 plateaux de petits fours.
 ~ score 15
@@ -618,37 +618,37 @@ plateaux de petits fours.
 ~ {flag fresques_lues} set mot_de_passe
 ~ {flag fresques_lues} score 10
 
-{flag fresques_lues} L'un d'eux repete un groupe de trois syllabes comme on repete un titre. Ce sont exactement les trois signes du cartouche epargne, sous les fresques du temple.
-{not flag fresques_lues} L'un d'eux repete un groupe de trois syllabes comme on repete un titre. Un nom, sans doute. Vous n'en savez pas assez pour le lire.
+{flag fresques_lues} L'un d'eux répète un groupe de trois syllabes comme on répète un titre. Ce sont exactement les trois signes du cartouche épargné, sous les fresques du temple.
+{not flag fresques_lues} L'un d'eux répète un groupe de trois syllabes comme on répète un titre. Un nom, sans doute. Vous n'en savez pas assez pour le lire.
 
 * [Continuer votre tour de salle] -> musee_expo
 
 :: gala_vitrine
-Sous son ecrin de verre blinde, l'Oeil de Quetzalcoatl bat de sa lueur verte —
+Sous son écrin de verre blindé, l'Œil de Quetzalcoatl bat de sa lueur verte —
 plus lente ici qu'au fond du temple, comme un pouls qui faiblit. Les deux gardes
 qui l'encadrent transpirent dans leur uniforme et se relaient pour regarder
 ailleurs. Vous connaissez cette attitude : ce sont des hommes qui savent ce qui
-va se passer et qui esperent etre ailleurs quand ca arrivera.
+va se passer et qui espèrent être ailleurs quand ça arrivera.
 ~ score 10
 
 * [Continuer votre tour de salle] -> musee_expo
 
 :: gala_assistant
-L'assistant du conservateur tient son plateau a deux mains pour cacher qu'elles
-tremblent. Trois questions polies et il regarde la porte ; a la quatrieme, il
+L'assistant du conservateur tient son plateau à deux mains pour cacher qu'elles
+tremblent. Trois questions polies et il regarde la porte ; à la quatrième, il
 souffle : « Ce n'est pas moi qui ai choisi les serveurs, monsieur. Ni les
-gardes. Ni la liste. » Il s'eloigne avant que vous demandiez qui.
+gardes. Ni la liste. » Il s'éloigne avant que vous demandiez qui.
 ~ set lead_conservateur
 ~ score 10
 
 * [Continuer votre tour de salle] -> musee_expo
 
 :: jean_gala
-{not flag jean_fusillade} Les freres Jean vous accueillent coupe a la main, beaux joueurs. « Sans rancune, l'ami », sourit l'aine. « Le camion, la jungle... les affaires, rien de plus. »
-{flag jean_fusillade} Les freres Jean vous laissent venir sans un geste. « Vous avez tire sur mes hommes », dit l'aine, tres doucement, sans reposer sa coupe. Un temps, et le sourire revient a moitie : « Cela dit, a votre place, j'aurais tire aussi. » Avril, lui, ne se detend pas.
-Il baisse la voix, soudain moins leger : « Un conseil, entre gens du metier :
-cette urne ne me disait rien qui vaille. Depuis qu'elle est ici, la moitie du
-personnel parle une langue de morts. Ouvre l'oeil, ce soir. » Derriere lui,
+{not flag jean_fusillade} Les frères Jean vous accueillent coupe à la main, beaux joueurs. « Sans rancune, l'ami », sourit l'aîné. « Le camion, la jungle... les affaires, rien de plus. »
+{flag jean_fusillade} Les frères Jean vous laissent venir sans un geste. « Vous avez tiré sur mes hommes », dit l'aîné, très doucement, sans reposer sa coupe. Un temps, et le sourire revient à moitié : « Cela dit, à votre place, j'aurais tiré aussi. » Avril, lui, ne se détend pas.
+Il baisse la voix, soudain moins léger : « Un conseil, entre gens du métier :
+cette urne ne me disait rien qui vaille. Depuis qu'elle est ici, la moitié du
+personnel parle une langue de morts. Ouvre l'œil, ce soir. » Derrière lui,
 Avril vous fixe sans un mot, poings comme des enclumes.
 ~ score 5
 ~ set jean_revanche
@@ -657,195 +657,195 @@ Avril vous fixe sans un mot, poings comme des enclumes.
 
 :: gala_ole
 Sur une impulsion que vous ne vous expliquerez jamais, vous claquez des talons
-et lancez un « Ole ! » sonore au beau milieu du hall. La conversation
-s'interrompt une seconde entiere. Quelqu'un, quelque part, applaudit
-poliment — par reflexe, sans doute. Vous rangez cet episode dans le tiroir de
-ceux qu'on ne raconte pas au diner.
+et lancez un « Olé ! » sonore au beau milieu du hall. La conversation
+s'interrompt une seconde entière. Quelqu'un, quelque part, applaudit
+poliment — par réflexe, sans doute. Vous rangez cet épisode dans le tiroir de
+ceux qu'on ne raconte pas au dîner.
 
 * [Reprendre une contenance] -> musee_expo
 
 :: discours
-Le conservateur tapote son verre ; le silence se fait. Il commence son eloge de
-votre expedition, la voix mal assuree, le front luisant. C'est l'instant que le
+Le conservateur tapote son verre ; le silence se fait. Il commence son éloge de
+votre expédition, la voix mal assurée, le front luisant. C'est l'instant que le
 chaos choisit.
 
-* [Ecouter, prêt a bondir] -> braquage
+* [Écouter, prêt à bondir] -> braquage
 
 :: braquage
-Tout va tres vite. Profitant de l'attention detournee, des invites nouent des
+Tout va très vite. Profitant de l'attention détournée, des invités nouent des
 foulards sur leur visage, sortent colts et Thompson, et matent la salle en
-quelques cris : *le braquage Moretti*. Les gardes de l'emeraude opposent une
-resistance de principe, puis se couchent — ils sont payes pour ca.
-Dans la panique, une partie des serveurs « azteques » se glisse vers la
-ziggourat reconstituee : ils raflent la momie de l'urne et deux autres, et
-disparaissent par un passage derobe. Une autre partie s'agenouille et entonne
-une psalmodie basse. Sous vos yeux, les momies restantes ouvrent les paupieres.
-Et l'emeraude, deja, n'est plus dans son ecrin.
+quelques cris : *le braquage Moretti*. Les gardes de l'émeraude opposent une
+résistance de principe, puis se couchent — ils sont payés pour ça.
+Dans la panique, une partie des serveurs « aztèques » se glisse vers la
+ziggourat reconstituée : ils raflent la momie de l'urne et deux autres, et
+disparaissent par un passage dérobé. Une autre partie s'agenouille et entonne
+une psalmodie basse. Sous vos yeux, les momies restantes ouvrent les paupières.
+Et l'émeraude, déjà, n'est plus dans son écrin.
 ~ sub SANG_FROID 2
 ~ set emeraude_perdue
 
-* [Reagir] -> braquage_reaction
+* [Réagir] -> braquage_reaction
 
 :: braquage_reaction
 ~ {flag lead_moretti} score 10
-{flag lead_moretti} Vous les aviez vus venir. Une heure plus tot vous saviez deja quels invites ne buvaient pas ; vous etiez deja tourne vers la ziggourat quand le premier foulard est monte. Cette seconde d'avance est tout ce que vous avez.
-{not flag lead_moretti} Vous n'aviez rien vu venir. Le temps de comprendre, tout est deja joue, et vous choisissez dans la panique.
+{flag lead_moretti} Vous les aviez vus venir. Une heure plus tôt vous saviez déjà quels invités ne buvaient pas ; vous étiez déjà tourné vers la ziggourat quand le premier foulard est monté. Cette seconde d'avance est tout ce que vous avez.
+{not flag lead_moretti} Vous n'aviez rien vu venir. Le temps de comprendre, tout est déjà joué, et vous choisissez dans la panique.
 
-* {flag lead_moretti} [Couper la route aux serviteurs avant le passage derobe] -> combat_serviteur
+* {flag lead_moretti} [Couper la route aux serviteurs avant le passage dérobé] -> combat_serviteur
 * {not flag lead_moretti} [Vous jeter sur les serviteurs qui emportent l'urne] -> combat_serviteur
-* [Barrer la route a une momie qui s'eveille] -> combat_momie
-* [Se mettre a couvert et graver chaque visage dans sa memoire] -> fuite_braquage
+* [Barrer la route à une momie qui s'éveille] -> combat_momie
+* [Se mettre à couvert et graver chaque visage dans sa mémoire] -> fuite_braquage
 
 :: combat_serviteur
-@combat "Serviteur de l'Ecorche" att=7 hp=8 dmg=4 armor=0
-@win apres_braquage "Le serviteur s'effondre sur l'urne qu'il defendait, un sourire de fievre encore aux levres. Sa dague d'obsidienne roule a vos pieds."
+@combat "Serviteur de l'Écorché" att=7 hp=8 dmg=4 armor=0
+@win apres_braquage "Le serviteur s'effondre sur l'urne qu'il défendait, un sourire de fièvre encore aux lèvres. Sa dague d'obsidienne roule à vos pieds."
   ~ {not has dague} give dague
   ~ give urne
   ~ set momie_arretee
   ~ score 20
 @lose mort_musee
 Corps peint de rouge et de noir, dague d'obsidienne au poing, un sourire de
-fievre : il meurt sans un cri, en serrant l'urne contre lui.
+fièvre : il meurt sans un cri, en serrant l'urne contre lui.
 
 :: combat_momie
-@combat "Momie de l'Ecorche" att=8 hp=12 dmg=3 armor=1
-@win apres_braquage "La momie se disloque enfin, membres epars sur le marbre, et cesse de bouger. Pour de bon, cette fois."
+@combat "Momie de l'Écorché" att=8 hp=12 dmg=3 armor=1
+@win apres_braquage "La momie se disloque enfin, membres épars sur le marbre, et cesse de bouger. Pour de bon, cette fois."
   ~ set momie_arretee
   ~ score 25
 @lose mort_musee
-Elle court au plafond a quatre pattes, se laisse tomber griffes en avant. Elle
-est deja morte : la tuer une seconde fois demande de l'estomac.
+Elle court au plafond à quatre pattes, se laisse tomber griffes en avant. Elle
+est déjà morte : la tuer une seconde fois demande de l'estomac.
 
 :: fuite_braquage
-Vous vous plaquez derriere une vitrine tandis que les balles hachent le stuc.
+Vous vous plaquez derrière une vitrine tandis que les balles hachent le stuc.
 Vous ne sauvez rien — mais vous retenez tout : un tatouage, un accent, la coupe
-d'un costume blanc entrevu une seconde pres du vestiaire.
+d'un costume blanc entrevu une seconde près du vestiaire.
 ~ score 10
 
 * [Attendre la fin du carnage] -> apres_braquage
 
 :: mort_musee
 @ending lose
-Une dague d'obsidienne trouve votre flanc dans la cohue, et le marbre monte a
-votre rencontre. La derniere image que vous emportez, c'est un costume blanc,
-trop propre pour un soir pareil, qui s'eloigne sans se presser.
+Une dague d'obsidienne trouve votre flanc dans la cohue, et le marbre monte à
+votre rencontre. La dernière image que vous emportez, c'est un costume blanc,
+trop propre pour un soir pareil, qui s'éloigne sans se presser.
 
 :: apres_braquage
 ~ restore ENDURANCE
-A l'aube, le grand hall n'est qu'un champ de verre brise. La police prend des
-notes qui ne menent nulle part ; les journaux tiennent leur titre. Bilan : la
-momie de l'urne a disparu, deux autres avec elle, l'*Oeil de Quetzalcoatl* s'est
-evapore, et le conservateur, blafard, evite votre regard.
-Il vous reste vos questions — et la certitude d'avoir rapporte de la jungle bien
-plus qu'un trophee.
+À l'aube, le grand hall n'est qu'un champ de verre brisé. La police prend des
+notes qui ne mènent nulle part ; les journaux tiennent leur titre. Bilan : la
+momie de l'urne a disparu, deux autres avec elle, l'*Œil de Quetzalcoatl* s'est
+évaporé, et le conservateur, blafard, évite votre regard.
+Il vous reste vos questions — et la certitude d'avoir rapporté de la jungle bien
+plus qu'un trophée.
 ~ {not flag momie_arretee} set momie_manque
 
-{flag momie_arretee} Une chose, une seule, a echappe au desastre : ce que vous avez arrache aux serviteurs est reste ici, sous scelles. Ils n'ont pas tout emporte.
-{not flag momie_arretee} Ils ont tout emporte. Vous n'avez rien retenu, rien ralenti, rien sauve.
+{flag momie_arretee} Une chose, une seule, a échappé au désastre : ce que vous avez arraché aux serviteurs est resté ici, sous scellés. Ils n'ont pas tout emporté.
+{not flag momie_arretee} Ils ont tout emporté. Vous n'avez rien retenu, rien ralenti, rien sauvé.
 
-* [Dormir douze heures, puis commencer l'enquete] -> enquete_debut
+* [Dormir douze heures, puis commencer l'enquête] -> enquete_debut
   ~ add SANG_FROID 2
 
 # ===========================================================================
-@chapter "L'Enquete"
+@chapter "L'Enquête"
 # ===========================================================================
 
 # /!\ Pas de `restore` ici : chaque piste revient sur cette section, un soin
-# gratuit a chaque retour annulerait le cout de georgio_menace. La remise a
-# neuf se fait une fois pour toutes en sortant du musee (apres_braquage).
+# gratuit à chaque retour annulerait le coût de georgio_menace. La remise à
+# neuf se fait une fois pour toutes en sortant du musée (apres_braquage).
 :: enquete_debut
-{stat NUITS == 0} Le braquage passe au second plan : un homme a ete retrouve *entierement ecorche* en plein Central Park, vide de son sang. La presse tient son nom : « l'Ecorcheur de New York ».
-{stat NUITS == 0} >> Chaque piste vous coutera une journee. Et il tue *chaque nuit*. <<
-{stat NUITS >= 1 and stat NUITS <= 2} Meme heure, meme edition speciale. Un deuxieme corps, ecorche comme le premier, dans une ruelle de l'East Side.
-{stat NUITS >= 3 and stat NUITS <= 4} Les journaux ne comptent plus les colonnes, ils comptent les corps. La ville ferme ses volets des la nuit tombee.
-{stat NUITS == 5} Cinq nuits, cinq depouilles. Couvre-feu sur la ville. Vous croisez des visages qui vous accusent sans savoir pourquoi.
-{stat NUITS >= 6} Vous avez cesse de lire les journaux. Chaque matin son mort — vous saviez, vous cherchiez, vous n'avez pas trouve assez vite.
+{stat NUITS == 0} Le braquage passe au second plan : un homme a été retrouvé *entièrement écorché* en plein Central Park, vidé de son sang. La presse tient son nom : « l'Écorcheur de New York ».
+{stat NUITS == 0} >> Chaque piste vous coûtera une journée. Et il tue *chaque nuit*. <<
+{stat NUITS >= 1 and stat NUITS <= 2} Même heure, même édition spéciale. Un deuxième corps, écorché comme le premier, dans une ruelle de l'East Side.
+{stat NUITS >= 3 and stat NUITS <= 4} Les journaux ne comptent plus les colonnes, ils comptent les corps. La ville ferme ses volets dès la nuit tombée.
+{stat NUITS == 5} Cinq nuits, cinq dépouilles. Couvre-feu sur la ville. Vous croisez des visages qui vous accusent sans savoir pourquoi.
+{stat NUITS >= 6} Vous avez cessé de lire les journaux. Chaque matin son mort — vous saviez, vous cherchiez, vous n'avez pas trouvé assez vite.
 
-* [Ouvrir votre carnet et decider] -> enquete_hub
+* [Ouvrir votre carnet et décider] -> enquete_hub
 
 :: enquete_hub
-{flag adresse_peruvien} Vous savez desormais ou se terre celui qu'on appelle « le Peruvien ».
+{flag adresse_peruvien} Vous savez désormais où se terre celui qu'on appelle « le Péruvien ».
 {flag xipe_su} Et vous savez, surtout, ce qui porte ce costume blanc.
 {stat NUITS >= 5 and not flag adresse_peruvien} Chaque piste que vous ouvrez est une nuit que vous lui donnez. Il faudrait choisir mieux, et vite.
 
 * {not flag q_presse} [Relire la presse du matin, sans suivre aucune piste] -> piste_presse
   ~ set q_presse
-* {not flag q_meurtres} [La scene du crime, a Central Park] -> piste_meurtres
+* {not flag q_meurtres} [La scène du crime, à Central Park] -> piste_meurtres
   ~ set q_meurtres
-* {not flag q_assistant} [L'assistant du conservateur, au musee] -> piste_assistant
+* {not flag q_assistant} [L'assistant du conservateur, au musée] -> piste_assistant
   ~ set q_assistant
-* {flag lead_conservateur and not flag q_conservateur} [Coincer le conservateur lui-meme] -> piste_conservateur
+* {flag lead_conservateur and not flag q_conservateur} [Coincer le conservateur lui-même] -> piste_conservateur
   ~ set q_conservateur
-* {not flag q_recherche} [Fouiller les archives du musee sur Xipe Totec] -> piste_recherche
+* {not flag q_recherche} [Fouiller les archives du musée sur Xipe Totec] -> piste_recherche
   ~ set q_recherche
 * {flag lead_moretti and not flag q_moretti} [Descendre chez les Moretti, dans le quartier italien] -> piste_moretti
   ~ set q_moretti
-* {flag q_moretti and not flag adresse_peruvien and not flag q_jean} [Une carte de visite glissee sous votre porte : « J. » ] -> piste_jean
+* {flag q_moretti and not flag adresse_peruvien and not flag q_jean} [Une carte de visite glissée sous votre porte : « J. » ] -> piste_jean
   ~ set q_jean
-* {flag adresse_peruvien} [Assez tourne : monter chez le Peruvien] -> vers_penthouse
+* {flag adresse_peruvien} [Assez tourné : monter chez le Péruvien] -> vers_penthouse
 
-# Filet de securite ET recompense. La carte « J. » n'arrive QU'APRES la descente
-# chez les Moretti (q_moretti) : c'est la, et nulle part ailleurs, que le nom du
-# « Peruvien » se prononce, et c'est le quartier italien qui fait circuler
-# l'information jusqu'aux freres Jean. Si Georgio a parle, on a deja l'adresse et
+# Filet de sécurité ET récompense. La carte « J. » n'arrive QU'APRÈS la descente
+# chez les Moretti (q_moretti) : c'est là, et nulle part ailleurs, que le nom du
+# « Péruvien » se prononce, et c'est le quartier italien qui fait circuler
+# l'information jusqu'aux frères Jean. Si Georgio a parlé, on a déjà l'adresse et
 # l'option ne s'affiche pas : les Jean ne sont l'autre porte que quand la
-# premiere s'est fermee (Georgio menace). Le ton du marche depend de ce qui s'est
+# première s'est fermée (Georgio menacé). Le ton du marché dépend de ce qui s'est
 # dit au gala.
 :: piste_jean
 ~ add NUITS 1
 ~ set adresse_peruvien
 ~ score 20
-Un cafe de la 9e Avenue, une table au fond. Les freres Jean au complet : l'aine
-qui sourit, les cadets a la porte, Avril qui ne vous regarde pas. Devant eux,
+Un café de la 9e Avenue, une table au fond. Les frères Jean au complet : l'aîné
+qui sourit, les cadets à la porte, Avril qui ne vous regarde pas. Devant eux,
 une enveloppe.
-« On a su que vous posiez des questions chez les Moretti », dit l'aine. « Dans
-ce quartier-la, tout se repete. Nous aussi on a fait nos courses : l'adresse du
-Peruvien. On vous la donne. » Il pousse l'enveloppe.
-« Ce qui est dans son coffre nous interesse — pas ce qu'il y a dans ses momies.
+« On a su que vous posiez des questions chez les Moretti », dit l'aîné. « Dans
+ce quartier-là, tout se répète. Nous aussi on a fait nos courses : l'adresse du
+Péruvien. On vous la donne. » Il pousse l'enveloppe.
+« Ce qui est dans son coffre nous intéresse — pas ce qu'il y a dans ses momies.
 Vous montez, vous nettoyez, et ce qui brille vert nous revient. On discutera. »
 
-{flag jean_revanche} « Vous nous avez parle en gens du metier, au musee. On rend la politesse. » Avril, dans son dos, hoche la tete une fois. C'est presque de l'estime.
-{flag jean_revanche and flag jean_fusillade} « Et vous nous avez tire dessus sans trembler. Chez nous, ca compte. »
-{not flag jean_revanche} L'aine ne sourit qu'avec la bouche. « Entendons-nous : ce n'est pas de l'amitie. On mise sur vous parce que vous etes celui qui est deja descendu dans le trou une fois. »
+{flag jean_revanche} « Vous nous avez parlé en gens du métier, au musée. On rend la politesse. » Avril, dans son dos, hoche la tête une fois. C'est presque de l'estime.
+{flag jean_revanche and flag jean_fusillade} « Et vous nous avez tiré dessus sans trembler. Chez nous, ça compte. »
+{not flag jean_revanche} L'aîné ne sourit qu'avec la bouche. « Entendons-nous : ce n'est pas de l'amitié. On mise sur vous parce que vous êtes celui qui est déjà descendu dans le trou une fois. »
 
 * [Prendre l'enveloppe] -> enquete_debut
 
 :: piste_presse
 Vous ressassez les gros titres sans qu'aucun ne vous apprenne rien de neuf :
-les memes photos floues, les memes temoins anonymes, le meme ton d'epouvante
-recycle d'une edition a l'autre. Vous refermez le journal. Il ne vous a rien
-coute — et rien donne non plus.
+les mêmes photos floues, les mêmes témoins anonymes, le même ton d'épouvante
+recyclé d'une édition à l'autre. Vous refermez le journal. Il ne vous a rien
+coûté — et rien donné non plus.
 
-* [Ouvrir le carnet malgre tout] -> enquete_hub
+* [Ouvrir le carnet malgré tout] -> enquete_hub
 
 :: piste_meurtres
 ~ add NUITS 1
-Quelques billets glisses aux bonnes mains vous ouvrent le rapport et la morgue.
-La victime, un inconnu d'une trentaine d'annees, a ete ecorchee *vivante* a
-l'aide d'un outil grossier et tranchant, le coeur arrache, les arteres percees
-pour la vider. Elle etait paralysee — nul ne sait dire pourquoi.
-Un temoin, un clochard ivre qui dormait la, jure avoir vu des hommes a moitie
-nus s'acharner sur elle en pleine nuit. « Apres, ils sont repartis avec un
+Quelques billets glissés aux bonnes mains vous ouvrent le rapport et la morgue.
+La victime, un inconnu d'une trentaine d'années, a été écorchée *vivante* à
+l'aide d'un outil grossier et tranchant, le cœur arraché, les artères percées
+pour la vider. Elle était paralysée — nul ne sait dire pourquoi.
+Un témoin, un clochard ivre qui dormait là, jure avoir vu des hommes à moitié
+nus s'acharner sur elle en pleine nuit. « Après, ils sont repartis avec un
 monsieur en costume blanc. » Il n'a rien entendu crier.
 
-{flag vu_blanc_jungle} Un costume blanc. La trouee dans les arbres, au-dessus du chantier, la silhouette immobile qui vous regardait charger le camion. Vous n'en aviez parle a personne, pas meme a Diego — on ne raconte pas ce genre de chose. Il vous aura suivi sur deux continents.
+{flag vu_blanc_jungle} Un costume blanc. La trouée dans les arbres, au-dessus du chantier, la silhouette immobile qui vous regardait charger le camion. Vous n'en aviez parlé à personne, pas même à Diego — on ne raconte pas ce genre de chose. Il vous aura suivi sur deux continents.
 
 ~ sub SANG_FROID 2
 ~ score 15
 ~ {flag vu_blanc_jungle} sub SANG_FROID 1
 ~ {flag vu_blanc_jungle} score 10
 
-* {flag urne_geole and not flag xipe_su} [Rester la, immobile, a laisser tout se remettre en place] -> meurtres_lien
-* [Poursuivre l'enquete] -> enquete_debut
+* {flag urne_geole and not flag xipe_su} [Rester là, immobile, à laisser tout se remettre en place] -> meurtres_lien
+* [Poursuivre l'enquête] -> enquete_debut
 
 # La deduction n'est offerte qu'a qui a examine les momies au temple : la
 # premisse (l'urne etait une geole) rencontre ici le costume blanc du temoin.
 :: meurtres_lien
 Tout se met en place d'un coup, avec un bruit sec, comme un os qu'on remet.
-Cinq pretres couches en geoliers autour d'une urne scellee. Des ongles qui ont
-gratte la pierre, six siecles durant, pour retenir ce qu'il y avait *dedans*.
-Une urne que vous avez ouverte. Transportee. Exposee sous des lustres.
-Et dont la momie a disparu le soir meme du gala.
+Cinq prêtres couchés en geôliers autour d'une urne scellée. Des ongles qui ont
+gratté la pierre, six siècles durant, pour retenir ce qu'il y avait *dedans*.
+Une urne que vous avez ouverte. Transportée. Exposée sous des lustres.
+Et dont la momie a disparu le soir même du gala.
 Ce qui porte le costume blanc n'est pas un homme qui vole des momies.
 C'est ce qui est sorti de l'urne — et c'est vous qui avez ouvert la porte.
 ~ set xipe_su
@@ -857,28 +857,28 @@ C'est ce qui est sorti de l'urne — et c'est vous qui avez ouvert la porte.
 
 :: piste_assistant
 ~ add NUITS 1
-L'assistant du conservateur est votre interlocuteur au musee, et il n'est pas a
-l'aise — loin de la. Un peu d'insistance, et il craque : c'est le conservateur
-lui-meme qui l'a charge d'organiser l'exposition, qui lui a *recommande quelqu'un*
-pour recruter serveurs et gardes, et qui a fourni la liste des invites — une
-liste ou figuraient, il l'a compris trop tard, plusieurs noms du crime organise.
+L'assistant du conservateur est votre interlocuteur au musée, et il n'est pas à
+l'aise — loin de là. Un peu d'insistance, et il craque : c'est le conservateur
+lui-même qui l'a chargé d'organiser l'exposition, qui lui a *recommandé quelqu'un*
+pour recruter serveurs et gardes, et qui a fourni la liste des invités — une
+liste où figuraient, il l'a compris trop tard, plusieurs noms du crime organisé.
 ~ set lead_conservateur
 ~ set lead_moretti
 ~ score 15
 
-* [Le laisser a sa peur] -> enquete_debut
+* [Le laisser à sa peur] -> enquete_debut
 
 :: piste_conservateur
 ~ add NUITS 1
-Le conservateur vous fuit, se dit deborde. Mais accule, il s'effondre : les
-Moretti le tiennent — des photos, des dettes. On l'a force a embaucher des
-serveurs mexicains, deux gardes qui ne feraient rien, a placer des « affranchis »
+Le conservateur vous fuit, se dit débordé. Mais acculé, il s'effondre : les
+Moretti le tiennent — des photos, des dettes. On l'a forcé à embaucher des
+serveurs mexicains, deux gardes qui ne feraient rien, à placer des « affranchis »
 sur la liste. « On m'avait promis que ce serait rapide et propre », sanglote-t-il.
-« Personne n'avait parle de momies. Ni de... ca. »
+« Personne n'avait parlé de momies. Ni de... ça. »
 ~ set lead_moretti
 ~ score 15
 
-* [Le laisser a sa honte] -> enquete_debut
+* [Le laisser à sa honte] -> enquete_debut
 
 :: piste_recherche
 ~ add NUITS 1
@@ -890,53 +890,53 @@ sur la liste. « On m'avait promis que ce serait rapide et propre », sanglote-t
   ~ set xipe_su
   ~ score 30
 @wrong recherche_rate
-Dans les reserves du musee, vous recoupez glyphes, chroniques et vieilles
-gravures. Un cartouche revient, gratte partout dans le temple mais oublie ici,
-sur un tesson : le nom du dieu de l'urne. A vous de le lire.
+Dans les réserves du musée, vous recoupez glyphes, chroniques et vieilles
+gravures. Un cartouche revient, gratté partout dans le temple mais oublié ici,
+sur un tesson : le nom du dieu de l'urne. À vous de le lire.
 
-{flag fresques_lues and has carnet} Vous ouvrez votre carnet de fouilles a la page des bas-reliefs. Les trois signes releves sous le temple sont la, trait pour trait — et ils repondent au tesson. Il ne vous reste qu'a prononcer ce que vous avez sous les yeux depuis le Mexique.
+{flag fresques_lues and has carnet} Vous ouvrez votre carnet de fouilles à la page des bas-reliefs. Les trois signes relevés sous le temple sont là, trait pour trait — et ils répondent au tesson. Il ne vous reste qu'à prononcer ce que vous avez sous les yeux depuis le Mexique.
 {flag fresques_lues and not has carnet} Vous avez vu ces trois signes sous le temple. Vous les revoyez, presque. Sans le carnet, « presque » est tout ce que vous avez.
-{not flag fresques_lues} Vous n'avez rien pour recouper : au temple, vous etes passe devant la paroi gravee sans la lire.
+{not flag fresques_lues} Vous n'avez rien pour recouper : au temple, vous êtes passé devant la paroi gravée sans la lire.
 
 :: recherche_ok
-Vous y etes. *Xipe Totec*, Notre Seigneur l'Ecorche. Les momies volees sont ses
-pretres. La momie de l'urne peut lui servir d'incarnation temporaire : le sang
-des sacrifices — coeur arrache, corps vide — lui rend force et pouvoir sur ce
-monde. Et l'emeraude disparue, l'Oeil de Quetzalcoatl, est la pierre qui le
+Vous y êtes. *Xipe Totec*, Notre Seigneur l'Écorché. Les momies volées sont ses
+prêtres. La momie de l'urne peut lui servir d'incarnation temporaire : le sang
+des sacrifices — cœur arraché, corps vide — lui rend force et pouvoir sur ce
+monde. Et l'émeraude disparue, l'Œil de Quetzalcoatl, est la pierre qui le
 tenait prisonnier.
 ~ sound page
 
-* [Refermer les grimoires, glace] -> enquete_debut
+* [Refermer les grimoires, glacé] -> enquete_debut
 
 :: recherche_rate
 Vous butez sur le cartouche : trop de signes manquent. Vous devinez un culte
-sanglant, des sacrifices, une pierre volee — mais le nom du dieu vous echappe
+sanglant, des sacrifices, une pierre volée — mais le nom du dieu vous échappe
 encore.
 
-* [Remettre a plus tard] -> enquete_debut
+* [Remettre à plus tard] -> enquete_debut
 
 :: piste_moretti
 ~ add NUITS 1
-Le quartier italien vous accueille froidement. Demander a parler a un
-responsable vous vaut, contre toute attente, une invitation a dejeuner : pates,
+Le quartier italien vous accueille froidement. Demander à parler à un
+responsable vous vaut, contre toute attente, une invitation à déjeuner : pâtes,
 pizza, chianti, et en face de vous *Georgio*, dit « le marteau », lieutenant de
 la famille, une montagne d'homme.
-Convaincu que vous n'etes pas du FBI et que vous ferez cesser ces meurtres qui
-plombent les affaires, il se detend et parle.
+Convaincu que vous n'êtes pas du FBI et que vous ferez cesser ces meurtres qui
+plombent les affaires, il se détend et parle.
 
-* [Ecouter Georgio] -> georgio
-* [Hausser le ton, exiger des reponses] -> georgio_menace
+* [Écouter Georgio] -> georgio
+* [Hausser le ton, exiger des réponses] -> georgio_menace
 
 :: georgio
-« Y a quelques semaines, un type se pointe. On l'appelle le Peruvien — mais il
+« Y a quelques semaines, un type se pointe. On l'appelle le Péruvien — mais il
 est mexicain, va comprendre. Il propose une affaire simple : on fait diversion
-au musee, sa bande pique quelques momies. En echange, on recrute ses serveurs,
-on relache la securite, on trouve un cambrioleur pour l'emeraude. L'argent,
-l'emeraude, le butin : pour nous. Lui, il veut *juste ses momies*. »
-Georgio ecarte les mains. « Sauf que ca a tourne. Des momies qui marchent, des
-morts pas propres, les flics sur les dents. Et l'emeraude s'est envolee. » Il
-gribouille une adresse sur une serviette. « Tenez. C'est la que le Peruvien a ses
-habitudes. Reglez-nous ca. »
+au musée, sa bande pique quelques momies. En échange, on recrute ses serveurs,
+on relâche la sécurité, on trouve un cambrioleur pour l'émeraude. L'argent,
+l'émeraude, le butin : pour nous. Lui, il veut *juste ses momies*. »
+Georgio écarte les mains. « Sauf que ça a tourné. Des momies qui marchent, des
+morts pas propres, les flics sur les dents. Et l'émeraude s'est envolée. » Il
+gribouille une adresse sur une serviette. « Tenez. C'est là que le Péruvien a ses
+habitudes. Réglez-nous ça. »
 ~ set adresse_peruvien
 ~ set lead_moretti
 ~ score 20
@@ -944,24 +944,24 @@ habitudes. Reglez-nous ca. »
 * [Empocher l'adresse] -> enquete_debut
 
 :: georgio_menace
-Menacer Georgio sur son propre territoire : mauvaise idee. Le sourire tombe, les
-chaises raclent, trois autres montagnes se levent dans votre dos. On vous jette
-dehors avec un avertissement clair — et vous voila persona non grata dans tout le
+Menacer Georgio sur son propre territoire : mauvaise idée. Le sourire tombe, les
+chaises raclent, trois autres montagnes se lèvent dans votre dos. On vous jette
+dehors avec un avertissement clair — et vous voilà persona non grata dans tout le
 quartier italien.
 Vous n'aurez jamais l'adresse. Il faudra la trouver ailleurs, ou renoncer.
 ~ sub SANG_FROID 1
 ~ sub ENDURANCE 3
 
-* [Filer avant que ca s'envenime] -> enquete_debut
+* [Filer avant que ça s'envenime] -> enquete_debut
 
 :: vers_penthouse
-Vous rassemblez ce que vous savez : le Peruvien, ses momies, ses sacrifices
+Vous rassemblez ce que vous savez : le Péruvien, ses momies, ses sacrifices
 chaque nuit. Il est temps de monter.
 
-{not flag q_jean} L'adresse griffonnee par Georgio sur une serviette de table brule dans votre poche.
-{flag q_jean} L'enveloppe des freres Jean brule dans votre poche — et, avec elle, la moitie d'un marche que vous n'avez pas signe.
+{not flag q_jean} L'adresse griffonnée par Georgio sur une serviette de table brûle dans votre poche.
+{flag q_jean} L'enveloppe des frères Jean brûle dans votre poche — et, avec elle, la moitié d'un marché que vous n'avez pas signé.
 
-* [Gagner l'immeuble du Peruvien] -> img_penthouse
+* [Gagner l'immeuble du Péruvien] -> img_penthouse
 
 # ===========================================================================
 @chapter "Le Penthouse"
@@ -975,65 +975,65 @@ New York, la nuit : le San Remo domine Central Park.
 * [Approcher] -> penthouse_pied
 
 :: penthouse_pied
-L'adresse mene a un gratte-ciel baroque donnant sur Central Park — le San Remo.
-Le Peruvien occuperait le dernier etage, le vingt et unieme. Un portier, un
-gardien, un groom se dressent entre vous et l'ascenseur prive.
-Tout la-haut, une rangee de fenetres luit d'une *lueur verte*, mouvante, malade.
-C'est cette nuit. C'est la-haut.
+L'adresse mène à un gratte-ciel baroque donnant sur Central Park — le San Remo.
+Le Péruvien occuperait le dernier étage, le vingt et unième. Un portier, un
+gardien, un groom se dressent entre vous et l'ascenseur privé.
+Tout là-haut, une rangée de fenêtres luit d'une *lueur verte*, mouvante, malade.
+C'est cette nuit. C'est là-haut.
 
 * [Baratiner et soudoyer le personnel] -> penthouse_hall
 * {has revolver} [Passer en force, revolver au clair] -> penthouse_porte
 
 :: penthouse_hall
 Quelques billets et beaucoup d'aplomb : en temps de crise, tout le monde a un
-prix. Le groom vous conduit lui-meme a l'ascenseur prive, les yeux ailleurs, et
-vous laisse monter seul vers le vingt et unieme.
+prix. Le groom vous conduit lui-même à l'ascenseur privé, les yeux ailleurs, et
+vous laisse monter seul vers le vingt et unième.
 ~ score 10
 
-* [Monter jusqu'a la porte du penthouse] -> penthouse_porte
+* [Monter jusqu'à la porte du penthouse] -> penthouse_porte
 
 :: penthouse_porte
 La porte du penthouse est close, et aucun bruit ne la traverse. La serrure est
-compliquee.
+compliquée.
 
-{stat SANG_FROID < 4} Vos mains ne tiennent plus rien. Depuis le musee, depuis la morgue, depuis la trouee dans les arbres, elles tremblent d'une facon que vous ne controlez pas. Le crochetage est hors de portee ce soir.
+{stat SANG_FROID < 4} Vos mains ne tiennent plus rien. Depuis le musée, depuis la morgue, depuis la trouée dans les arbres, elles tremblent d'une façon que vous ne contrôlez pas. Le crochetage est hors de portée ce soir.
 
-* [L'enfoncer d'un coup d'epaule] -> penthouse_alerte
+* [L'enfoncer d'un coup d'épaule] -> penthouse_alerte
 # Recompense de trois chapitres : avoir lu les fresques (I), reconnu les trois
 # syllabes chez les serveurs (II), et porter une lame du culte (I ou II).
-* {has dague and flag mot_de_passe} [Frapper trois coups, la lame a plat contre le battant] -> penthouse_initie
+* {has dague and flag mot_de_passe} [Frapper trois coups, la lame à plat contre le battant] -> penthouse_initie
   ~ score 30
 * {stat PERCEPTION >= 8 and stat SANG_FROID >= 4} [La crocheter en silence] -> penthouse_salon
   ~ score 15
 # Faux choix : sans la dague ET le mot de passe, sonner ou enfoncer reviennent
 # exactement au meme (voir la justification dans penthouse_alerte).
-* [Sonner et s'annoncer comme un invite en retard] -> penthouse_alerte
+* [Sonner et s'annoncer comme un invité en retard] -> penthouse_alerte
 
 
 :: penthouse_initie
-Vous frappez trois fois, lentement, et vous presentez l'obsidienne a plat dans
-l'entrebaillement. L'homme peint qui ouvre voit la lame, entend les trois
-syllabes que vous avez apprises d'un serveur au musee, et s'ecarte sans un mot.
-On vous laisse entrer comme on laisse entrer un frere en retard.
+Vous frappez trois fois, lentement, et vous présentez l'obsidienne à plat dans
+l'entrebâillement. L'homme peint qui ouvre voit la lame, entend les trois
+syllabes que vous avez apprises d'un serveur au musée, et s'écarte sans un mot.
+On vous laisse entrer comme on laisse entrer un frère en retard.
 ~ sound page
 
 * [Avancer dans le salon] -> penthouse_salon
 
 :: penthouse_alerte
 Il n'a fallu ni fracas ni sonnette : quelque chose, dans cette maison, savait
-deja que vous montiez. Quand vous debouchez dans le salon, on vous attend deja,
-tournes vers vous. L'effet de surprise est pour eux.
+déjà que vous montiez. Quand vous débouchez dans le salon, on vous attend déjà,
+tournés vers vous. L'effet de surprise est pour eux.
 ~ sub SANG_FROID 1
 
-* [Avancer quand meme] -> penthouse_salon
+* [Avancer quand même] -> penthouse_salon
 
 :: penthouse_salon
-Un immense salon vitre, Central Park a vos pieds, la ville comme une braise. Au
-coeur de la piece, un autel de pierre brute ; dessus, un homme allonge,
-conscient, les yeux fous. De chaque cote, deux hommes aux corps peints de rouge
-et de noir l'ecorchent lentement, a la dague d'obsidienne.
-Et derriere, tranquille, un homme *en costume blanc* — le visage recouvert d'un
-masque de peau encore fraiche — boit a longs traits un liquide rouge et poisseux
+Un immense salon vitré, Central Park à vos pieds, la ville comme une braise. Au
+cœur de la pièce, un autel de pierre brute ; dessus, un homme allongé,
+conscient, les yeux fous. De chaque côté, deux hommes aux corps peints de rouge
+et de noir l'écorchent lentement, à la dague d'obsidienne.
+Et derrière, tranquille, un homme *en costume blanc* — le visage recouvert d'un
+masque de peau encore fraîche — boit à longs traits un liquide rouge et poisseux
 dans un gobelet d'or.
 ~ sub SANG_FROID 2
 ~ sound magic
@@ -1041,16 +1041,16 @@ dans un gobelet d'or.
 * [Interrompre le sacrifice] -> confrontation
 
 :: confrontation
-Les pretres suspendent leur geste. L'homme au masque se tourne vers vous, et son
-sourire, a travers la peau d'un autre, est une chose obscene. Il vous regarde
-comme on regarde un mets. « Approche », dit-il, et sa voix resonne *a l'interieur*
-de votre crane, chaude, raisonnable. « Devet-toi. Allonge-toi. Je t'offrirai un
+Les prêtres suspendent leur geste. L'homme au masque se tourne vers vous, et son
+sourire, à travers la peau d'un autre, est une chose obscène. Il vous regarde
+comme on regarde un mets. « Approche », dit-il, et sa voix résonne *à l'intérieur*
+de votre crâne, chaude, raisonnable. « Dévêts-toi. Allonge-toi. Je t'offrirai un
 supplice ineffablement doux. »
 Vos mains, sans vous, montent vers votre col.
 ~ sound magic
 
-{flag xipe_su} Vous savez ce qui vous parle. Ce n'est pas un homme, ce n'est meme pas un pretre : c'est *Xipe Totec* dans une peau volee, et le nom que vous mettez dessus vous rend vos mains.
-{has dague} La dague d'obsidienne pese a votre ceinture. Une lame de son propre culte — la seule chose ici qui lui appartienne autant qu'a vous.
+{flag xipe_su} Vous savez ce qui vous parle. Ce n'est pas un homme, ce n'est même pas un prêtre : c'est *Xipe Totec* dans une peau volée, et le nom que vous mettez dessus vous rend vos mains.
+{has dague} La dague d'obsidienne pèse à votre ceinture. Une lame de son propre culte — la seule chose ici qui lui appartienne autant qu'à vous.
 
 * {stat SANG_FROID >= 5} [Briser sa voix d'un cri et bondir] -> combat_pretres
 # Aucune garde de SANG_FROID ici, volontairement : la prose ci-dessus dit que
@@ -1058,16 +1058,16 @@ Vos mains, sans vous, montent vers votre col.
 # fermait l'option a exactement ceux qui avaient fait la deduction — la chaine
 # piste_meurtres (-2, -1) + meurtres_lien (-2) les amenait a 0.
 * {flag xipe_su} [Lui jeter son nom au visage] -> confrontation_nom
-* {stat SANG_FROID < 5} [Ceder un pas... puis vous dechirer a sa suggestion] -> suggestion_fatale
-* [Vous jeter sur lui a mains nues, avant de reflechir] -> possession
+* {stat SANG_FROID < 5} [Céder un pas... puis vous déchirer à sa suggestion] -> suggestion_fatale
+* [Vous jeter sur lui à mains nues, avant de réfléchir] -> possession
 
 :: confrontation_nom
 « XIPE TOTEC. »
-Le nom claque dans le salon vitre, et pour la premiere fois le sourire sous le
-masque se fige. Les pretres se figent avec lui. Un dieu que l'on nomme est un
+Le nom claque dans le salon vitré, et pour la première fois le sourire sous le
+masque se fige. Les prêtres se figent avec lui. Un dieu que l'on nomme est un
 dieu que l'on a reconnu — et donc, quelque part, un dieu qui peut perdre.
-La voix dans votre crane se retire d'un coup, comme une main qu'on retire d'un
-gant. Vos mains redeviennent les votres.
+La voix dans votre crâne se retire d'un coup, comme une main qu'on retire d'un
+gant. Vos mains redeviennent les vôtres.
 ~ add SANG_FROID 3
 ~ score 40
 ~ sound magic
@@ -1075,16 +1075,16 @@ gant. Vos mains redeviennent les votres.
 * [Profiter de ce silence] -> combat_pretres
 
 :: possession
-Vous franchissez les trois metres avant d'avoir decide de le faire — et votre
+Vous franchissez les trois mètres avant d'avoir décidé de le faire — et votre
 main nue se referme sur son poignet.
 C'est une erreur.
-Sous la peau volee, quelque chose *se deverse*. Pas une douleur : une arrivee.
-Une chose immense et froide s'installe derriere vos yeux, essaie vos doigts un a
-un, trouve la manoeuvre a son gout.
+Sous la peau volée, quelque chose *se déverse*. Pas une douleur : une arrivée.
+Une chose immense et froide s'installe derrière vos yeux, essaie vos doigts un à
+un, trouve la manœuvre à son goût.
 ~ sub SANG_FROID 4
 ~ sound magic
 
-{stat SANG_FROID >= 3} Vous hurlez, et le hurlement est encore le votre. Vous arrachez votre main comme on s'arrache a une machine, et vous tombez en arriere, vivant, vide, tremblant. Il ne recommencera pas : il a compris que ce corps-la se defend.
+{stat SANG_FROID >= 3} Vous hurlez, et le hurlement est encore le vôtre. Vous arrachez votre main comme on s'arrache à une machine, et vous tombez en arrière, vivant, vide, tremblant. Il ne recommencera pas : il a compris que ce corps-là se défend.
 {stat SANG_FROID < 3} Vous ne hurlez pas. Vous n'en avez plus les moyens.
 
 * {stat SANG_FROID >= 3} [Se relever avant qu'il change d'avis] -> combat_pretres
@@ -1093,35 +1093,35 @@ un, trouve la manoeuvre a son gout.
 
 :: suggestion_fatale
 Vous avez fait trois pas vers l'autel avant de comprendre. Trop tard : les
-pretres sont sur vous, et la voix, douce, vous berce pendant qu'on vous couche
-sur la pierre tiede.
+prêtres sont sur vous, et la voix, douce, vous berce pendant qu'on vous couche
+sur la pierre tiède.
 ~ sub ENDURANCE 6
 
-* [Vous arracher a l'hypnose dans un dernier sursaut] -> combat_pretres
+* [Vous arracher à l'hypnose dans un dernier sursaut] -> combat_pretres
 
 :: combat_pretres
-@combat "Serviteurs de l'Ecorche" att=7 hp=10 dmg=4 armor=0
-@win salon_oeil "Les deux corps peints s'affaissent, dagues encore serrees. Entre vous et le dieu au masque de peau, il n'y a plus personne."
+@combat "Serviteurs de l'Écorché" att=7 hp=10 dmg=4 armor=0
+@win salon_oeil "Les deux corps peints s'affaissent, dagues encore serrées. Entre vous et le dieu au masque de peau, il n'y a plus personne."
   ~ score 25
 @lose fin_mort
-Les deux corps peints se jettent sur vous, dagues levees, prets a mourir pour
+Les deux corps peints se jettent sur vous, dagues levées, prêts à mourir pour
 leur dieu.
 
 :: salon_oeil
-Le dieu recule d'un pas, sans hate, et ce recul vous apprend deux choses : il
-peut etre inquiet, et il n'est pas presse.
-Sur une desserte basse, entre l'autel et la baie, un coffret de cedre est
-entrouvert. A l'interieur, une lueur verte que vous reconnaitriez entre mille :
-l'*Oeil de Quetzalcoatl*, la pierre qui le tenait enferme.
-Il est a quatre pas. Le dieu est a trois.
+Le dieu recule d'un pas, sans hâte, et ce recul vous apprend deux choses : il
+peut être inquiet, et il n'est pas pressé.
+Sur une desserte basse, entre l'autel et la baie, un coffret de cèdre est
+entrouvert. À l'intérieur, une lueur verte que vous reconnaîtriez entre mille :
+l'*Œil de Quetzalcoatl*, la pierre qui le tenait enfermé.
+Il est à quatre pas. Le dieu est à trois.
 
 * [Bondir sur le coffret d'abord] -> salon_oeil_prendre
-* [L'ignorer : d'abord le tuer, on ramassera apres] -> combat_xipe
+* [L'ignorer : d'abord le tuer, on ramassera après] -> combat_xipe
 
 :: salon_oeil_prendre
-Vous plongez. Vos doigts se referment sur la pierre tiede au moment ou la dague
-du dieu vous ouvre l'epaule — il etait plus rapide, evidemment. Mais l'Oeil est
-dans votre poche, et quelque chose, dans le salon, change de temperature.
+Vous plongez. Vos doigts se referment sur la pierre tiède au moment où la dague
+du dieu vous ouvre l'épaule — il était plus rapide, évidemment. Mais l'Œil est
+dans votre poche, et quelque chose, dans le salon, change de température.
 ~ give emeraude
 ~ set oeil_repris
 ~ clear emeraude_perdue
@@ -1137,26 +1137,26 @@ dans votre poche, et quelque chose, dans le salon, change de temperature.
   ~ score 60
   ~ {has dague} score 20
 @lose fin_mort
-Prive de ses serviteurs, le dieu tire de sa manche une longue dague effilee. Le
+Privé de ses serviteurs, le dieu tire de sa manche une longue dague effilée. Le
 corps qu'il habite est plus fort, plus endurant qu'un homme — mais il saigne, et
-c'est deja beaucoup.
+c'est déjà beaucoup.
 
 :: fin_mort
 @ending lose
-La derniere chose que vous voyez, c'est le masque de peau se pencher sur vous, et
-ce sourire qui n'en finit pas. Cette nuit, l'Ecorcheur de New York fait une
-victime de plus — et pas la derniere.
+La dernière chose que vous voyez, c'est le masque de peau se pencher sur vous, et
+ce sourire qui n'en finit pas. Cette nuit, l'Écorcheur de New York fait une
+victime de plus — et pas la dernière.
 
 :: fin_possede
 @ending lose
-Vous vous relevez. Vous epoussetez votre veste. Vous regardez, avec un interet
+Vous vous relevez. Vous époussetez votre veste. Vous regardez, avec un intérêt
 poli, l'homme au masque de peau s'affaisser sur le marbre, sa besogne faite —
-une depouille de plus, dont vous n'avez plus l'usage.
-Dans le miroir noir de la baie vitree, votre visage vous sourit. Ce n'est pas
+une dépouille de plus, dont vous n'avez plus l'usage.
+Dans le miroir noir de la baie vitrée, votre visage vous sourit. Ce n'est pas
 votre sourire.
-=! IL A CHANGE DE PEAU
-Au matin, l'archeologue rentre chez lui. Il repond au telephone, il remercie ses
-confreres, il accepte la chaire qu'on lui offre enfin. Personne ne remarque rien.
+=! IL A CHANGÉ DE PEAU
+Au matin, l'archéologue rentre chez lui. Il répond au téléphone, il remercie ses
+confrères, il accepte la chaire qu'on lui offre enfin. Personne ne remarque rien.
 Personne ne remarquera rien avant longtemps.
 
 # --- Aiguillage de fin : lit ce qui a ete fait, puis saute a l'epilogue. -----
@@ -1164,44 +1164,44 @@ Personne ne remarquera rien avant longtemps.
 # un aiguillage. L'ordre compte : du plus rare au plus commun.
 
 :: denouement
-Votre lame trouve le coeur sous la peau volee. Le corps qu'habitait le dieu
-s'affaisse, se ride, se defait en un instant — redevenu momie parmi les momies.
-Le masque de peau glisse sur le marbre. La lueur verte s'eteint.
+Votre lame trouve le cœur sous la peau volée. Le corps qu'habitait le dieu
+s'affaisse, se ride, se défait en un instant — redevenu momie parmi les momies.
+Le masque de peau glisse sur le marbre. La lueur verte s'éteint.
 ~ {flag oeil_repris and flag momie_arretee} goto fin_totale
 ~ {stat NUITS >= 5} goto fin_creuse
 ~ goto fin_amere
 
 :: fin_totale
 @ending win
-=! L'ECORCHEUR EST TOMBE
-Dans un coffret de cedre, pres de l'autel, l'*Oeil de Quetzalcoatl* bat encore.
+=! L'ÉCORCHEUR EST TOMBÉ
+Dans un coffret de cèdre, près de l'autel, l'*Œil de Quetzalcoatl* bat encore.
 Vous le refermez sur sa lueur verte et vous l'emportez — la pierre qui tenait le
-dieu prisonnier retourne au musee, sous cle, avec ce que vous avez arrache aux
+dieu prisonnier retourne au musée, sous clé, avec ce que vous avez arraché aux
 serviteurs le soir du gala.
-Il ne manque rien. C'est si rare que vous mettrez des annees a y croire.
+Il ne manque rien. C'est si rare que vous mettrez des années à y croire.
 Les journaux inventent une histoire raisonnable ; vous les laissez faire. Vous
-savez ce que vous avez referme, et vous etes le seul.
+savez ce que vous avez refermé, et vous êtes le seul.
 
 :: fin_amere
 @ending win
-=! L'ECORCHEUR EST TOMBE
+=! L'ÉCORCHEUR EST TOMBÉ
 Au matin, les journaux inventent une histoire raisonnable : un tueur, un
-justicier, une ville sauvee. Vous les laissez faire. Vous goutez une celebrite
+justicier, une ville sauvée. Vous les laissez faire. Vous goûtez une célébrité
 courte et intense — la seule que vous ayez jamais connue.
-Mais il reste une sensation d'inacheve.
+Mais il reste une sensation d'inachevé.
 
-{flag emeraude_perdue} L'*Oeil de Quetzalcoatl* a disparu dans la nuit, et vous n'avez aucune piste.
-{not flag emeraude_perdue} L'*Oeil de Quetzalcoatl* est dans votre poche — mais il a fallu le prendre a un dieu, et vous savez maintenant a quoi il sert.
-{flag momie_manque} Une partie des momies n'a jamais ete retrouvee.
+{flag emeraude_perdue} L'*Œil de Quetzalcoatl* a disparu dans la nuit, et vous n'avez aucune piste.
+{not flag emeraude_perdue} L'*Œil de Quetzalcoatl* est dans votre poche — mais il a fallu le prendre à un dieu, et vous savez maintenant à quoi il sert.
+{flag momie_manque} Une partie des momies n'a jamais été retrouvée.
 Pour le moment...
 
 :: fin_creuse
 @ending win
-=! TROP TARD, ET QUAND MEME
-Vous avez gagne. La ville a paye le prix de votre lenteur : une nuit par piste
-ouverte, un corps par nuit, et autant de familles a qui l'on rendra des restes.
-On vous felicitera. On vous decorera, peut-etre. Vous n'arriverez jamais tout a
-fait a entendre ces mots-la sans compter, derriere, les nuits que vous avez
-passees a lire des archives pendant qu'il travaillait.
-{flag emeraude_perdue} L'*Oeil* a disparu ; des momies manquent. Et vous ne savez plus si vous avez envie de les chercher.
-{not flag emeraude_perdue} Vous rapportez l'*Oeil*. C'est tout ce que vous rapportez — et vous ne savez plus si vous avez envie de chercher le reste.
+=! TROP TARD, ET QUAND MÊME
+Vous avez gagné. La ville a payé le prix de votre lenteur : une nuit par piste
+ouverte, un corps par nuit, et autant de familles à qui l'on rendra des restes.
+On vous félicitera. On vous décorera, peut-être. Vous n'arriverez jamais tout à
+fait à entendre ces mots-là sans compter, derrière, les nuits que vous avez
+passées à lire des archives pendant qu'il travaillait.
+{flag emeraude_perdue} L'*Œil* a disparu ; des momies manquent. Et vous ne savez plus si vous avez envie de les chercher.
+{not flag emeraude_perdue} Vous rapportez l'*Œil*. C'est tout ce que vous rapportez — et vous ne savez plus si vous avez envie de chercher le reste.

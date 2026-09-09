@@ -142,8 +142,10 @@ LNGSRC   := $(wildcard ../../lang/*.lng)
 # recents que le .adv, make les croit a jour, et la disquette garde en silence
 # le rendu de l'ancien compilateur. C'est arrive avec le passage de la casse.
 A2CSRC   := $(wildcard ../../compiler/a2c/*.py)
-# Options supplementaires pour a2c. Ex. pour une disquette Apple II / II+, qui
-# n'ont aucun glyphe minuscule :  make dsk ADV=... A2CFLAGS=--majuscules
+# Options supplementaires pour a2c (--max-file, --summary...). La casse et les
+# accents ne sont plus un choix de compilation : STORY.DAT porte le texte tel
+# quel (Latin-1), c'est scr.c qui adapte a l'ecran au runtime (II/II+ sans
+# minuscule detectes via get_ostype(), cf. scr_init).
 A2CFLAGS ?=
 DATAOUT  := $(DATADIR)/$(STORY) $(DATADIR)/APP.LNG $(DATADIR)/ASSETS.IDX $(DATADIR)/IMAGES.MAP
 
@@ -286,7 +288,7 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) $(ZX02_TOOL) | $(BU
 	done
 	java -jar $(AC_JAR) -p  $(DSK) ASSETS.IDX bin 0       < $(DATADIR)/ASSETS.IDX
 	@# APP.LNG : socle de chaines d'interface. Sans lui le player est muet ;
-	@# c'est une garantie de fabrication, pas un cas d'execution (spec §6.1).
+	@# c'est une garantie de fabrication, pas un cas d'execution.
 	@[ -e $(DATADIR)/APP.LNG ] || { echo "ERREUR: $(DATADIR)/APP.LNG absent"; exit 1; }
 	java -jar $(AC_JAR) -p  $(DSK) APP.LNG bin 0          < $(DATADIR)/APP.LNG
 	@# .ZX2 en type bin/aux 0 (donnee brute a decompresser, pas une image a

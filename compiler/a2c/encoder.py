@@ -1,4 +1,4 @@
-"""Encodeur binaire : Story -> STORY.DAT + ASSETS.IDX (spec §7ter).
+"""Encodeur binaire : Story -> STORY.DAT + ASSETS.IDX.
 
 Tous les champs multi-octets sont little-endian (natif 6502). Les opcodes de
 condition et d'effet font 4 octets fixes.
@@ -11,7 +11,7 @@ import struct
 from . import model as M
 from .errors import A2Error
 from .symbols import Symbols
-from .translit import transliterate
+from .translit import normalize_display
 
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
@@ -39,8 +39,14 @@ _EFFECT_OP = {
 }
 
 
-def _ascii(text: str, upper: bool) -> bytes:
-    return transliterate(text, upper).encode("ascii")
+def _encode_text(text: str) -> bytes:
+    """Latin-1 : 1 octet par caractère, accents et casse conservés (cf.
+    translit.py). Chaque player retranscrit ensuite selon son écran."""
+    normalized = normalize_display(text)
+    try:
+        return normalized.encode("latin-1")
+    except UnicodeEncodeError as exc:
+        raise A2Error(f"caractère non supporté dans '{text[:30]}': {exc}")
 
 
 def _bitset(count: int, is_on) -> bytes:
@@ -53,8 +59,7 @@ def _bitset(count: int, is_on) -> bytes:
 
 # --- STORY.DAT -------------------------------------------------------------
 
-def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE,
-                 upper: bool = False) -> list[bytes]:
+def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE) -> list[bytes]:
     """Encode l'aventure en 1..N fichiers STORYn.DAT (format v4).
 
     Découpage par chapitre (+ sous-découpage si > max_file). Chaque STORYn.DAT
@@ -64,8 +69,8 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE,
     fichier courant."""
     sym = Symbols(story)
 
-    preamble = _encode_preamble(story, upper)
-    bodies = [_encode_section(sec, sym, upper) for sec in story.sections]
+    preamble = _encode_preamble(story)
+    bodies = [_encode_section(sec, sym) for sec in story.sections]
     n = len(bodies)
 
     # --- Pass 1 : repartir les sections en fichiers (par chapitre + taille) ---
@@ -146,7 +151,7 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE,
     return out_files
 
 
-def _encode_preamble(story: M.Story, upper: bool) -> bytes:
+def _encode_preamble(story: M.Story) -> bytes:
     out = bytearray()
     for s in story.stats:
         out += struct.pack("<BBB", s.init, s.lo, s.hi)
@@ -160,20 +165,20 @@ def _encode_preamble(story: M.Story, upper: bool) -> bytes:
     out += _bitset(len(story.items), lambda i: story.items[i].default_on)
     out += _bitset(len(story.flags), lambda i: story.flags[i].default_on)
     for s in story.stats:
-        out += _lenstr(s.name, upper)
+        out += _lenstr(s.name)
     for it in story.items:
-        out += _lenstr(it.label if it.label else it.name, upper)
-    out += _lenstr(story.title, upper)                       # titre (pour le menu)
+        out += _lenstr(it.label if it.label else it.name)
+    out += _lenstr(story.title)                       # titre (pour le menu)
     for idx in story.intro_index:                     # scènes d'intro
         out += struct.pack("<H", idx)
     # Chaînes d'UI : SEULES LES SURCHARGES (v5). Le socle des 28 chaînes vit
-    # dans APP.LNG (cf. spec §6.1) ; ici, des couples (index de clé, texte)
+    # dans APP.LNG ; ici, des couples (index de clé, texte)
     # appliqués par-dessus. Une aventure sans `@ui` n'emporte donc rien.
     over = [(i, story.ui[k]) for i, (k, _d) in enumerate(M.UI_KEYS)
             if k in story.ui]
     out += struct.pack("<B", len(over))
     for i, text in over:
-        out += struct.pack("<B", i) + _lenstr(text, upper)
+        out += struct.pack("<B", i) + _lenstr(text)
     # attributs de combat par objet (atk, dmg, armor) — signés, en fin de préambule
     for it in story.items:
         out += struct.pack("<bbb", it.atk, it.dmg, it.armor)
@@ -183,14 +188,14 @@ def _encode_preamble(story: M.Story, upper: bool) -> bytes:
     return bytes(out)
 
 
-def _lenstr(text: str, upper: bool) -> bytes:
-    b = _ascii(text, upper)
+def _lenstr(text: str) -> bytes:
+    b = _encode_text(text)
     if len(b) > 255:
         raise A2Error(f"chaîne trop longue (>255): '{text[:20]}...'")
     return struct.pack("<B", len(b)) + b
 
 
-def _encode_section(sec: M.Section, sym: Symbols, upper: bool) -> bytes:
+def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
     out = bytearray()
     out += struct.pack("<BB", int(sec.mode), int(sec.ending))
     out += struct.pack("<H", sec.image_asset if sec.image else NO_IMAGE)
@@ -203,24 +208,24 @@ def _encode_section(sec: M.Section, sym: Symbols, upper: bool) -> bytes:
         out += struct.pack("<BBBB", cb.att, cb.hp, cb.dmg, cb.armor)
         out += struct.pack("<H", cb.image_asset if cb.image else NO_IMAGE)
         out += struct.pack("<HHH", cb.win_index, cb.lose_index, cb.flee_index)
-        out += _lenstr(cb.name, upper)
+        out += _lenstr(cb.name)
         out += _encode_effects(cb.win_effects, sym)    # effets par issue
         out += _encode_effects(cb.lose_effects, sym)
         out += _encode_effects(cb.flee_effects, sym)
-        out += _lenstr(cb.win_msg, upper)     # textes d'issue (vides = aucun ecran)
-        out += _lenstr(cb.lose_msg, upper)
-        out += _lenstr(cb.flee_msg, upper)
+        out += _lenstr(cb.win_msg)     # textes d'issue (vides = aucun ecran)
+        out += _lenstr(cb.lose_msg)
+        out += _lenstr(cb.flee_msg)
     # bloc saisie optionnel (u8 present + invite + reponses + cibles + effets)
     if sec.input is None:
         out += struct.pack("<B", 0)
     else:
         ip = sec.input
         out += struct.pack("<B", 1)
-        out += _lenstr(ip.prompt, upper)
+        out += _lenstr(ip.prompt)
         out += struct.pack("<B", ip.maxlen)
         out += struct.pack("<B", len(ip.answers))
         for a in ip.answers:
-            out += _lenstr(a, upper)
+            out += _lenstr(a)
         out += struct.pack("<HH", ip.correct_index, ip.wrong_index)
         out += _encode_effects(ip.correct_effects, sym)
         out += _encode_effects(ip.wrong_effects, sym)
@@ -232,7 +237,7 @@ def _encode_section(sec: M.Section, sym: Symbols, upper: bool) -> bytes:
         out += _encode_cond(t.cond, sym)
         out += struct.pack("<B", t.style)        # style du paragraphe
         # marqueurs inline *...* -> octet bascule inverse (invisible)
-        body = _ascii(t.text, upper).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
+        body = _encode_text(t.text).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
         if len(body) > 0xFFFF:
             raise A2Error("segment de texte trop long (>65535)", t.line)
         out += struct.pack("<H", len(body)) + body
@@ -242,7 +247,7 @@ def _encode_section(sec: M.Section, sym: Symbols, upper: bool) -> bytes:
         out += _encode_cond(c.cond, sym)
         out += _encode_effects(c.effects, sym)
         out += struct.pack("<H", c.target_index)
-        out += _lenstr(c.label, upper)
+        out += _lenstr(c.label)
     return bytes(out)
 
 
@@ -292,9 +297,8 @@ def _encode_effect(e: M.Effect, sym: Symbols) -> bytes:
 
 # --- ASSETS.IDX ------------------------------------------------------------
 
-def encode_lang(lang: str, strings: dict[str, str],
-                upper: bool = False) -> bytes:
-    """Socle de chaines d'interface -> APP.LNG (cf. spec §6.1).
+def encode_lang(lang: str, strings: dict[str, str]) -> bytes:
+    """Socle de chaines d'interface -> APP.LNG.
 
     Positionnel : les 28 chaines dans l'ordre figé de UI_KEYS. Toutes sont
     exigées — un socle incomplet laisserait le player muet sur une clé.
@@ -304,12 +308,12 @@ def encode_lang(lang: str, strings: dict[str, str],
         raise A2Error(f"fichier de langue incomplet, {len(missing)} clé(s) "
                       f"manquante(s) : {', '.join(missing[:5])}"
                       + (" ..." if len(missing) > 5 else ""))
-    code = _ascii(lang, True).ljust(2)[:2]   # code langue : toujours "FR", "EN"
+    code = lang.upper().encode("ascii").ljust(2)[:2]  # code langue : "FR", "EN"
     out = bytearray(MAGIC_LANG)
     out += struct.pack("<B", LANG_VERSION) + code
     out += struct.pack("<B", len(M.UI_KEYS))
     for key, _default in M.UI_KEYS:
-        out += _lenstr(strings[key], upper)
+        out += _lenstr(strings[key])
     return bytes(out)
 
 
