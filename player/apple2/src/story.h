@@ -1,7 +1,7 @@
 /* story.h -- ouverture de STORY.DAT, données résidentes, streaming des sections.
  *
  * Le header, le préambule et l'accès à l'index restent résidents ; le corps
- * d'une section est lu à la demande dans secbuf[] (cf. spec §7bis, §7ter).
+ * d'une section est lu à la demande dans secbuf[].
  */
 #ifndef A2ADV_STORY_H
 #define A2ADV_STORY_H
@@ -15,7 +15,7 @@ extern u16 g_start;
 extern u8  g_score_on, g_moves_on;    /* compteurs actifs ? (flags d'entete) */
 extern u8  g_nfiles;                  /* nombre de fichiers STORYn.DAT */
 /* 1er index de flag LOCAL : les flags [g_local_base, g_nflags) sont remis a 0
- * a chaque changement de chapitre (cf. spec §6.1, flags locaux). */
+ * a chaque changement de chapitre (flags locaux). */
 extern u8  g_local_base;
 /* Masque des stats MASQUEES : bit i = la stat i ne figure pas au bandeau
  * d'etat (@stat ... hidden). Elle reste lisible par les conditions et

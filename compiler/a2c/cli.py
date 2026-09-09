@@ -12,7 +12,7 @@ from .errors import A2Error
 from .parser import parse, parse_lang
 from .symbols import resolve
 
-# Socles d'interface : lang/<code>.lng a la racine du depot (cf. spec §6.1).
+# Socles d'interface : lang/<code>.lng a la racine du depot.
 LANG_DIR = Path(__file__).resolve().parents[2] / "lang"
 
 
@@ -25,16 +25,6 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-file", type=lambda s: int(s, 0), default=None,
                     help="taille max d'un STORYn.DAT en octets (force le "
                          "sous-decoupage ; utile pour tester le multi-fichiers)")
-    # Casse du texte encodé. Le generateur de caracteres des machines cibles
-    # n'a aucun glyphe accentue : les accents sont retires dans tous les cas
-    # (cf. translit.py). Reste la casse, et elle depend de l'ecran — d'ou le
-    # choix laisse a l'auteur plutot qu'une regle figee.
-    ap.add_argument("--majuscules", dest="upper", action="store_true",
-                    help="force tout le texte en MAJUSCULES (rendu d'origine, "
-                         "affichable sur n'importe quel Apple II) ; par défaut "
-                         "la casse du source est conservée, ce qui suppose un "
-                         "//e ou plus récent — les II et II+ n'ont aucun "
-                         "glyphe minuscule")
     ap.add_argument("--summary", action="store_true",
                     help="affiche un résumé de l'aventure compilée")
     ap.add_argument("--version", action="version",
@@ -50,10 +40,9 @@ def main(argv: list[str] | None = None) -> int:
         story = parse(src.read_text(encoding="utf-8"))
         warnings = resolve(story)
         if args.max_file is not None:
-            story_files = encode_story(story, max_file=args.max_file,
-                                       upper=args.upper)
+            story_files = encode_story(story, max_file=args.max_file)
         else:
-            story_files = encode_story(story, upper=args.upper)
+            story_files = encode_story(story)
         assets_bin = encode_assets(story)
         # APP.LNG : socle d'interface choisi par le @lang de l'aventure. C'est
         # ce qui rend impossible une disquette dont l'interface et l'histoire
@@ -65,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
                           + (", ".join(sorted(p.stem for p in LANG_DIR.glob("*.lng")))
                              or "(aucune)"))
         lang_code, lang_strings = parse_lang(lng_src.read_text(encoding="utf-8"))
-        lang_bin = encode_lang(lang_code, lang_strings, upper=args.upper)
+        lang_bin = encode_lang(lang_code, lang_strings)
     except A2Error as e:
         print(f"a2c: {src.name}: {e}", file=sys.stderr)
         return 1
@@ -88,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     # regenerer les fichiers numerotes a partir des fichiers NOMMES
     # (img/named/<ID>.HGR) : l'auteur n'a jamais a compter/nommer un index a
     # la main, et reordonner les @image ne desynchronise plus rien en
-    # silence (cf. spec, notes de portage).
+    # silence.
     images_map = "".join(f"{i:02d} {name}\n" for i, name in enumerate(story.assets))
     (out / "IMAGES.MAP").write_text(images_map, encoding="ascii")
 

@@ -1,7 +1,7 @@
 # demo.adv — mini-aventure d'exemple pour valider la grammaire DSL v0
 # (2 stats + 1 objet, 6 sections, une fin victoire et une fin defaite)
 
-@title   La Caverne aux Echos
+@title   La Caverne aux Échos
 @author  Thomas
 @start   lisiere
 
@@ -19,10 +19,10 @@
 :: lisiere
 @mode image_text
 @image foret
-Au bout du sentier, l'entree sombre d'une caverne vous fait face.
+Au bout du sentier, l'entrée sombre d'une caverne vous fait face.
 Le vent y siffle comme une voix lointaine.
 
-* [S'approcher de l'entree] -> entree
+* [S'approcher de l'entrée] -> entree
 * [Fouiller les buissons] -> buissons
 
 :: buissons
@@ -39,8 +39,8 @@ Sous les ronces, vous trouvez une vieille torche encore utilisable.
 :: entree
 @mode image_text
 @image caverne
-{has torche} La torche eclaire des parois couvertes de symboles.
-{not has torche} L'obscurite est totale : vous avancez a l'aveugle.
+{has torche} La torche éclaire des parois couvertes de symboles.
+{not has torche} L'obscurité est totale : vous avancez à l'aveugle.
 
 * {has torche} [Suivre les symboles] -> tresor
 * [Avancer dans le noir] -> gouffre
@@ -49,9 +49,9 @@ Sous les ronces, vous trouvez une vieille torche encore utilisable.
 :: tresor
 @mode full_image
 @image coffre
-Les symboles menent a un coffre debordant de pieces d'or !
+Les symboles mènent à un coffre débordant de pièces d'or !
 
-* [Empocher le tresor] -> victoire
+* [Empocher le trésor] -> victoire
   ~ add OR 50
 
 :: gouffre
@@ -59,7 +59,7 @@ Les symboles menent a un coffre debordant de pieces d'or !
 @on_enter
   ~ sub VIE 10
   ~ sub MORAL 5
-Un pas de trop : le sol se derobe. Vous chutez dans le vide...
+Un pas de trop : le sol se dérobe. Vous chutez dans le vide...
 
 * [...] -> defaite
 
@@ -68,9 +68,9 @@ Un pas de trop : le sol se derobe. Vous chutez dans le vide...
 :: victoire
 @mode full_text
 @ending win
-Vous ressortez fortune faite. L'aventure est un succes !
+Vous ressortez fortune faite. L'aventure est un succès !
 
 :: defaite
 @mode full_text
 @ending lose
-Les echos de la caverne resteront votre derniere compagnie.
+Les échos de la caverne resteront votre dernière compagnie.

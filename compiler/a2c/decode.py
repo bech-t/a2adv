@@ -29,7 +29,7 @@ class _Reader:
         v = self.buf[self.pos:self.pos + n]; self.pos += n; return v
 
     def lenstr(self) -> str:
-        return self.take(self.u8()).decode("ascii")
+        return self.take(self.u8()).decode("latin-1")
 
 
 @dataclass
@@ -180,7 +180,7 @@ def _decode_section(r: _Reader) -> DecSection:
     for _ in range(r.u8()):
         cond = _decode_cond(r)
         style = r.u8()
-        text = r.take(r.u16()).decode("ascii")
+        text = r.take(r.u16()).decode("latin-1")
         texts.append((cond, style, text))
     choices = []
     for _ in range(r.u8()):

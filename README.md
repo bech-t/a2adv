@@ -56,16 +56,16 @@ absorbées par le compilateur, pas subies par l'auteur.
 
 **Compatibilité maximale.** La machine de destination, c'est l'**Apple II** : le
 moteur vise le **6502** et tient dans les **64 Ko de RAM principale** — le
-plancher imposé par ProDOS lui-même, qui ne démarre pas en dessous. Un Apple II
-avec 64 Ko suffit donc, mais un **//e est conseillé** pour deux raisons
-distinctes : le 80 colonnes est plus confortable à lire sur de longs
-paragraphes — le 40 reste pleinement géré — et surtout son générateur de
-caractères possède les **minuscules**. N'importe quel //e les a, y compris le
-modèle nu à 64 Ko : c'est une ROM, pas une extension. Attention en revanche à
-ne pas confondre les deux critères — un II+ à carte langage atteint lui aussi
-64 Ko et démarre ProDOS, mais n'a aucun glyphe minuscule. Pour ces machines,
-compilez avec `--majuscules`. Le disque RAM sur 128 Ko est **détecté à
-l'exécution** et exploité s'il est présent, jamais exigé. La carte son
+plancher imposé par ProDOS lui-même, qui ne démarre pas en dessous. Un Apple
+II ou II+ à 64 Ko suffit donc, mais un **//e est conseillé** pour le confort :
+le 80 colonnes est plus agréable à lire sur de longs paragraphes — le 40 reste
+pleinement géré — et son générateur de caractères possède les **minuscules**
+(N'importe quel //e les a, y compris le modèle nu à 64 Ko : c'est une ROM, pas
+une extension). Un II ou II+ n'en a aucune, casse **et** accents y sont donc
+repliés en capitales ASCII à l'affichage — automatiquement, la machine est
+détectée **à l'exécution** (`get_ostype()`), même disquette des deux côtés,
+rien à recompiler. Le disque RAM sur 128 Ko est **détecté à l'exécution** et
+exploité s'il est présent, jamais exigé. La carte son
 Mockingboard suit une règle différente et volontaire : **jamais de détection
 automatique** — un balayage des slots écrirait dans des cartes inconnues.
 Le slot se choisit à la main dans le menu Options, puis est vérifié avant

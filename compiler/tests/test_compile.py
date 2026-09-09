@@ -10,18 +10,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from a2c import model as M              # noqa: E402
 from a2c.decode import decode           # noqa: E402
 from a2c.encoder import VERSION, encode_story    # noqa: E402
-from a2c.translit import transliterate           # noqa: E402
+from a2c.translit import normalize_display, to_match_key  # noqa: E402
 from a2c.parser import parse            # noqa: E402
 from a2c.symbols import resolve         # noqa: E402
 
 DEMO = Path(__file__).resolve().parents[2] / "adventures" / "demo_simple" / "demo_simple.adv"
 
 
-def _compile(upper: bool = False):
-    """Compile la demo. `upper` = l'option `--majuscules` du CLI."""
+def _compile():
     story = parse(DEMO.read_text(encoding="utf-8"))
     resolve(story)
-    return story, decode(encode_story(story, upper=upper)[0])   # STORY0.DAT
+    return story, decode(encode_story(story)[0])   # STORY0.DAT
 
 
 def test_header_counts():
@@ -114,27 +113,22 @@ def test_local_flag_rejects_on():
         raise AssertionError("un flag 'local on' aurait du etre refuse")
 
 
+def test_normalize_display_conserve_accents_et_casse():
+    """Le texte affiché garde accents et casse : c'est scr.c qui adapte."""
+    src = "Où est l'Œuf, Éléphant ?"
+    assert normalize_display(src) == "Où est l'Oeuf, Éléphant ?"
+    normalize_display(src).encode("latin-1")   # ne doit jamais lever
+
+
+def test_to_match_key_toujours_ascii_majuscule():
+    """Un clavier Apple II ne tape pas d'accent : la clé de comparaison l'est."""
+    src = "Où est l'Œuf, Éléphant ?"
+    assert to_match_key(src) == "OU EST L'OEUF, ELEPHANT ?"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:
         fn()
         print(f"ok  {fn.__name__}")
     print(f"\n{len(fns)} tests passés.")
-
-
-def test_majuscules_option():
-    """`--majuscules` : rendu d'origine, tout en capitales ASCII."""
-    story, d = _compile(upper=True)
-    idx = {s.name: i for i, s in enumerate(story.sections)}
-    assert d["item_labels"] == ["TORCHE"]
-    _cond, _eff, _tgt, label = d["sections"][idx["buissons"]].choices[0]
-    assert label == "RAMASSER LA TORCHE"
-
-
-def test_translit_accents_toujours_retires():
-    """Aucun glyphe accentué sur la machine cible : les deux modes sont ASCII."""
-    src = "Où est l'Œuf, Éléphant ?"
-    assert transliterate(src) == "Ou est l'Oeuf, Elephant ?"
-    assert transliterate(src, upper=True) == "OU EST L'OEUF, ELEPHANT ?"
-    for mode in (False, True):
-        transliterate(src, mode).encode("ascii")   # ne doit jamais lever

@@ -1,7 +1,7 @@
-# Demo de combat (v1) : montre le PRNG, l'ecran de combat, l'arme portee.
+# Démo de combat (v1) : montre le PRNG, l'écran de combat, l'arme portée.
 # Prose originale.
 
-@title  Demo Combat
+@title  Démo Combat
 @author a2adv
 @start  entree
 
@@ -12,14 +12,14 @@
 @combat_hp     ENDURANCE
 @combat_basedmg 2           # degats du heros a mains nues
 
-@item epee "Epee courte" atk=1 dmg=2    # +1 attaque, +2 degats tant qu'elle est portee
+@item epee "Épée courte" atk=1 dmg=2    # +1 attaque, +2 degats tant qu'elle est portee
 
 :: entree
 =! LA FOSSE AUX GOBELINS
-Une fosse etroite, eclairee par une torche mourante. Au fond grogne un gobelin.
-Contre le mur, une *epee courte* est plantee dans un cadavre.
+Une fosse étroite, éclairée par une torche mourante. Au fond grogne un gobelin.
+Contre le mur, une *épée courte* est plantée dans un cadavre.
 
-* {not has epee} [Arracher l'epee du cadavre] -> entree
+* {not has epee} [Arracher l'épée du cadavre] -> entree
   ~ give epee
   ~ sound pickup
 * [Affronter le gobelin] -> combat_gobelin

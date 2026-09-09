@@ -1,4 +1,4 @@
-"""Parser du DSL .adv (cf. spec §6.1).
+"""Parser du DSL .adv.
 
 Orienté lignes : chaque ligne est classée d'après son premier caractère non-blanc
 (`#` commentaire, `::` section, `@` directive, `*` choix, `~` effet, `{...}` texte
@@ -247,7 +247,7 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
             raise A2Error("@ui: texte attendu entre guillemets", n)
         story.ui[args[0]] = m.group(1)
     elif key == "@lang":
-        # Choisit lang/<code>.lng comme socle d'interface (cf. spec §6.1).
+        # Choisit lang/<code>.lng comme socle d'interface.
         if len(args) != 1 or not re.fullmatch(r"[a-z]{2}", args[0]):
             raise A2Error("@lang attend un code de 2 lettres minuscules "
                           "(ex. @lang fr)", n)
