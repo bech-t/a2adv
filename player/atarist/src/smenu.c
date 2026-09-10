@@ -164,11 +164,9 @@ static u8 menu_loop(void)
     char line[64];
 
     for (;;) {                 /* boucle : redessine apres un retour d'Options */
-        /* (Re)lance le theme a CHAQUE dessin du menu, pas seulement a la
-         * premiere entree : choisir un slot dans les Options passe par
-         * mb_init, qui remet les deux AY a zero et coupe la musique. Sans ce
-         * rappel, on revenait des Options en silence. */
-        snd_music(MUS_TITLE);
+        /* Pas de musique de menu sur ST (divergence deliberee par rapport a
+         * l'Apple II, cf. player/apple2/src/smenu.c) -- snd_music(MUS_TITLE)
+         * retire ici. */
 
         /* --- menu semi-graphique (image MENU.HGR + titre + choix en bas) --- */
         if (img_load("MENU.HGR") == 0) {
