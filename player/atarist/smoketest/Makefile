@@ -1,6 +1,6 @@
 # Test de fumee du toolchain ST -- pas le vrai player, juste de quoi
 # verifier que m68k-atari-mint-gcc + Hatari + EmuTOS fonctionnent ensemble
-# avant d'ecrire scr.c/snd.c pour de vrai (cf. spec-atarist.md §10).
+# avant d'ecrire scr.c/snd.c pour de vrai.
 
 CC := m68k-atari-mint-gcc
 CFLAGS := -mshort -O2

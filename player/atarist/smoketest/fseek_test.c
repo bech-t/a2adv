@@ -1,11 +1,10 @@
 /* Test de diagnostic (garde volontairement) : `fseek()` de la libc mintlib
  * (paquet cross-mint-essential, jammy) echoue sur un fichier ouvert par
  * fopen() sous l'emulation GEMDOS-HDD de Hatari -- confirme en pratique le
- * 2026-09-09 (cf. spec-atarist.md §9/§11). L'appel GEMDOS brut Fseek(), lui,
- * fonctionne parfaitement : le bug est dans la couche stdio de mintlib, pas
- * dans GEMDOS/Hatari. story.c (copie ST) devra contourner fseek() -- via le
- * handle GEMDOS brut plutot que fseek() -- avant que le chargement d'une
- * aventure ne marche.
+ * 2026-09-09. L'appel GEMDOS brut Fseek(), lui, fonctionne parfaitement :
+ * le bug est dans la couche stdio de mintlib, pas dans GEMDOS/Hatari.
+ * story.c (copie ST) contourne fseek() en consequence -- handle GEMDOS
+ * brut plutot que fseek(), cf. son en-tete.
  *
  * A relancer si mintlib est mis a jour, ou sur une vraie image disquette
  * FAT12 plutot qu'un dossier hote monte en GEMDOS-HDD (cf. §3), pour voir si

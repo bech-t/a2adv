@@ -1,17 +1,22 @@
-# Player Atari ST -- slice "texte seul" (cf. spec-atarist.md §10). Pas encore
-# de mode graphique ni de son reel (scr_gfx_*/scr_load_hgr sont des bouchons,
-# snd.c ne fait rien hors __CC65__, cf. player/atarist/src/scr.c/snd.c).
+# Player Atari ST. Texte + images (scr_gfx_*/scr_load_hgr, cf.
+# player/atarist/src/scr.c) + son YM2149 (snd.c) -- ce dernier pas encore
+# verifie sur emulateur/materiel.
 #
 # make dsk ADV=combat_demo : compile le player + copie STORY00.DAT/APP.LNG
 # depuis adventures/<ADV>/build/ (deja produits par le Makefile Apple II --
-# le format est partage, cf. spec.md §9ter) dans build/AUTO/, prete pour
-# `make run`.
+# le compilateur a2c produit un format binaire neutre vis-a-vis de la
+# plateforme cible) dans build/AUTO/, prete pour `make run`.
+#
+# Images ST-specifiques (format different de l'Apple II, cf. img2st.py) :
+# adventures/<ADV>/img/atarist/*.HGR, si le dossier existe -- a cote de
+# adventures/<ADV>/img/ (Apple II), pas dedans, pour ne rien lui melanger.
 
 CC := m68k-atari-mint-gcc
 CFLAGS := -mshort -O2 -Wall
 
 ADV      ?= combat_demo
 ADVDIR   := ../../adventures/$(ADV)/build
+IMGDIR   := ../../adventures/$(ADV)/img/atarist
 BUILDDIR := build
 AUTO     := $(BUILDDIR)/AUTO
 PRG      := $(AUTO)/A2ADV.PRG
@@ -34,8 +39,8 @@ $(BUILDDIR) $(AUTO):
 	mkdir -p $@
 
 # STORY00.DAT/APP.LNG : produits par `make dsk ADV=...` cote player/apple2
-# (le compilateur a2c ne connait pas la plateforme cible, cf. spec.md §9ter).
-# A la racine du lecteur C: (pas dans AUTO/) : le programme auto-lance depuis
+# (le compilateur a2c ne connait pas la plateforme cible). A la racine du
+# lecteur C: (pas dans AUTO/) : le programme auto-lance depuis
 # AUTO/ mais son repertoire courant GEMDOS reste la racine du volume.
 #
 # TODO (note du 2026-09-09, a reflechir plus tard, pas maintenant) : appeler
@@ -52,12 +57,16 @@ dsk: $(PRG)
 	@test -f $(ADVDIR)/STORY00.DAT || { echo "ERREUR: $(ADVDIR)/STORY00.DAT absent -- lancer d'abord: make -C ../apple2 dsk ADV=$(ADV)"; exit 1; }
 	rm -f $(BUILDDIR)/STORY*.DAT
 	cp $(ADVDIR)/STORY*.DAT $(ADVDIR)/APP.LNG $(BUILDDIR)/
+	@test -f BOOT00.HGR && cp BOOT00.HGR $(BUILDDIR)/ || true
+	@test -d $(IMGDIR) && cp $(IMGDIR)/*.HGR $(BUILDDIR)/ || true
 
-# HFLAGS : options Hatari, par defaut le 80 colonnes (--monitor mono force la
-# haute resolution monochrome, Getrez()=2 -- `--tos-res med` seul (RGB,
-# moyenne resolution, 80 col aussi) ne suffit pas avec cette version de
-# Hatari, verifie le 2026-09-09 ; a reessayer si Hatari est mis a jour).
-# Surchargeable : `make run HFLAGS=` pour le 40 col par defaut (basse res).
+# HFLAGS : options Hatari, par defaut un moniteur monochrome (--monitor mono
+# force la haute resolution, Getrez()=2 -- `--tos-res med` seul (RGB, moyenne
+# resolution) ne suffit pas avec cette version de Hatari, verifie le
+# 2026-09-09 ; a reessayer si Hatari est mis a jour). Sur mono, jamais
+# d'image (impossible materiellement), cf. scr.c. Surchargeable : `make run
+# HFLAGS=` pour un moniteur couleur (texte 80 col, images en 40 col/16
+# couleurs des qu'une scene en affiche une, cf. scr_load_hgr).
 HFLAGS ?= --monitor mono
 run: dsk
 	cd $(BUILDDIR) && hatari --tos ../$(TOS) -d "$$(pwd)" $(HFLAGS)

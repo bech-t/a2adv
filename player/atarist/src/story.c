@@ -3,9 +3,9 @@
  * VARIANTE ST (diverge deliberement de player/apple2/src/story.c, cf. regle
  * "chaque portage evolue separement") : `fseek()` de la libc (mintlib,
  * cross-mint-essential) echoue silencieusement sur un fichier ouvert par
- * fopen() sous l'emulation GEMDOS-HDD de Hatari -- confirme le 2026-09-09,
- * cf. spec-atarist.md §9 et smoketest/fseek_test.c (l'appel GEMDOS BRUT
- * Fseek(), lui, fonctionne). Plutot que contourner fseek() a chaque site
+ * fopen() sous l'emulation GEMDOS-HDD de Hatari -- confirme le 2026-09-09 et
+ * isole via smoketest/fseek_test.c (l'appel GEMDOS BRUT Fseek(), lui,
+ * fonctionne). Plutot que contourner fseek() a chaque site
  * d'appel (3, avec le risque de desynchroniser un tampon stdio partage), on
  * charge le fichier STORYnn.DAT COURANT entierement en memoire au premier
  * acces : chaque STORYn.DAT fait au plus DEFAULT_MAX_FILE = 0xFC00 o (~63 Ko,

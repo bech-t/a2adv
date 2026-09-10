@@ -1,44 +1,56 @@
-/* snd.h -- son via le haut-parleur 1 bit ($C030). Monophonique et bloquant
- * (convient a un livre-jeu au tour par tour : sons courts entre deux ecrans). */
+/* snd.h -- son Atari ST via le YM2149 (PSG interne, compatible registre avec
+ * l'AY-3-8910 du Mockingboard Apple II -- cf. player/apple2/src/snd_mb.c,
+ * la meilleure reference de conception disponible pour ce fichier : meme
+ * modele de programmation par registres, seul l'acces materiel change).
+ *
+ * Contrairement au Mockingboard (carte optionnelle, deux AY-3-8910, sondee
+ * par slot), le YM2149 est TOUJOURS present -- soude sur la carte mere du
+ * ST, rien a detecter ni choisir. L'interface publique reste identique a
+ * celle du player Apple II (main.c/smenu.c, partages, n'ont rien a savoir
+ * de la machine), mais son sens est reinterprete :
+ *   - snd_backend            : 0 = silence, 1 = YM2149 actif (plus un choix
+ *                              de carte)
+ *   - snd_mb_slot             : sans objet sur ST, reste a 0
+ *   - snd_use_mockingboard(0) coupe le son ; un slot 1..7 (n'importe lequel)
+ *     l'active -- smenu.c propose encore un choix de "slot" 1-7 a l'ecran
+ *     Options, ce qui n'a pas de sens sur ST (aucun numero de slot ici) ;
+ *     fonctionne tel quel mais l'intitule affiche resterait a revoir cote
+ *     UI/traduction -- hors perimetre de ce fichier.
+ *
+ * Un seul chip = un seul generateur de bruit et un seul generateur
+ * d'enveloppe pour les trois voies (meme limite que CHAQUE AY du
+ * Mockingboard pris individuellement, qui n'en a pas plus). Repartition
+ * retenue (cf. snd.c) : voies A/B = musique (deux voix, amplitude FIXE,
+ * sans enveloppe) ; voie C = effets (seule a utiliser l'enveloppe
+ * materielle) -- separation qui garantit qu'un effet ne peut jamais
+ * perturber l'enveloppe ou le mixeur de la musique en cours. */
 #ifndef A2ADV_SND_H
 #define A2ADV_SND_H
 
 #include "format.h"
 
-/* Un ton carre : pitch = demi-periode (grand = grave), dur = nombre de bascules. */
+/* Sans objet sur ST (pas de haut-parleur 1 bit a piloter) -- gardee pour le
+ * contrat avec le reste du moteur, ne fait rien. */
 void snd_tone(u8 pitch, u16 dur);
 
-/* Joue un effet predefini (SND_SELECT, SND_WIN, ...). */
+/* Joue un effet predefini (SND_SELECT, SND_WIN, ...) sur la voie C. */
 void snd_play(u8 id);
 
-/* Backend son : 0 = haut-parleur (defaut), 1 = Mockingboard. */
-extern u8 snd_backend;
+extern u8 snd_backend;    /* 0 = silence, 1 = YM2149 actif */
+extern u8 snd_mb_slot;    /* sans objet sur ST, toujours 0 */
 
-/* Slot Mockingboard actif (1..7), ou 0 si haut-parleur. Informatif (menu Options). */
-extern u8 snd_mb_slot;
-
-/* Active la Mockingboard au slot 1..7 (et l'initialise) ; slot 0 = repli
- * haut-parleur. Pilote par le menu Options : le choix est MANUEL.
- *
- * Pas de detection automatique au boot : un balayage ecrirait dans sept slots
- * dont on ignore le contenu, et le joueur sait mieux que nous ce qu'il a dans
- * ses machines.
- *
- * Le slot choisi est en revanche VERIFIE avant usage (mb_probe) : deux 6522
- * doivent repondre, en $Cn00 et $Cn80. Si non, on retombe silencieusement sur
- * le haut-parleur -- le menu Options continue d'afficher "HAUT-PARLEUR", ce
- * qui suffit a dire au joueur que son slot n'a pas ete accepte. */
+/* slot == 0 : coupe le son. slot != 0 (1..7, n'importe lequel) : l'active.
+ * Cf. note d'en-tete sur l'intitule "slot" herite du Mockingboard. */
 void snd_use_mockingboard(u8 slot);
 
 /* --- Musique de fond ----------------------------------------------------- */
-/* Reservee a la Mockingboard : au haut-parleur 1 bit, une musique de fond
- * monopoliserait le processeur et figerait le jeu. Ces appels sont donc des
- * no-op tant que le backend est le haut-parleur -- les appelants n'ont aucun
- * test a faire. */
 #define MUS_NONE   0
 #define MUS_TITLE  1
 
-/* Lance un morceau en boucle, ou l'arrete avec MUS_NONE. */
+/* Lance un morceau en boucle sur les voies A/B, ou l'arrete avec MUS_NONE.
+ * Non bloquant : avance d'un cran par VBL via scr_idle_hook (cf. scr.h),
+ * appele depuis scr_getkey() pendant l'attente clavier -- meme mecanisme
+ * que mb_music_tick cote Apple II. */
 void snd_music(u8 id);
 
 #endif /* A2ADV_SND_H */
