@@ -85,17 +85,19 @@ static u8 cx;
  * un bug de ce fichier. A surveiller si un jour ca se voit a l'usage. */
 #define FRCLOCK (*(volatile unsigned long *)0x466L)
 
-/* Texte : fond noir, glyphes blancs -- forces explicitement plutot que de
+/* Texte : fond blanc, glyphes noirs -- forces explicitement plutot que de
  * garder la palette trouvee au boot (registres 0/1, communs a toutes les
- * resolutions couleur). Fond noir choisi pour se fondre avec la zone de
- * letterboxing des images en mode mixte (cf. img2st.py : les lignes non
- * couvertes par l'image sont a l'index 0). Memes deux couleurs reservees
- * aux memes index dans les images generees par img2st.py, donc un texte
- * dessine par-dessus une image en mode mixte reste lisible sans rien faire
- * de plus. Sans objet si st_mono : un moniteur monochrome n'a pas de
- * palette RVB. */
-#define TXT_BG 0x0000   /* noir */
-#define TXT_FG 0x0777   /* blanc : 0000 0111 0111 0111 */
+ * resolutions couleur). Memes deux couleurs reservees aux memes index dans
+ * les images generees par img2st.py, donc un texte dessine par-dessus une
+ * image en mode mixte reste lisible sans rien faire de plus. Sans objet si
+ * st_mono : un moniteur monochrome n'a pas de palette RVB.
+ *
+ * Poses par Setpalette() (16 registres d'un coup), pas par deux Setcolor()
+ * separes : c'est le meme mecanisme que celui, deja verifie a l'ecran, que
+ * scr_load_hgr() utilise pour les images. */
+static const u16 text_palette[16] = {
+    0x0777, 0x0000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
 
 /* 1 si moniteur MONOCHROME : Getrez() vaut alors TOUJOURS 2 (haute
  * resolution) des le boot, quel que soit ce que le programme demande
@@ -121,8 +123,7 @@ void scr_init(void)
     if (!st_mono) {
         void *scr = Physbase();
         Setscreen((long)scr, (long)scr, 1);   /* moyenne resolution (texte 80 col) */
-        (void)Setcolor(0, TXT_BG);
-        (void)Setcolor(1, TXT_FG);
+        Setpalette((long)text_palette);
     }
     scr_cols = 80;                    /* 80 colonnes dans les deux cas, texte seul */
     scr_idle_hook = 0;
@@ -268,8 +269,7 @@ void scr_gfx_off(void)
     if (!st_mono) {
         void *scr = Physbase();
         Setscreen((long)scr, (long)scr, 1);
-        (void)Setcolor(0, TXT_BG);
-        (void)Setcolor(1, TXT_FG);
+        Setpalette((long)text_palette);
         scr_cols = 80;
     }
     scr_clear();                          /* efface AVANT de revenir : pas d'effet memoire */

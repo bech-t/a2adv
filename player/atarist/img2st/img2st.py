@@ -9,10 +9,10 @@ src/scr.c).
 Contrairement a l'Apple II (6 couleurs d'artefact NTSC fixes, cf.
 player/apple2/img2hgr/img2hgr.py), le ST a une vraie palette RGB : chaque
 image choisit 14 couleurs par quantification + tramage Floyd-Steinberg
-(Pillow). Les couleurs 0 (noir) et 1 (blanc) sont TOUJOURS reservees (cf.
+(Pillow). Les couleurs 0 (blanc) et 1 (noir) sont TOUJOURS reservees (cf.
 quantize_st) : ce sont celles que scr.c force pour le texte, donc un texte
-dessine par-dessus l'image en mode --mixed reste lisible (fond noir,
-texte blanc) quelle que soit la palette propre a l'image.
+dessine par-dessus l'image en mode --mixed reste lisible (fond blanc,
+texte noir) quelle que soit la palette propre a l'image.
 
 Sortie : un .PI1 lisible tel quel par n'importe quel outil/visionneuse
 Atari ST -- pas un format invente pour l'occasion.
@@ -148,13 +148,11 @@ def edge_preserving_smooth(arr, strength=2.0, iters=2):
 
 
 # --------------------------------------------------------------------------
-# Quantification 14 couleurs adaptatives + 2 reservees (index 0 = noir,
-# index 1 = blanc) + tramage. Ces deux index sont ceux que scr.c force pour
-# le texte (fond noir, texte blanc) : les reserver ici garantit qu'un texte
+# Quantification 14 couleurs adaptatives + 2 reservees (index 0 = blanc,
+# index 1 = noir) + tramage. Ces deux index sont ceux que scr.c force pour
+# le texte (fond blanc, texte noir) : les reserver ici garantit qu'un texte
 # dessine par-dessus l'image en mode mixte tombe sur les memes deux couleurs,
-# quelle que soit la palette propre a l'image. Noir a l'index 0 aussi parce
-# que c'est la couleur des lignes non couvertes par l'image en mode --mixed
-# (cf. pack_planes : completees a 0) -- se fond avec le fond noir du texte.
+# quelle que soit la palette propre a l'image.
 # --------------------------------------------------------------------------
 def quantize_st(arr, dither=True):
     """arr : float32 (rows, 320, 3). Renvoie (idx uint8 (rows,320) valeurs
@@ -165,7 +163,7 @@ def quantize_st(arr, dither=True):
         dither=Image.FLOYDSTEINBERG if dither else Image.NONE)
     pal_flat = q.getpalette()[: (N_COLORS - 2) * 3]
     idx = np.asarray(q, dtype=np.uint8) + 2     # decale : 0 et 1 deviennent libres
-    palette = [(0, 0, 0), (255, 255, 255)] + [
+    palette = [(255, 255, 255), (0, 0, 0)] + [
         tuple(pal_flat[i * 3: i * 3 + 3]) for i in range(N_COLORS - 2)
     ]
     return idx, palette
@@ -191,7 +189,7 @@ def st_word_to_rgb(word):
 # --------------------------------------------------------------------------
 def pack_planes(idx, rows_used):
     """idx : uint8 (rows_used, 320), valeurs 0..15. Complete a ST_ROWS avec
-    des lignes a 0 (noir, cf. quantize_st) pour une image --mixed."""
+    des lignes a 0 (blanc, cf. quantize_st) pour une image --mixed."""
     full = np.zeros((ST_ROWS, ST_W), dtype=np.uint16)
     full[:rows_used] = idx
 
