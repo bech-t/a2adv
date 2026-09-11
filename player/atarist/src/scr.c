@@ -61,6 +61,37 @@ static char to_screen_st(char c)
     return (char)a;
 }
 
+/* Replie une touche accentuee (code natif du clavier/jeu de caracteres ST,
+ * PAS du Latin-1 -- sans rapport avec to_screen_st ci-dessus) en sa lettre
+ * ASCII nue majuscule. Necessaire cote saisie (@ask) : le compilateur
+ * compare toujours une reponse en ASCII majuscule sans accent, meme
+ * cible ST (cf. compiler/a2c/translit.py, to_match_key) -- un joueur qui
+ * tape "café" doit donc matcher une reponse stockee "CAFE". 0 = code non
+ * reconnu ici (laisse tel quel, cf. scr_readline). */
+static char fold_accent(u8 c)
+{
+    switch (c) {
+    case 0x82: case 0x8A: case 0x88: case 0x89: case 0x90: /* e e e e e' */
+        return 'E';
+    case 0x85: case 0x83: case 0x84: case 0xB6: case 0x8E: /* a a a A A */
+        return 'A';
+    case 0x87: case 0x80: /* c c */
+        return 'C';
+    case 0x97: case 0x96: case 0x81: case 0x9A: /* u u u U */
+        return 'U';
+    case 0x8C: case 0x8B: /* i i */
+        return 'I';
+    case 0x93: case 0x94: case 0x99: /* o o O */
+        return 'O';
+    case 0x98: /* y */
+        return 'Y';
+    case 0xA4: case 0xA5: /* n N */
+        return 'N';
+    default:
+        return 0;
+    }
+}
+
 u8  scr_cols;
 u16 scr_entropy;
 void (*scr_idle_hook)(void);
@@ -186,14 +217,14 @@ char scr_getkey(void)
         if (scr_idle_hook)
             scr_idle_hook();       /* musique de fond, sans interruptions */
     }
-    return (char)(Cnecin() & 0x7F);
+    return (char)(Cnecin() & 0xFF);
 }
 
 char scr_poll(void)
 {
     if (!Cconis())
         return 0;
-    return (char)(Cnecin() & 0x7F);
+    return (char)(Cnecin() & 0xFF);
 }
 
 void scr_flush(void)
@@ -209,21 +240,32 @@ void scr_backspace(void)
     Cconout(8);
 }
 
-/* Identique a apple2/src/scr.c : aucune dependance materielle dans cette
- * fonction, seulement scr_getkey/scr_backspace/scr_putc ci-dessus. */
+/* Diverge d'apple2/src/scr.c sur un point : le clavier ST peut produire des
+ * codes accentues (0x80-0xFF), replies ici via fold_accent avant meme d'
+ * entrer dans buf -- l'Apple II n'a pas ce cas, son clavier ne sort que de
+ * l'ASCII 7 bits. */
 u8 scr_readline(char *buf, u8 maxlen)
 {
     u8 n = 0;
     char c;
+    u8 uc;
     for (;;) {
         c = scr_getkey();
+        uc = (u8)c;
+        if (uc >= 0x80) {
+            char f = fold_accent(uc);
+            if (!f)
+                continue;          /* code ST sans equivalent ASCII : ignore */
+            c = f;
+            uc = (u8)c;
+        }
         if (c == 13)
             break;
         if (c == 8 || c == 127) {
             if (n) { --n; scr_backspace(); }
             continue;
         }
-        if (c >= 32 && n < maxlen) {
+        if (uc >= 32 && n < maxlen) {
             buf[n++] = c;
             scr_putc(c);
         }
@@ -250,16 +292,18 @@ void scr_gfx_on(void)
 {
 }
 
-/* Image en haut (160 lignes, cf. ST_MIXED_ROWS) + fenetre texte 40 col
- * (4 lignes) en bas -- memes proportions que apple2/src/scr.c (cy = 20 sur
- * 24 lignes). Pas de switch materiel ICI : deja fait par scr_load_hgr()
- * (bascule de resolution + palette) ; la zone de texte fait deja partie de
- * l'image chargee (le convertisseur y met du noir, cf. player/atarist/
- * img2st/img2st.py --mixed), scr_putc()/Cconout() n'a plus qu'a dessiner
- * ses glyphes par-dessus. */
+/* Image en haut (160 lignes = 20 rangees de 8px, cf. ST_MIXED_ROWS) +
+ * fenetre texte 40 col en bas. La fenetre fait 5 rangees (160-200px) mais on
+ * en laisse une (rangee 20) vide sous l'image avant d'ecrire : 4 rangees de
+ * texte utiles, ligne d'air sous l'image plutot que le texte colle dessus.
+ * Pas de switch materiel ICI : deja fait par scr_load_hgr() (bascule de
+ * resolution + palette) ; la zone de texte fait deja partie de l'image
+ * chargee (le convertisseur y met du noir, cf. player/atarist/img2st/
+ * img2st.py --mixed), scr_putc()/Cconout() n'a plus qu'a dessiner ses
+ * glyphes par-dessus. */
 void scr_gfx_mixed(void)
 {
-    scr_gotoxy(0, 20);
+    scr_gotoxy(0, 21);
 }
 
 /* Revient au texte seul : moyenne resolution (80 col) sur moniteur couleur,

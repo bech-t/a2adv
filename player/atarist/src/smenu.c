@@ -170,13 +170,13 @@ static u8 menu_loop(void)
 
         /* --- menu semi-graphique (image MENU.HGR + titre + choix en bas) --- */
         if (img_load("MENU.HGR") == 0) {
-            scr_gfx_mixed();                   /* image en haut, 4 lignes en bas */
-            menu_center(g_title, 20, 1, 40);   /* titre */
+            scr_gfx_mixed();                   /* image en haut, ligne d'air puis 4 lignes en bas */
+            menu_center(g_title, 21, 1, 40);   /* titre */
             build_choices(line);
-            menu_center(line, 22, 0, 40);       /* 1) 2) 3) */
+            menu_center(line, 23, 0, 40);       /* 1) 2) 3) */
             line[0] = '\0';
             strcat(line, "Q) "); strcat(line, ui_str[UI_MENU_QUIT]);
-            menu_center(line, 23, 0, 40);       /* Q) quitter, ligne centree */
+            menu_center(line, 24, 0, 40);       /* Q) quitter, ligne centree */
             scr_flush();               /* le chargement de MENU.HGR peut etre long */
             for (;;) {
                 c = scr_getkey();

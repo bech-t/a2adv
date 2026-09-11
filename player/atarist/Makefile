@@ -57,6 +57,11 @@ dsk: $(PRG)
 	@test -f $(ADVDIR)/STORY00.DAT || { echo "ERREUR: $(ADVDIR)/STORY00.DAT absent -- lancer d'abord: make -C ../apple2 dsk ADV=$(ADV)"; exit 1; }
 	rm -f $(BUILDDIR)/STORY*.DAT
 	cp $(ADVDIR)/STORY*.DAT $(ADVDIR)/APP.LNG $(BUILDDIR)/
+	@# Splash du player, pas de l'aventure : contrairement a l'Apple II (ou
+	@# BOOT00.HGR est toujours fourni par l'aventure, cf. adventures/*/img/),
+	@# ce BOOT00.HGR-la vit a la racine du player ST et s'affiche avant TOUTE
+	@# aventure qui n'en fournit pas le sien -- easter egg assume, pas un
+	@# reste de test.
 	@test -f BOOT00.HGR && cp BOOT00.HGR $(BUILDDIR)/ || true
 	@test -d $(IMGDIR) && cp $(IMGDIR)/*.HGR $(BUILDDIR)/ || true
 
@@ -67,7 +72,10 @@ dsk: $(PRG)
 # d'image (impossible materiellement), cf. scr.c. Surchargeable : `make run
 # HFLAGS=` pour un moniteur couleur (texte 80 col, images en 40 col/16
 # couleurs des qu'une scene en affiche une, cf. scr_load_hgr).
-HFLAGS ?= --monitor mono
+# HFLAGS ?= --monitor mono
+
+HFLAGS=
+
 run: dsk
 	cd $(BUILDDIR) && hatari --tos ../$(TOS) -d "$$(pwd)" $(HFLAGS)
 

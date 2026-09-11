@@ -41,12 +41,17 @@ est cassé sous l'émulation GEMDOS-HDD de Hatari (confirmé et isolé via
 chargeant chaque `STORYnn.DAT` entièrement en RAM (64 Ko max, garanti par
 le compilateur) plutôt qu'en cherchant dedans.
 
-Mode graphique écrit (`scr_gfx_*`/`scr_load_hgr`, basse résolution 320×200
-16 couleurs pour les images, bascule automatique depuis le texte 80
-colonnes) et convertisseur PNG/JPG → `.PI1` (`img2st/img2st.py`) — pas
-encore vérifié à l'écran sous Hatari/matériel réel.
+Mode graphique écrit et **vérifié à l'écran sous Hatari** (`scr_gfx_*`/
+`scr_load_hgr`, basse résolution 320×200 16 couleurs pour les images,
+bascule automatique depuis le texte 80 colonnes) avec convertisseur
+PNG/JPG → `.PI1` (`img2st/img2st.py`). Les réponses accentuées à `@ask`
+sont repliées en ASCII majuscule à la saisie (`scr_getkey`/`fold_accent`,
+`scr.c`), pour matcher la comparaison du compilateur (toujours en ASCII
+sans accent, quelle que soit la plateforme).
 
 Son écrit (`snd.c`, YM2149 natif du ST accédé directement en $FF8800/
 $FF8802, même modèle de registres que le Mockingboard Apple II mais deux
 voies dédiées à la musique + une aux effets, un seul chip oblige) — pas
-encore vérifié à l'oreille sous Hatari/matériel réel non plus.
+encore vérifié à l'oreille sous Hatari/matériel réel. La musique de menu
+reste désactivée en attendant (`smenu.c`) : divergence délibérée par
+rapport à l'Apple II, pas un oubli.

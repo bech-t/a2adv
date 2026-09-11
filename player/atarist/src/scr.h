@@ -27,7 +27,7 @@ void scr_putc(char c);            /* '\r' = colonne 0 ; '\n' = ligne suivante co
 void scr_puts(const char *s);
 void scr_revers(u8 on);           /* video inverse pour les caracteres suivants */
 void scr_gotoxy(u8 x, u8 y);      /* place le curseur */
-char scr_getkey(void);            /* attend une touche, renvoie l'ASCII (7 bits) */
+char scr_getkey(void);            /* attend une touche, renvoie l'ASCII (accents repliés, cf. scr.c) */
 
 /* Cf. apple2/src/scr.h : hook d'avancement pendant scr_getkey (musique de
  * fond). NULL par defaut -- rien a implementer tant que snd.c ST ne gere
