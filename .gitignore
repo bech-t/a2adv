@@ -9,6 +9,7 @@ player/apple2/build/
 player/atarist/**/*.img
 player/atarist/**/AUTO/
 player/atarist/build/
+player/atarist/smoketest/
 player/atarist/**/*.prg
 player/atarist/**/*.PRG
 
