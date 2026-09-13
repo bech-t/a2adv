@@ -75,12 +75,13 @@ enum {
 #define MAX_FLAGS     128    /* flags purs = 1 bit chacun (bitset) -> ~32 o au total */
 #define MAX_INTRO     8      /* scenes d'intro max */
 #define TITLE_LEN     33     /* titre de l'aventure (pour le menu) */
+#define VERSION_LEN   12     /* version de l'aventure (@version, optionnelle -- "" sinon) */
 
 /* Versions de format attendues. DOIVENT suivre a2c/encoder.py (VERSION,
  * LANG_VERSION). Le player REFUSE un fichier d'une autre version : la
  * disposition du preambule change d'une version a l'autre, et une lecture
  * decalee ne produit pas d'erreur, juste du charabia. */
-#define STORY_FORMAT_VERSION 6
+#define STORY_FORMAT_VERSION 7
 #define LANG_FORMAT_VERSION  1
 
 /* Chaines d'interface : ORDRE FIGÉ (doit correspondre a UI_KEYS du compilateur,

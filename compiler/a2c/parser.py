@@ -214,8 +214,8 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
     args = parts[1:]
 
     # directives de préambule (avant toute section)
-    if key in ("@title", "@author", "@start", "@stat", "@item", "@flag",
-               "@intro", "@ui", "@lang", "@score", "@moves",
+    if key in ("@title", "@version", "@author", "@start", "@stat", "@item",
+               "@flag", "@intro", "@ui", "@lang", "@score", "@moves",
                "@combat_attack", "@combat_hp", "@combat_basedmg"):
         if seen_section:
             raise A2Error(f"{key} doit figurer dans le préambule "
@@ -223,6 +223,8 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
 
     if key == "@title":
         story.title = body[len(key):].strip().strip('"')
+    elif key == "@version":
+        story.version = body[len(key):].strip().strip('"')
     elif key == "@author":
         story.author = body[len(key):].strip().strip('"')
     elif key == "@start":

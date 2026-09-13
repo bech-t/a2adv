@@ -281,6 +281,7 @@ class Section:
 @dataclass
 class Story:
     title: str = ""
+    version: str = ""          # @version, optionnelle -- "" si absente
     author: str = ""
     start: str = ""
     stats: list[StatDecl] = field(default_factory=list)

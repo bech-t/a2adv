@@ -33,6 +33,10 @@ extern u16  intro_idx[MAX_INTRO];     /* index de section de chaque scene */
 #else
 extern char g_title[TITLE_LEN];       /* titre de l'aventure */
 #endif
+/* Version de l'aventure (@version, optionnelle -- "" si absente). Trop
+ * petite (VERSION_LEN=12) pour justifier une adresse fixe basse comme
+ * g_title/ui_str : simple BSS, comme la plupart des autres champs. */
+extern char g_version[VERSION_LEN];
 /* Chaines d'UI : en RAM basse sur Apple II (soulage le BSS). */
 #ifdef __CC65__
 #define ui_str ((char (*)[UI_STR_LEN])0x1700)   /* 46*36 = 1656 o : $1700-$1D77 */

@@ -92,6 +92,8 @@ def main(argv: list[str] | None = None) -> int:
 
 def _print_summary(story) -> None:
     print(f"  titre    : {story.title!r}")
+    if story.version:
+        print(f"  version  : {story.version!r}")
     print(f"  auteur   : {story.author!r}")
     print(f"  départ   : {story.start} (index {story.start_index})")
     print(f"  sections : {len(story.sections)}")

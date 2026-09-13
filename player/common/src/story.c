@@ -25,6 +25,7 @@ u16  intro_idx[MAX_INTRO];
 char g_title[TITLE_LEN];
 char ui_str[UI_COUNT][UI_STR_LEN];   /* hote : vrais tableaux (cf. story.h) */
 #endif
+char g_version[VERSION_LEN];
 
 u8  stat_init[MAX_STATS];
 u8  stat_min[MAX_STATS];
@@ -256,6 +257,7 @@ signed char story_open(const char *path)
     for (i = 0; i < g_nitems; ++i)
         f_lenstr(item_label[i], ITEM_LABEL_LEN);
     f_lenstr(g_title, TITLE_LEN);
+    f_lenstr(g_version, VERSION_LEN);
     for (i = 0; i < g_nintro; ++i)
         intro_idx[i] = f_u16();
 

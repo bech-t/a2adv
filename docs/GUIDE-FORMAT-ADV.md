@@ -191,17 +191,22 @@ compilateur refuse qu'une caractéristique, un objet ou un drapeau soit utilisé
 sans avoir été déclaré ici. C'est un filet contre les fautes de frappe, et
 c'est ce qui garantit que le format des sauvegardes reste stable.
 
-### `@title`, `@author`, `@start`, `@intro`
+### `@title`, `@version`, `@author`, `@start`, `@intro`
 
 ```
-@title  L'Homme en Costume Blanc
-@author Votre nom
-@start  premiere_section
-@intro  intro_1 intro_2 intro_3
+@title   L'Homme en Costume Blanc
+@version 1.2
+@author  Votre nom
+@start   premiere_section
+@intro   intro_1 intro_2 intro_3
 ```
 
-- `@title` (33 caractères max) et `@author` sont de simples chaînes, affichées
-  au menu.
+- `@title` (33 caractères max) est une simple chaîne, affichée au menu.
+- `@version` (12 caractères max, optionnelle) est une chaîne libre, affichée
+  dans l'écran Options — pratique pour retrouver, sur une disquette, quelle
+  révision de l'aventure elle contient.
+- `@author` est une simple chaîne, gardée par le compilateur (`--summary`)
+  mais pas encore affichée en jeu.
 - `@start` est **obligatoire** : c'est la section par laquelle une nouvelle
   partie commence.
 - `@intro` liste des sections jouées automatiquement au lancement, avant

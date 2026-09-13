@@ -16,7 +16,7 @@ from .translit import normalize_display
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
 MAGIC_LANG = b"A2LG"
-VERSION = 6                 # v6 : masque des stats masquees (@stat ... hidden)
+VERSION = 7                 # v7 : @version de l'aventure (optionnelle, "" sinon)
                             # v5 : socle d'UI dans APP.LNG, l'aventure ne porte
                             #      plus que ses surcharges (v4 : index par fichier)
 LANG_VERSION = 1
@@ -169,6 +169,7 @@ def _encode_preamble(story: M.Story) -> bytes:
     for it in story.items:
         out += _lenstr(it.label if it.label else it.name)
     out += _lenstr(story.title)                       # titre (pour le menu)
+    out += _lenstr(story.version)                      # version (@version, "" si absente)
     for idx in story.intro_index:                     # scènes d'intro
         out += struct.pack("<H", idx)
     # Chaînes d'UI : SEULES LES SURCHARGES (v5). Le socle des 28 chaînes vit

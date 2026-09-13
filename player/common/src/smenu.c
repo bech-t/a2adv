@@ -114,6 +114,13 @@ static void run_options(void)
         ui_clear();
         scr_revers(1); scr_putc(' '); scr_puts(ui_str[UI_OPT_TITLE]); scr_putc(' ');
         scr_revers(0);
+        ui_newline();
+
+        scr_puts(g_title);
+        if (g_version[0] != '\0') {
+            scr_puts(" V");
+            scr_puts(g_version);
+        }
         ui_newline(); ui_newline();
 
         scr_puts("T)   "); scr_puts(ui_str[UI_OPT_TEST]);     ui_newline();

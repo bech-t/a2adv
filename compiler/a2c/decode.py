@@ -78,6 +78,8 @@ def decode(buf: bytes) -> dict:
     stat_names = [r.lenstr() for _ in range(n_stats)]
     item_labels = [r.lenstr() for _ in range(n_items)]
     title = r.lenstr()
+    adv_version = r.lenstr()      # v7 : @version de l'aventure ("" si absente) --
+                                   # a ne pas confondre avec header.version (format)
     intro = [r.u16() for _ in range(n_intro)]
     n_ui = r.u8()
     ui = [r.lenstr() for _ in range(n_ui)]
@@ -126,6 +128,7 @@ def decode(buf: bytes) -> dict:
         "stat_names": stat_names,
         "item_labels": item_labels,
         "title": title,
+        "adv_version": adv_version,
         "intro": intro,
         "ui": ui,
         "item_combat": item_combat,
