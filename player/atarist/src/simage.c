@@ -122,7 +122,7 @@ char show_intro_image(u16 asset)
         ui_col_reset();
         scene_render_texts();
         scr_revers(1);
-        ui_center(ui_str[UI_INTRO_HINT], 23);   /* invite sur la derniere ligne */
+        ui_center(ui_str[UI_INTRO_HINT], 24);   /* invite sur la derniere ligne */
         scr_revers(0);
         scr_flush();
         c = scr_getkey();
