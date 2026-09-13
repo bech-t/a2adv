@@ -15,10 +15,10 @@
  * (cf. simage.c). Decalees de +1 par rapport a l'Apple II (cf.
  * apple2/src/platform.h) : scr_gfx_mixed() laisse ici une ligne d'air entre
  * l'image et le texte. */
-#define MENU_ROW_TITLE       21
-#define MENU_ROW_CHOICES     23
-#define MENU_ROW_QUIT        24
-#define UI_INTRO_HINT_ROW    24
+#define MENU_ROW_TITLE       20
+#define MENU_ROW_CHOICES     22
+#define MENU_ROW_QUIT        23
+#define UI_INTRO_HINT_ROW    23
 
 /* Taille du tampon image (cf. scr.h:SCR_HGR_SIZE) : bitmap .PI1 seul (hors
  * resolution/palette, 320x200/4bpp planaire = 32000 o). */
