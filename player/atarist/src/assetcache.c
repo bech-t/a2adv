@@ -26,3 +26,14 @@ const char *cache_asset_path(const char *name)
 {
     return name;
 }
+
+/* Aucune compression d'image sur ST : la disquette DD 720 Ko a assez de
+ * marge (cf. `st` dans le Makefile), et le seul codec existant (ZX02, cf.
+ * apple2/src/assetcache.c) est ecrit en assembleur 6502, inutilisable sur
+ * 68000. Toujours -1 : l'appelant retombe alors sur un chargement direct. */
+signed char cache_load_compressed(const char *name, void *dst)
+{
+    (void)name;
+    (void)dst;
+    return -1;
+}

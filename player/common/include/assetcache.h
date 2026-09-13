@@ -39,4 +39,13 @@ const char *cache_story_path(u8 id);
  * l'appelant sait ainsi s'il a eu le cache ou non, cf. simage.c). */
 const char *cache_asset_path(const char *name);
 
+/* Charge dans `dst` une eventuelle variante COMPRESSEE de l'image `name`
+ * (meme base, extension et codec au choix du backend), SANS passer par le
+ * cache ci-dessus. 0 = chargee, -1 = pas de variante compressee (fichier
+ * absent, ou plateforme sans compression -- cf. apple2/src/assetcache.c
+ * pour la seule implementation reelle a ce jour, via ZX02 : cf. son
+ * tools/zx02/, specifique a la disquette 140 Ko de l'Apple II) ;
+ * l'appelant retombe alors sur un chargement direct non compresse. */
+signed char cache_load_compressed(const char *name, void *dst);
+
 #endif /* A2ADV_ASSETCACHE_H */

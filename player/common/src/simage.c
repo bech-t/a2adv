@@ -10,9 +10,6 @@
 #include "state.h"
 #include "ui.h"
 #include "game.h"
-#if HAS_ZX02
-#include "zx02_getbyte.h"
-#endif
 
 /* Nom de fichier d'un asset image : "IMGnn.<ext>" (index sur 2 chiffres,
  * extension IMG_EXT propre a la machine, cf. platform.h). */
@@ -25,44 +22,21 @@ static const char *img_name(u16 asset)
 }
 
 /* Charge `hgr_name` (ex: "IMG00.HGR" sur Apple II, "IMG00.PI1" sur ST -- cf.
- * IMG_EXT dans platform.h) en page graphique, en preferant sa version
- * compressee sur la disquette : "<meme base>.ZX2" (produite par le Makefile
- * Apple II, cf. tools/zx02, jamais generee cote ST) si elle existe, sinon
- * `hgr_name` telle quelle -- une aventure compilee avant l'introduction de la
- * compression, ou une image que compresser n'aidait pas, reste lisible sans
+ * IMG_EXT dans platform.h) en page graphique, en preferant une eventuelle
+ * variante compressee (cf. assetcache.h:cache_load_compressed -- format et
+ * existence meme du codec au choix du backend, ce fichier n'en sait rien)
+ * a `hgr_name` telle quelle -- une aventure compilee avant l'introduction
+ * de la compression, ou une plateforme qui n'en a pas, reste lisible sans
  * rien changer.
  *
- * Decompression EN FLUX : zx_getbyte lit le fichier .ZX2 par blocs de 256 o
- * (cf. zx02_getbyte.c) ; le flux compresse entier n'a donc jamais besoin de
- * tenir en RAM, quelle que soit la taille de l'image. C'est ce choix qui
- * remplace la decompression EN PLACE envisagee d'abord (testee, puis
- * abandonnee : elle corrompt les donnees des que la sortie devient
- * nettement plus grosse que l'entree, ce qui est systematiquement le cas
- * pour des images qui compressent bien).
- *
- * Ne touche PAS au cache d'assets (cf. assetcache.h) : c'est a l'appelant de
- * decider s'il faut y ecrire le resultat (cache_boot_fill) ou non (affichage
- * direct, cf. img_load). Renvoie comme scr_load_hgr : 0 = image chargee. */
+ * Ne touche PAS au cache d'assets (cf. assetcache.h:cache_asset_path) :
+ * c'est a l'appelant de decider s'il faut y ecrire le resultat
+ * (cache_boot_fill) ou non (affichage direct, cf. img_load). Renvoie comme
+ * scr_load_hgr : 0 = image chargee. */
 signed char img_load_from_disk(const char *hgr_name)
 {
-#if HAS_ZX02
-    char zx_name[11];        /* "BOOT00.ZX2" (le plus long) + NUL = 11 o */
-    FILE *f;
-    u8 i;
-
-    for (i = 0; hgr_name[i] != '\0' && hgr_name[i] != '.' && i < 6; ++i)
-        zx_name[i] = hgr_name[i];
-    zx_name[i++] = '.'; zx_name[i++] = 'Z'; zx_name[i++] = 'X'; zx_name[i++] = '2';
-    zx_name[i] = '\0';
-
-    f = fopen(zx_name, "rb");
-    if (f != NULL) {
-        zx_getbyte_init(f);
-        zx02_unpack(scr_hgr_page());
-        fclose(f);
+    if (cache_load_compressed(hgr_name, scr_hgr_page()) == 0)
         return 0;
-    }
-#endif
     return scr_load_hgr(hgr_name, 0);      /* repli : pas de version compressee */
 }
 
@@ -156,9 +130,9 @@ void run_splashes(void)
         name[5] = (char)('0' + i % 10);
         /* Pas de img_load ici : un splash n'est affiche qu'une fois, au boot,
          * donc pas de mise en cache -- la place sert mieux aux images du jeu,
-         * qui reviennent. img_load_from_disk decompresse tout de meme si un
-         * .ZX2 existe : la compression profite aussi aux splashes, uniquement
-         * pour l'espace disque, sans rien coder de plus ici. */
+         * qui reviennent. img_load_from_disk decompresse tout de meme une
+         * eventuelle variante compressee : ca profite aussi aux splashes,
+         * uniquement pour l'espace disque, sans rien coder de plus ici. */
         if (img_load_from_disk(name) != 0)
             break;                    /* plus de splash */
         scr_gfx_on();

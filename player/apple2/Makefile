@@ -186,6 +186,7 @@ hosttest:
 	gcc -std=c99 -Wall -I$(SRCDIR) -I$(COMMONDIR)/include test/hostplay.c \
 	    $(COMMONDIR)/src/story.c $(COMMONDIR)/src/state.c $(COMMONDIR)/src/combat.c \
 	    $(SRCDIR)/snd.c $(SRCDIR)/ramdisk.c $(SRCDIR)/diskio.c $(SRCDIR)/assetcache.c \
+	    $(SRCDIR)/zx02_getbyte.c \
 	    -o $(HOSTBIN)
 	@echo "== parcours victoire =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 2 1 1 1 1 | tail -2
 	@echo "== parcours defaite  =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 1 1 1     | tail -2
