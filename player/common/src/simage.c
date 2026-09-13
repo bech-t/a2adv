@@ -10,7 +10,9 @@
 #include "state.h"
 #include "ui.h"
 #include "game.h"
+#if HAS_ZX02
 #include "zx02_getbyte.h"
+#endif
 
 /* Nom de fichier d'un asset image : "IMGnn.<ext>" (index sur 2 chiffres,
  * extension IMG_EXT propre a la machine, cf. platform.h). */
@@ -43,6 +45,7 @@ static const char *img_name(u16 asset)
  * direct, cf. img_load). Renvoie comme scr_load_hgr : 0 = image chargee. */
 signed char img_load_from_disk(const char *hgr_name)
 {
+#if HAS_ZX02
     char zx_name[11];        /* "BOOT00.ZX2" (le plus long) + NUL = 11 o */
     FILE *f;
     u8 i;
@@ -59,6 +62,7 @@ signed char img_load_from_disk(const char *hgr_name)
         fclose(f);
         return 0;
     }
+#endif
     return scr_load_hgr(hgr_name, 0);      /* repli : pas de version compressee */
 }
 

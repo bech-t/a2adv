@@ -33,4 +33,12 @@
  * son -- cf. snd.c) : reel sur Atari ST. */
 #define HAS_SCR_FRCLOCK       1
 
+/* Compression ZX02 des images (cf. player/apple2/src/zx02.s + tools/zx02/) :
+ * sans objet ici -- la disquette DD 720 Ko a assez de marge (cf. `st` dans
+ * le Makefile), et le decodeur est ecrit en assembleur 6502, inutilisable
+ * sur 68000. A ecrire pour de vrai le jour ou la compression devient utile
+ * sur cette machine (cf. l'ancien atarist/src/zx02_unpack.c, un bouchon
+ * vide desormais retire -- ce define desactive completement le chemin). */
+#define HAS_ZX02              0
+
 #endif /* A2ADV_PLATFORM_H */

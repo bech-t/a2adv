@@ -27,4 +27,10 @@
 /* scr_frclock() (compteur VBL brut) : sans objet sur Apple II. */
 #define HAS_SCR_FRCLOCK       0
 
+/* Compression ZX02 des images (cf. tools/zx02/, apple2/src/zx02.s +
+ * zx02_getbyte.c) : utile ici, la disquette ProDOS 140 Ko est le facteur
+ * limitant (cf. le budget verifie dans le Makefile). Sans objet sur une
+ * machine a support plus grand (Atari ST : disquette 720 Ko). */
+#define HAS_ZX02              1
+
 #endif /* A2ADV_PLATFORM_H */

@@ -4,15 +4,19 @@
 
 #include "format.h"
 
-/* Charge une image par son nom, via le cache en disque RAM (cf. ramdisk.h).
- * Renvoie comme scr_load_hgr : 0 si l'image est en page HIRES. */
+/* Charge une image par son nom, via le cache d'assets (cf. assetcache.h).
+ * Renvoie comme scr_load_hgr : 0 si l'image est chargee. */
 signed char img_load(const char *name);
 
-/* Charge `hgr_name` (ex: "IMG00.HGR") en page HIRES SANS passer par le cache
- * /RAM : prefere "<meme base>.ZX2" sur la disquette (decompression en flux,
- * cf. zx02_getbyte.c) si elle existe, sinon lit `hgr_name` telle quelle.
+/* Charge `hgr_name` (ex: "IMG00.HGR") SANS passer par le cache d'assets :
+ * sur Apple II (HAS_ZX02, cf. platform.h), prefere "<meme base>.ZX2" sur la
+ * disquette (decompression en flux, cf. apple2/src/zx02_getbyte.c +
+ * zx02.s) si elle existe, sinon lit `hgr_name` telle quelle ; sur une
+ * plateforme sans ZX02 (Atari ST : la disquette a assez de place, cf.
+ * tools/zx02/ specifique Apple II), lit toujours `hgr_name` directement.
  * Utilisee par img_load (repli quand rien n'est en cache) et par
- * ram_boot_fill (cf. ramdisk.c, pour remplir precisement ce cache). */
+ * cache_boot_fill (cf. apple2/src/ramdisk.c, pour remplir precisement ce
+ * cache). */
 signed char img_load_from_disk(const char *hgr_name);
 
 /* Affiche l'image d'un asset puis revient en texte.
