@@ -141,6 +141,16 @@ menus, combat, saisie et images fonctionnent et sont vérifiés à l'écran sous
 Hatari ; le son n'est pas encore vérifié à l'oreille. Détails et état
 d'avancement dans [`player/atarist/README.md`](player/atarist/README.md).
 
+```bash
+cd player/atarist
+make st ADV=homme_costume_blanc
+# -> adventures/homme_costume_blanc/build/homme_costume_blanc.st
+```
+
+Fabrique une vraie image disquette `.ST` (FAT12 720 Ko), via **mtools**
+(`sudo apt install mtools`). `make run` reste plus rapide pour itérer : il
+monte directement le dossier de build dans Hatari sans produire de fichier.
+
 ## Démarrage rapide
 
 Il vous faut **cc65** (compilateur 6502), **Python 3** et **Java** (pour

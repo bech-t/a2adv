@@ -2,10 +2,11 @@
 # player/atarist/src/scr.c) + son YM2149 (snd.c) -- ce dernier pas encore
 # verifie sur emulateur/materiel.
 #
-# make dsk ADV=combat_demo : compile le player + copie STORY00.DAT/APP.LNG
-# depuis adventures/<ADV>/build/ (deja produits par le Makefile Apple II --
-# le compilateur a2c produit un format binaire neutre vis-a-vis de la
-# plateforme cible) dans build/AUTO/, prete pour `make run`.
+# make dsk ADV=combat_demo : compile le player + les donnees de l'aventure
+# (delegue au Makefile racine, neutre vis-a-vis de la plateforme -- cf.
+# ../../Makefile) dans build/AUTO/, prete pour `make run`.
+# make st ADV=combat_demo : idem, puis fabrique une vraie image disquette
+# .ST (FAT12, via mtools) dans adventures/<ADV>/build/.
 #
 # Images ST-specifiques (format different de l'Apple II, cf. img2st.py) :
 # adventures/<ADV>/img/atarist/*.HGR, si le dossier existe -- a cote de
@@ -15,7 +16,7 @@ CC := m68k-atari-mint-gcc
 CFLAGS := -mshort -O2 -Wall
 
 ADV      ?= combat_demo
-ADVDIR   := ../../adventures/$(ADV)/build
+ADVBUILD := ../../adventures/$(ADV)/build
 IMGDIR   := ../../adventures/$(ADV)/img/atarist
 BUILDDIR := build
 AUTO     := $(BUILDDIR)/AUTO
@@ -26,7 +27,7 @@ TOS := etos512fr.img
 SRC := $(wildcard src/*.c)
 OBJ := $(SRC:src/%.c=$(BUILDDIR)/%.o)
 
-.PHONY: all dsk run clean
+.PHONY: all dsk st dist run clean
 all: $(PRG)
 
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
@@ -38,25 +39,20 @@ $(PRG): $(OBJ) | $(AUTO)
 $(BUILDDIR) $(AUTO):
 	mkdir -p $@
 
-# STORY00.DAT/APP.LNG : produits par `make dsk ADV=...` cote player/apple2
-# (le compilateur a2c ne connait pas la plateforme cible). A la racine du
-# lecteur C: (pas dans AUTO/) : le programme auto-lance depuis
-# AUTO/ mais son repertoire courant GEMDOS reste la racine du volume.
+# STORY00.DAT/APP.LNG : compiles depuis le .adv par le Makefile racine (le
+# compilateur a2c ne connait pas la plateforme cible -- cf. ../../Makefile,
+# cible `compile`). A la racine du lecteur C: (pas dans AUTO/) : le programme
+# auto-lance depuis AUTO/ mais son repertoire courant GEMDOS reste la racine
+# du volume.
 #
-# TODO (note du 2026-09-09, a reflechir plus tard, pas maintenant) : appeler
-# `make -C ../apple2` d'ici est un raccourci qui couple ce Makefile au dossier
-# Apple II, alors que compiler un .adv en STORY.DAT est neutre vis-a-vis de la
-# plateforme. A separer proprement un jour entre make de player (ce fichier),
-# make de disque/image, et make d'aventure (.adv -> STORY.DAT, qui ne devrait
-# dependre d'aucun player).
 # Nettoie les STORY*.DAT AVANT de copier : sans ca, enchainer `make dsk
 # ADV=x` puis `make run` tout seul (ADV retombe au defaut combat_demo) melange
 # les STORYnn.DAT de deux aventures differentes dans build/ -- constate en
 # pratique le 2026-09-09.
 dsk: $(PRG)
-	@test -f $(ADVDIR)/STORY00.DAT || { echo "ERREUR: $(ADVDIR)/STORY00.DAT absent -- lancer d'abord: make -C ../apple2 dsk ADV=$(ADV)"; exit 1; }
+	$(MAKE) -C ../.. compile ADV=$(ADV)
 	rm -f $(BUILDDIR)/STORY*.DAT
-	cp $(ADVDIR)/STORY*.DAT $(ADVDIR)/APP.LNG $(BUILDDIR)/
+	cp $(ADVBUILD)/STORY*.DAT $(ADVBUILD)/APP.LNG $(BUILDDIR)/
 	@# Splash du player, pas de l'aventure : contrairement a l'Apple II (ou
 	@# BOOT00.HGR est toujours fourni par l'aventure, cf. adventures/*/img/),
 	@# ce BOOT00.HGR-la vit a la racine du player ST et s'affiche avant TOUTE
@@ -78,6 +74,49 @@ HFLAGS=
 
 run: dsk
 	cd $(BUILDDIR) && hatari --tos ../$(TOS) -d "$$(pwd)" $(HFLAGS)
+
+# --- Image disquette .ST (mtools) ---------------------------------------
+# `run` monte $(BUILDDIR) comme disque dur GEMDOS via Hatari (-d) : pratique
+# pour iterer, mais ne produit aucun fichier a distribuer. `st` fabrique une
+# VRAIE image disquette Atari ST -- format FAT12 720 Ko, la disquette DD
+# standard, lisible par n'importe quel Atari ST/emulateur -- a partir du
+# meme contenu que `dsk`. Necessite mtools (mformat/mcopy/mmd), aucun montage
+# ni droit root : `sudo apt install mtools`.
+ST_IMG := $(ADVBUILD)/$(ADV).st
+
+st: $(ST_IMG)
+
+$(ST_IMG): dsk
+	rm -f $@
+	mformat -C -f 720 -i $@ ::
+	mmd -i $@ ::AUTO
+	mcopy -i $@ $(AUTO)/A2ADV.PRG ::AUTO/
+	mcopy -i $@ $(BUILDDIR)/STORY*.DAT $(BUILDDIR)/APP.LNG ::
+	@test -f $(BUILDDIR)/BOOT00.HGR && mcopy -i $@ $(BUILDDIR)/BOOT00.HGR :: || true
+	@for f in $(BUILDDIR)/*.HGR; do \
+	  [ -e "$$f" ] && [ "$$(basename $$f)" != "BOOT00.HGR" ] && mcopy -i $@ "$$f" :: || true; \
+	done
+	@echo "Image disquette prete : $@"
+
+# Images .ST pretes a l'emploi pour TOUTES les aventures detectees, dans
+# build/ a la racine du depot (meme convention que le `dist` Apple II, cf.
+# player/apple2/Makefile) -- liste fournie par le Makefile racine (cf.
+# print-adventures) : pas de duplication. Une aventure qui echoue (ex.
+# fixture de test incomplete, comme demo_simple) est signalee et IGNOREE
+# plutot que d'interrompre les autres.
+DISTDIR := ../../build
+dist:
+	@mkdir -p $(DISTDIR)
+	@failed=""; \
+	for a in $$($(MAKE) -s -C ../.. print-adventures); do \
+	  if $(MAKE) st ADV=$$a; then \
+	    cp ../../adventures/$$a/build/$$a.st $(DISTDIR)/$$a.st; \
+	  else \
+	    echo "ATTENTION: $$a ignoree (echec de construction)"; \
+	    failed="$$failed $$a"; \
+	  fi; \
+	done; \
+	[ -z "$$failed" ] || echo "Aventures ignorees :$$failed"
 
 clean:
 	rm -rf $(BUILDDIR)

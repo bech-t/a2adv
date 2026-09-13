@@ -126,15 +126,15 @@ BIN      := $(BUILDDIR)/$(PROGRAM).bin
 DSK      := $(DATADIR)/$(ADV).dsk
 
 # --- Regles -------------------------------------------------------------
-.PHONY: all clean dsk run hosttest data
+.PHONY: all clean dsk run hosttest data dist
 
 all: $(BIN)
 
-# Compile l'aventure selectionnee (ADV) -> adventures/<ADV>/build/
-# Un seul appel a2c produit STORYnn.DAT, ASSETS.IDX et APP.LNG : cible groupee
-# (&:, GNU Make >= 4.3) pour que make les considere tous produits ensemble.
-# Sinon un APP.LNG manquant ne declencherait pas la recompilation tant que les
-# STORYnn.DAT restent plus recents que le .adv.
+# Compilation de l'aventure (.adv -> STORYnn.DAT/APP.LNG/ASSETS.IDX/
+# IMAGES.MAP) : DELEGUEE au Makefile racine (cible neutre vis-a-vis de la
+# plateforme, cf. ../../Makefile). Ce Makefile-ci ne sait faire QUE le player
+# et la disquette Apple II ; les prerequis ci-dessous ne servent qu'a decider
+# QUAND rappeler le compilateur (mtime), pas a le lancer eux-memes.
 # Les .lng sont en prerequis : traduire l'interface refait la disquette.
 LNGSRC   := $(wildcard ../../lang/*.lng)
 # Le COMPILATEUR est un prerequis, au meme titre que la source. Sans ca, changer
@@ -151,8 +151,7 @@ DATAOUT  := $(DATADIR)/$(STORY) $(DATADIR)/APP.LNG $(DATADIR)/ASSETS.IDX $(DATAD
 
 data: $(DATAOUT)
 $(DATAOUT) &: $(ADVSRC) $(LNGSRC) $(A2CSRC)
-	( cd ../../compiler && python3 -m a2c ../adventures/$(ADV)/$(ADV).adv \
-	    -o ../adventures/$(ADV)/build $(A2CFLAGS) )
+	$(MAKE) -C ../.. compile ADV=$(ADV) A2CFLAGS='$(A2CFLAGS)'
 
 # Edition de liens -> binaire Apple II
 $(BIN): $(OBJECTS)
@@ -310,6 +309,29 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) $(ZX02_TOOL) | $(BU
 
 run: $(DSK)
 	@echo "Bootez $(DSK) dans un emulateur Apple II (ProDOS)."
+
+# Disquettes pretes a l'emploi pour TOUTES les aventures detectees, dans
+# build/ a la racine du depot -- pour tester sans installer la chaine de
+# build (cc65, AppleCommander, Java, Python...). Liste des aventures fournie
+# par le Makefile racine (cf. print-adventures) : pas de duplication.
+# Une aventure qui echoue (ex. fixture de test sans images nommees, comme
+# demo_simple) est signalee et IGNOREE plutot que d'interrompre les autres :
+# le dossier adventures/ peut contenir des aventures incompletes qui ne sont
+# pas destinees a produire de disquette.
+DISTDIR := ../../build
+.PHONY: dist
+dist:
+	@mkdir -p $(DISTDIR)
+	@failed=""; \
+	for a in $$($(MAKE) -s -C ../.. print-adventures); do \
+	  if $(MAKE) dsk ADV=$$a; then \
+	    cp ../../adventures/$$a/build/$$a.dsk $(DISTDIR)/$$a.dsk; \
+	  else \
+	    echo "ATTENTION: $$a ignoree (echec de construction)"; \
+	    failed="$$failed $$a"; \
+	  fi; \
+	done; \
+	[ -z "$$failed" ] || echo "Aventures ignorees :$$failed"
 
 clean:
 	rm -rf $(BUILDDIR)/*
