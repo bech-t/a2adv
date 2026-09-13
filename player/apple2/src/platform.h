@@ -18,9 +18,6 @@
 #define MENU_ROW_QUIT        23
 #define UI_INTRO_HINT_ROW    23
 
-/* Musique de menu : Mockingboard verifiee au theme du titre. Cf. smenu.c. */
-#define HAS_MENU_MUSIC       1
-
 /* Taille du tampon image (cf. scr.h:SCR_HGR_SIZE) : une page HIRES brute. */
 #define SCR_HGR_SIZE         8192
 

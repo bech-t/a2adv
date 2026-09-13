@@ -51,3 +51,5 @@
 @ui opt_back     "RETOUR"
 @ui snd_title    "TEST DES SONS"
 @ui snd_all      "TOUT JOUER"
+@ui opt_info       "INFO SYSTEME"
+@ui sysinfo_title  "INFO SYSTEME"

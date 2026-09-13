@@ -50,8 +50,8 @@ sont repliées en ASCII majuscule à la saisie (`scr_getkey`/`fold_accent`,
 sans accent, quelle que soit la plateforme).
 
 Son écrit (`snd.c`, YM2149 natif du ST accédé directement en $FF8800/
-$FF8802, même modèle de registres que le Mockingboard Apple II mais deux
-voies dédiées à la musique + une aux effets, un seul chip oblige) — pas
-encore vérifié à l'oreille sous Hatari/matériel réel. La musique de menu
-reste désactivée en attendant (`smenu.c`) : divergence délibérée par
+$FF8802, deux voies dédiées à la musique + une aux effets, un seul chip
+oblige) — pas encore vérifié à l'oreille sous Hatari/matériel réel. La
+musique de menu reste désactivée en attendant (`smenu.c`) : divergence
+délibérée par
 rapport à l'Apple II, pas un oubli.

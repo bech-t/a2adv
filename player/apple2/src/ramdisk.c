@@ -107,8 +107,8 @@ static u8 vol_ready(u8 vol)
 #endif
 }
 
-/* Au moins un volume utilisable ? */
-static u8 ram_ready(void)
+/* Au moins un volume utilisable ? (cf. ramdisk.h) */
+u8 ram_ready(void)
 {
     return (u8)(vol_ready(0) || vol_ready(1));
 }

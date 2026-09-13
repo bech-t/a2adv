@@ -300,8 +300,9 @@ def _encode_effect(e: M.Effect, sym: Symbols) -> bytes:
 def encode_lang(lang: str, strings: dict[str, str]) -> bytes:
     """Socle de chaines d'interface -> APP.LNG.
 
-    Positionnel : les 28 chaines dans l'ordre figé de UI_KEYS. Toutes sont
-    exigées — un socle incomplet laisserait le player muet sur une clé.
+    Positionnel : les chaines dans l'ordre figé de UI_KEYS (cf. son
+    len() ci-dessous, jamais recopié en dur). Toutes sont exigées — un
+    socle incomplet laisserait le player muet sur une clé.
     """
     missing = [k for k, _d in M.UI_KEYS if k not in strings]
     if missing:

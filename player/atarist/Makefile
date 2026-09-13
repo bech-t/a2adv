@@ -30,8 +30,7 @@ TOS := etos512fr.img
 # Le gros du moteur (parsing, streaming, UI, menu...) vit dans $(COMMONDIR),
 # partage avec le player Apple II (cf. ../apple2/Makefile) ; ne reste ici que
 # ce qui est reellement specifique Atari ST (scr.c, snd.c, diskio.c/
-# assetcache.c -- backends de player/common/include/, z2_intro.c,
-# zx02_unpack.c).
+# assetcache.c -- backends de player/common/include/).
 CFLAGS += -I src -I $(COMMONDIR)/include
 SRC := $(wildcard src/*.c) $(wildcard $(COMMONDIR)/src/*.c)
 OBJ := $(patsubst src/%.c,$(BUILDDIR)/%.o,\

@@ -1,13 +1,13 @@
-; z2_intro.s — jingle de demarrage pour z2adv
+; snd_intro.s — jingle de demarrage (cf. snd.h:snd_intro)
 ; Pilote le haut-parleur 1 bit de l'Apple II ($C030).
-; Appelable depuis C (cc65) :  void z2_intro(void);
+; Appelable depuis C (cc65) :  void snd_intro(void);
 ;
 ; Le haut-parleur est binaire : chaque acces a $C030 produit un seul
 ; "clic". Une note s'obtient en basculant le haut-parleur a intervalle
 ; regulier — l'intervalle fixe la hauteur, le nombre de bascules fixe
 ; la duree. Aucune interruption ni timer : boucle d'attente pure.
 
-        .export _z2_intro
+        .export _snd_intro
 
 SPKR    = $C030                 ; toggle haut-parleur (tout acces = 1 clic)
 
@@ -19,10 +19,10 @@ index:  .res 1                  ; index de lecture dans la table
         .code
 
 ; ---------------------------------------------------------------
-; _z2_intro : joue toute la melodie puis rend la main.
+; _snd_intro : joue toute la melodie puis rend la main.
 ;   detruit A, X, Y (convention cc65 : libre de le faire)
 ; ---------------------------------------------------------------
-_z2_intro:
+_snd_intro:
         lda #0
         sta index
 next:

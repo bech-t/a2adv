@@ -9,13 +9,7 @@
 #include "simage.h"
 #include "game.h"
 #include "platform.h"
-
-/* Ecran d'options son actif seulement si la Mockingboard est compilee. */
-#if defined(__CC65__) && defined(A2ADV_MOCKINGBOARD)
-#define OPT_MB 1
-#else
-#define OPT_MB 0
-#endif
+#include "sysinfo.h"
 
 /* Ecrit une chaine centree sur `width` colonnes a la ligne y. `width` = 40
  * pour le menu semi-graphique (fenetre mixte, toujours 40 col qu'importe
@@ -44,28 +38,10 @@ static const char *const snd_names[SND_COUNT] = {
     "PICKUP", "HIT", "MAGIC", "DOOR", "PAGE"
 };
 
-/* "SORTIE : HAUT-PARLEUR" ou "SORTIE : MOCKINGBOARD (SLOT n)".
- * Partage par l'ecran Options et l'ecran de test. */
-static void put_output(void)
-{
-    scr_puts(ui_str[UI_OPT_OUTPUT]);
-    scr_puts(" : ");
-    if (snd_backend) {
-        scr_puts(ui_str[UI_OPT_MB]);
-        scr_puts(" (");
-        scr_puts(ui_str[UI_OPT_SLOT]);
-        scr_putc(' ');
-        scr_putc((char)('0' + snd_mb_slot));
-        scr_putc(')');
-    } else {
-        scr_puts(ui_str[UI_OPT_SPEAKER]);
-    }
-}
-
 /* --- Sous-ecran : test des sons ---------------------------------------
  * Une touche 0..8 rejoue le son de ce code, A les enchaine tous. Sert a
- * regler les tons de snd.c / snd_mb.c a l'oreille : on modifie, on
- * recompile, on rejoue le meme numero sans relancer une partie. */
+ * regler les tons de snd.c a l'oreille : on modifie, on recompile, on
+ * rejoue le meme numero sans relancer une partie. */
 static void run_sound_test(void)
 {
     char c;
@@ -75,9 +51,6 @@ static void run_sound_test(void)
         ui_clear();
         scr_revers(1); scr_putc(' '); scr_puts(ui_str[UI_SND_TITLE]); scr_putc(' ');
         scr_revers(0);
-
-        scr_gotoxy(0, 2);
-        put_output();
 
         /* Deux colonnes de 5 lignes : 0-4 a gauche, 5-8 a droite. */
         for (i = 0; i < SND_COUNT; ++i) {
@@ -111,9 +84,29 @@ static void run_sound_test(void)
     }
 }
 
-/* --- Ecran Options : choix du backend son (haut-parleur / Mockingboard) ---
- * Permet d'activer/desactiver la Mockingboard, de choisir son slot (1..7),
- * de relancer la detection auto et de tester le son sans recompiler. */
+/* --- Sous-ecran : info systeme (cf. sysinfo.h) -------------------------
+ * sys_info() ecrit son propre nombre de lignes, au choix de la plateforme :
+ * ce fichier ne connait que le titre et le retour, comme run_sound_test. */
+static void run_sys_info(void)
+{
+    ui_clear();
+    scr_revers(1); scr_putc(' '); scr_puts(ui_str[UI_SYSINFO_TITLE]); scr_putc(' ');
+    scr_revers(0);
+    ui_newline(); ui_newline();
+
+    sys_info();
+
+    ui_newline();
+    scr_puts("ESC) "); scr_puts(ui_str[UI_OPT_BACK]); ui_newline();
+    scr_flush();
+
+    while (scr_getkey() != KEY_ESC)
+        ;
+}
+
+/* --- Ecran Options : test des sons + info systeme ----------------------
+ * Aucune des deux plateformes actuelles n'offre de backend son a choisir a
+ * la main (Apple II : haut-parleur seul ; Atari ST : YM2149 toujours actif). */
 static void run_options(void)
 {
     char c;
@@ -123,16 +116,8 @@ static void run_options(void)
         scr_revers(0);
         ui_newline(); ui_newline();
 
-        put_output();
-        ui_newline(); ui_newline();
-
-#if OPT_MB
-        scr_puts("H)   "); scr_puts(ui_str[UI_OPT_SPEAKER]);  ui_newline();
-        scr_puts("1-7) "); scr_puts(ui_str[UI_OPT_MB_SLOTS]); ui_newline();
-#else
-        scr_puts(ui_str[UI_OPT_NO_MB]);                       ui_newline();
-#endif
         scr_puts("T)   "); scr_puts(ui_str[UI_OPT_TEST]);     ui_newline();
+        scr_puts("I)   "); scr_puts(ui_str[UI_OPT_INFO]);     ui_newline();
         scr_puts("ESC) "); scr_puts(ui_str[UI_OPT_BACK]);     ui_newline();
         scr_flush();
 
@@ -140,11 +125,7 @@ static void run_options(void)
         if (c == KEY_ESC)
             return;
         if (c == 'T' || c == 't') { run_sound_test(); continue; }
-#if OPT_MB
-        /* Choix MANUEL du backend : plus de detection automatique. */
-        if (c == 'H' || c == 'h')            snd_use_mockingboard(0);
-        else if (c >= '1' && c <= '7')       snd_use_mockingboard((u8)(c - '0'));
-#endif
+        if (c == 'I' || c == 'i') { run_sys_info(); continue; }
     }
 }
 
@@ -165,13 +146,10 @@ static u8 menu_loop(void)
     char line[64];
 
     for (;;) {                 /* boucle : redessine apres un retour d'Options */
-#if HAS_MENU_MUSIC
         /* (Re)lance le theme a CHAQUE dessin du menu, pas seulement a la
-         * premiere entree : choisir un slot dans les Options passe par
-         * mb_init, qui remet les deux AY a zero et coupe la musique. Sans ce
-         * rappel, on revenait des Options en silence. */
-        snd_music(MUS_TITLE);
-#endif
+         * premiere entree -- no-op sur une plateforme sans musique de fond
+         * (cf. snd.h), les appelants n'ont donc aucun test a faire. */
+        snd_menu_music(1);
 
         /* --- menu semi-graphique (image MENU + titre + choix en bas) --- */
         if (img_load("MENU." IMG_EXT) == 0) {
@@ -216,6 +194,6 @@ static u8 menu_loop(void)
 u8 run_menu(void)
 {
     u8 act = menu_loop();     /* le theme est (re)lance a chaque dessin, dedans */
-    snd_music(MUS_NONE);      /* silence des qu'on entre dans l'aventure */
+    snd_menu_music(0);        /* silence des qu'on entre dans l'aventure */
     return act;
 }

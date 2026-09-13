@@ -45,8 +45,8 @@ L'aventure se distribue sous forme de **disquette ProDOS bootable**, à démarre
 dans n'importe quel émulateur Apple II — ou sur une vraie machine.
 
 Elle tourne sur un Apple II 64 Ko. Si votre machine ou votre émulateur en offre
-plus, elle s'en sert toute seule : 80 colonnes sur //e, carte son Mockingboard,
-et chargement accéléré par le disque RAM sur 128 Ko.
+plus, elle s'en sert toute seule : 80 colonnes sur //e, et chargement accéléré
+par le disque RAM sur 128 Ko.
 
 Pour la fabriquer depuis les sources — il vous faut `cc65`, Python 3 et Java :
 

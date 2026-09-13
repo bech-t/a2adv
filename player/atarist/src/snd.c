@@ -1,9 +1,8 @@
-/* snd.c -- pilote YM2149 (cf. snd.h). Portage du MODELE de programmation
- * par registres de player/apple2/src/snd_mb.c (AY-3-8910, registre-compatible
- * avec le YM2149) -- pas du code, qui est specifique au bus 6522/6502.
+/* snd.c -- pilote YM2149 (cf. snd.h). Programmation par registres, dans le
+ * meme esprit qu'un AY-3-8910 (le YM2149 lui est registre-compatible) :
+ * generateurs de ton/bruit/enveloppe par voie, mixeur commun.
  *
- * ATTENTION : materiel NON teste (comme snd_mb.c en son temps). A valider
- * sous Hatari puis sur ST reel.
+ * ATTENTION : materiel NON teste. A valider sous Hatari puis sur ST reel.
  *
  * Acces bas niveau : $FF8800 (selection de registre) / $FF8802 (donnee),
  * les deux ports memoire-mappes standard du PSG sur ST. Necessite le mode
@@ -14,12 +13,17 @@
  * plutot que lu puis modifie : ses bits 6-7 sont la direction des ports
  * IOA/IOB du chip (IOA cable sur le ST au selecteur de face disquette et au
  * signal STROBE Centronics), et ce chip ne supporte pas la relecture de
- * registre (comme l'AY-3-8910 du Mockingboard). 0xFF met IOA/IOB en sortie
- * (ce que TOS attend) et coupe les trois voies ; seuls les bits 0-5
- * changent ensuite, via mixer_shadow. */
+ * registre. 0xFF met IOA/IOB en sortie (ce que TOS attend) et coupe les
+ * trois voies ; seuls les bits 0-5 changent ensuite, via mixer_shadow. */
 
 #include "snd.h"
 #include "scr.h"      /* scr_idle_hook, scr_frclock : la musique avance pendant l'attente */
+
+/* Musique du menu titre (cf. snd_menu_music plus bas) : ecrite et cablee,
+ * mais le YM2149 n'est pas encore verifie a l'oreille sous Hatari/materiel
+ * reel (cf. player/atarist/README.md). Un simple passage a 1 l'activera,
+ * sans toucher a rien d'autre (ni common/, ni platform.h). */
+#define MENU_MUSIC_VERIFIED 0
 
 #define PSG_SELECT (*(volatile u8 *)0xFFFF8800L)
 #define PSG_DATA   (*(volatile u8 *)0xFFFF8802L)
@@ -29,12 +33,6 @@ static void ym_w(u8 reg, u8 val)
     PSG_SELECT = reg;
     PSG_DATA = val;
 }
-
-/* Actif par defaut : contrairement au Mockingboard (carte optionnelle dont
- * le slot doit etre choisi a la main avant tout risque d'y ecrire), le
- * YM2149 est toujours la -- rien ne justifie de demarrer en silence. */
-u8 snd_backend = 1;   /* 0 = silence, 1 = YM2149 actif */
-u8 snd_mb_slot;        /* sans objet sur ST, cf. snd.h */
 
 static u8 ready;
 static u8 mixer_shadow;   /* bits 0-5 = tons/bruits ; bits 6-7 = IOA/IOB, jamais modifies */
@@ -92,37 +90,17 @@ static void ensure_ready(void)
         st_init();
 }
 
-void snd_use_mockingboard(u8 slot)
+/* Pas encore de jingle de demarrage YM2149 ecrit (cf. player/atarist/README.md) :
+ * bouchon en attendant. */
+void snd_intro(void)
 {
-    if (slot) {
-        ensure_ready();
-        snd_backend = 1;
-        scr_idle_hook = 0;   /* pose par snd_music() seulement si un morceau tourne */
-    } else {
-        snd_backend = 0;
-        scr_idle_hook = 0;
-        if (ready) {
-            ym_w(8, 0); ym_w(9, 0); ym_w(10, 0);
-            mixer_shadow |= 0x3F;
-            ym_w(7, mixer_shadow);
-        }
-    }
-    snd_mb_slot = 0;   /* sans objet sur ST */
-}
-
-void snd_tone(u8 pitch, u16 dur)
-{
-    (void)pitch;
-    (void)dur;
 }
 
 /* --- Notes -----------------------------------------------------------
- * YM2149 cadence a 2 MHz sur ST (contre ~1 MHz assume pour l'AY-3-8910 du
- * Mockingboard) : periode = 125000 / frequence (formule identique a
- * snd_mb.c, cf. son commentaire "periode = 62500 / frequence" a 1 MHz --
- * ici deux fois plus vite, donc deux fois la periode a frequence egale).
- * Meme accord (index 0 = C3, La4 = 440 Hz a l'index 21) que le Mockingboard,
- * juste recalcule pour ce chip -- PAS une simple copie de sa table. */
+ * YM2149 cadence a 2 MHz sur ST : periode = 125000 / frequence (formule
+ * standard AY-3-8910/YM2149 a un multiple pres de l'horloge -- 125000 =
+ * 2 000 000 / 16, le pre-diviseur materiel du chip). Table de periodes
+ * calculee pour cette horloge (index 0 = C3, La4 = 440 Hz a l'index 21). */
 #define NOTE_MAX  36
 static const u16 note_period[NOTE_MAX] = {
     956, 902, 851, 804, 758, 716, 676, 638, 602, 568, 536, 506,
@@ -142,9 +120,9 @@ static u16 note_period_of(u8 note)
 }
 
 /* --- Morceaux --------------------------------------------------------
- * Meme flux [note][duree en VBL] que MbTune (cf. snd_mb.c), sur DEUX voix
- * au lieu de trois (melodie + basse -- l'harmonie, plus creuse, est celle
- * qui manque le moins avec une seule voie de moins). A ~50 Hz (PAL), 12
+ * Flux [note][duree en VBL] par voie, DEUX voix (melodie + basse --
+ * l'harmonie, plus creuse, est celle qui manque le moins avec une seule
+ * voie de moins que les trois du chip). A ~50 Hz (PAL), 12
  * ticks font ~0,24 s -- des VBL reels (cf. scr_frclock), donc ~20 % plus
  * vite en NTSC, meme ecart deja documente pour wait_or_key (cf. scr.c). */
 static const u8 title_mel[] = {
@@ -238,6 +216,7 @@ static u8 tick_due(void)
     return 1;
 }
 
+#if MENU_MUSIC_VERIFIED
 static void snd_music_tick(void)
 {
     if (!ready || !music_on)
@@ -245,29 +224,33 @@ static void snd_music_tick(void)
     if (tick_due())
         music_advance();
 }
+#endif
 
-void snd_music(u8 id)
+/* Musique du menu titre : ecrite et cablee ci-dessus (music_start et suite),
+ * mais le YM2149 n'est pas encore verifie a l'oreille sous Hatari/materiel
+ * reel (cf. player/atarist/README.md) -- MENU_MUSIC_VERIFIED (cf. entete du
+ * fichier) reste a 0 en attendant : un simple passage a 1 l'activera, sans
+ * toucher a rien d'autre (ni common/, ni platform.h). */
+void snd_menu_music(u8 on)
 {
+#if MENU_MUSIC_VERIFIED
     ensure_ready();
-    if (!snd_backend) {
-        music_on = 0;
-        return;
-    }
-    if (id == MUS_NONE) {
+    if (!on) {
         music_on = 0;
         track_stop(0);
         track_stop(1);
         scr_idle_hook = 0;
         return;
     }
-    if (id != MUS_TITLE)
-        return;
     tune_track[0] = title_mel;
     tune_track[1] = title_bass;
     music_loop = 1;
     last_frclock = scr_frclock();
     music_start();
     scr_idle_hook = snd_music_tick;
+#else
+    (void)on;
+#endif
 }
 
 /* --- Effets (voie C, cf. snd.h) -------------------------------------- */
@@ -303,7 +286,7 @@ static void fx_noise(u8 period, u8 amp, u8 ticks)
 static void fx_knock(u8 period, u16 decay, u8 ticks)
 {
     st_noise(period);
-    st_env(decay, 0x00);        /* MB_ENV_DECAY : attaque puis extinction */
+    st_env(decay, 0x00);        /* forme 0x00 : attaque puis extinction */
     st_amp(CH_FX, AMP_ENV);
     st_mix(CH_FX, 0, 1);
     fx_wait(ticks);
@@ -321,15 +304,11 @@ static void fx_knock(u8 period, u16 decay, u8 ticks)
 #define N_E5 28
 #define N_G5 31
 
-/* Memes notes/amplitudes/durees que mb_play (snd_mb.c) : c'est le meme
- * chip, le meme tick ~50 Hz -- seule la voie change (C au lieu de l'AY #2). */
 void snd_play(u8 id)
 {
     u8 n;
 
     ensure_ready();
-    if (!snd_backend)
-        return;
 
     switch (id) {
     case SND_SELECT: fx_note(N_A4, 10, 2); break;

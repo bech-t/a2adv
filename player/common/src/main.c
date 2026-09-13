@@ -20,7 +20,6 @@
 #include "assetcache.h"
 #include "lang.h"
 #include "game.h"
-#include "z2_intro.h"
 
 /* Choix visibles collectes pour la section courante */
 static u16         v_target[MAX_CHOICES];
@@ -346,7 +345,7 @@ int main(void)
 
     ui_init();        /* detecte 40/80 col et configure l'ecran */
     run_splashes();   /* BOOTxx.HGR (avant d'ouvrir l'histoire) */
-    z2_intro();       /* jingle haut-parleur : occupe l'attente sur le dernier
+    snd_intro();      /* jingle de demarrage : occupe l'attente sur le dernier
                        * splash pendant que /RAM et STORY0.DAT se chargent. */
 
     /* Cache /RAM des STORYnn.DAT : AVANT story_open, ou seuls

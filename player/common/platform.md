@@ -40,7 +40,6 @@ Pas dans `common/include/` : chaque machine a le SIEN, dans son propre
 | `IMG_EXT` | Extension des fichiers image (concaténée à la compilation : `"IMG00." IMG_EXT`) | `"HGR"` | `"PI1"` |
 | `MENU_ROW_TITLE`, `MENU_ROW_CHOICES`, `MENU_ROW_QUIT` | Lignes du menu semi-graphique (`smenu.c`) | 20/22/23 | 21/23/24 |
 | `UI_INTRO_HINT_ROW` | Ligne de l'invite en scène d'intro mixte (`simage.c`) | 23 | 24 |
-| `HAS_MENU_MUSIC` | Musique de fond au menu titre activée (`smenu.c`) | 1 | 0 (YM2149 pas encore vérifié à l'oreille) |
 | `HAS_SCR_FRCLOCK` | `scr_frclock()` existe (compteur VBL brut, cf. `scr.h`) | 0 | 1 |
 
 Pour une nouvelle machine : copier un des deux fichiers, changer les
@@ -101,12 +100,12 @@ justifie `ramdisk.c`) écrira ici son propre équivalent ; une machine avec
 beaucoup de RAM ou un support déjà rapide répondra juste "non" partout,
 comme le ST aujourd'hui.
 
-### 4. `scr.h` / `snd.h` — contrats écran et son
+### 4. `scr.h` — contrat écran
 
-Déclarés dans `common/include/`, mais **entièrement implémentés** par
-`apple2/src/scr.c`+`snd.c`(+`snd_mb.c`) et `atarist/src/scr.c`+`snd.c` — il
-n'existe aucune version commune de ces `.c`, le matériel est trop différent
-d'une machine à l'autre pour qu'un seul fichier ait un sens.
+Déclaré dans `common/include/`, mais **entièrement implémenté** par
+`apple2/src/scr.c` et `atarist/src/scr.c` — il n'existe aucune version
+commune de ce `.c`, le matériel est trop différent d'une machine à l'autre
+pour qu'un seul fichier ait un sens.
 
 Point d'attention pour un nouveau portage : `scr_gfx_mixed()` (image en
 haut, texte en bas) doit laisser EXACTEMENT le même nombre de lignes que ce
@@ -115,18 +114,45 @@ la source du décalage de +1 entre Apple II et Atari ST (une ligne d'air en
 plus sur ST). Écrire `scr_gfx_mixed()` et compter ses lignes AVANT de fixer
 ces constantes, pas l'inverse.
 
-`snd.h` déclare aussi `MUS_NONE`/`MUS_TITLE` (identifiants de morceaux) et
-`SND_SELECT`/`SND_WIN`/... (`format.h`, effets — ceux-là sont figés par le
-compilateur `a2c`, ne pas y toucher). Une machine sans musique de fond fait
-de `snd_music()` un no-op et met `HAS_MENU_MUSIC=0`.
+### 5. `snd.h` — contrat son : trois choses, rien d'autre
 
-### 5. `z2_intro.h` — jingle de démarrage
+Déclaré dans `common/include/`, entièrement implémenté par
+`apple2/src/snd.c` et `atarist/src/snd.c`. Volontairement réduit à ce que le
+moteur a vraiment besoin de demander — **aucune notion de backend, de carte
+ou de slot n'y apparaît** :
 
-Le plus petit contrat (une seule fonction, `z2_intro(void)`, bloquant,
-~1 s). `apple2/src/z2_intro.s` pilote le haut-parleur en assembleur 6502 ;
-`atarist/src/z2_intro.c` est un bouchon vide en attendant un vrai jingle
-YM2149. Un nouveau portage peut commencer par un bouchon vide ici sans que
-rien d'autre n'en souffre.
+| Fonction | Rôle | Apple II | Atari ST |
+|---|---|---|---|
+| `snd_intro()` | Jingle de démarrage, bloquant (~1 s) | Réel (assembleur, `snd_intro.s`) | Bouchon vide (pas encore écrit) |
+| `snd_menu_music(on)` | Musique du menu titre, on/off, non bloquante | No-op (haut-parleur 1 bit incapable de fond sonore) | Réel, mais gardé désactivé en interne (`MENU_MUSIC_VERIFIED` dans `snd.c` — jamais vérifié à l'oreille) |
+| `snd_play(id)` | Effet prédéfini (`SND_SELECT`, `SND_WIN`, ... — `format.h`, figés par `a2c`, ne pas y toucher) | Réel (haut-parleur) | Réel (YM2149) |
+
+`main.c`/`smenu.c` (communs) appellent les trois INCONDITIONNELLEMENT,
+exactement comme pour `assetcache.h` (point 3) : une plateforme qui n'a rien
+à offrir répond par un no-op, jamais par un test côté appelant. Le choix
+"cette plateforme joue-t-elle vraiment cette musique aujourd'hui" (par
+opposition à "en est-elle matériellement capable") reste une décision
+interne au `snd.c` de cette plateforme, cf. l'exemple `MENU_MUSIC_VERIFIED`
+côté Atari ST — ça n'a pas sa place dans `platform.h`, qui ne décrit que des
+faits durables de la machine, pas un état d'avancement du portage.
+
+### 6. `sysinfo.h` — info système (écran Options, diagnostic)
+
+Déclaré dans `common/include/`, entièrement implémenté par
+`apple2/src/sysinfo.c` et `atarist/src/sysinfo.c` : une seule fonction,
+`sys_info()`, qui écrit quelques lignes (modèle, mode écran, mémoire...) via
+`scr_puts()`/`ui_newline()` — le format exact et le nombre de faits affichés
+sont laissés à chaque plateforme, `smenu.c` (commun) ne fait qu'ajouter le
+titre et le retour autour (cf. `run_sys_info`).
+
+Choisir QUOI afficher est le vrai travail ici : ne montrer que des faits
+qu'une API standard et documentée donne de façon fiable (modèle machine,
+colonnes/résolution actives, mémoire libre annoncée par l'OS) — pas une
+détection matérielle maison non vérifiée (ex. taille RAM totale sur Apple
+II, hors de portée sans sonder la mémoire directement). Un fait dont
+l'affichage n'a pas encore été rejoué sur émulateur/matériel réel doit le
+dire dans un commentaire (cf. `atarist/src/sysinfo.c`), jamais prétendre
+être vérifié sans l'avoir été.
 
 ## Fichiers volontairement PAS derrière un contrat commun
 
@@ -135,8 +161,6 @@ rien d'autre n'en souffre.
   adresses de chargement, format de disquette. Le Makefile racine
   (`../../Makefile`) reste lui totalement neutre : il ne compile QUE les
   aventures (`.adv` → `STORYnn.DAT`) via `a2c`, jamais un player.
-- **`snd_mb.c/h`** (Apple II) : Mockingboard, une carte son optionnelle sans
-  équivalent sur les autres machines visées à ce jour.
 - **ZX02** (`apple2/src/zx02.s` + `zx02_getbyte.c/h`) : compression d'image,
   utile uniquement parce que la disquette ProDOS fait 140 Ko. Rangée
   derrière `cache_load_compressed()` (point 3), donc invisible de
@@ -153,7 +177,10 @@ rien d'autre n'en souffre.
    permet) avant d'optimiser.
 4. `assetcache.c` : un stub complet (tout renvoie "pas de cache") suffit
    pour démarrer — cf. `atarist/src/assetcache.c` comme modèle minimal.
-5. `z2_intro.c` : bouchon vide, à faire vibrer plus tard si souhaité.
+5. `snd_intro()`/`snd_menu_music()` : des bouchons vides suffisent pour
+   démarrer (cf. `atarist/src/snd.c` avant que son jingle soit écrit) ;
+   `snd_play()` seul doit faire quelque chose dès le début, les effets
+   sonores étant beaucoup plus présents dans le jeu qu'intro/musique.
 6. Le Makefile : copier `atarist/Makefile` (le plus récent, donc le plus à
    jour sur la séparation compilateur/player/disquette) et l'adapter à la
    toolchain cible.

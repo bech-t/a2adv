@@ -20,11 +20,6 @@
 #define MENU_ROW_QUIT        24
 #define UI_INTRO_HINT_ROW    24
 
-/* Musique de menu : pas encore activee sur ST (divergence deliberee, cf.
- * player/atarist/README.md -- son YM2149 ecrit mais pas encore verifie a
- * l'oreille). A remettre a 1 une fois verifiee. */
-#define HAS_MENU_MUSIC       0
-
 /* Taille du tampon image (cf. scr.h:SCR_HGR_SIZE) : bitmap .PI1 seul (hors
  * resolution/palette, 320x200/4bpp planaire = 32000 o). */
 #define SCR_HGR_SIZE         32000

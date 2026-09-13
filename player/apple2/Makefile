@@ -49,8 +49,8 @@ VOLNAME  := A2ADV
 # Sources / objets. Le gros du moteur (parsing, streaming, UI, menu...) vit
 # dans $(COMMONDIR), partage avec le player Atari ST (cf. ../atarist/Makefile) ;
 # ne reste ici que ce qui est reellement specifique Apple II (scr.c, snd.c,
-# snd_mb.c, diskio.c/assetcache.c -- backends de player/common/include/,
-# z2_intro.s, zx02.s).
+# diskio.c/assetcache.c -- backends de player/common/include/, snd_intro.s,
+# zx02.s).
 SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s) $(wildcard $(COMMONDIR)/src/*.c)
 
 # Options de compilation.
@@ -74,9 +74,10 @@ LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 
 # --- Place code --------------------------------------------------------
 # Le player ne tient plus sous le __HIMEM__ par defaut de la cible apple2 : on
-# le releve a $B000 DANS TOUS LES CAS. C'etait auparavant conditionne a
-# MOCKINGBOARD=1, si bien que MOCKINGBOARD=0 ne liait plus -- le binaire
-# debordait de ~900 octets.
+# le releve a $B000 DANS TOUS LES CAS. C'etait auparavant conditionne a un
+# backend son materiel optionnel (retire depuis, jamais valide sur du vrai
+# son), si bien que le desactiver ne relevait plus HIMEM -- le binaire
+# debordait alors de ~900 octets.
 # A $B000 il reste 3 buffers ProDOS ($B000-$BF00), suffisant : STORY ouvert (1)
 # + sauvegarde transitoire (1).
 # Chaque Ko rendu au code retire un tampon ProDOS ($B000 -> 3, $B400 -> 2).
@@ -101,26 +102,6 @@ LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 # et rendre de la place ailleurs.
 HIMEM    ?= 0xB400
 LDFLAGS  += -Wl -D,__HIMEM__=$(HIMEM)
-
-# --- Son Mockingboard --------------------------------------------------
-# DESACTIVEE par defaut : rare sur //e (peu de machines en ont une), et son
-# tampon (~2,9 Ko) ne laisse plus assez de marge une fois les images
-# compressees (cf. tools/zx02) prises en compte -- les deux ne rentrent pas
-# ensemble. Activation : make dsk MOCKINGBOARD=1 -- snd_mb.c est alors compile
-# et lie ; sans elle, seul le haut-parleur reste, et le menu Options degrade
-# proprement (cf. OPT_MB dans smenu.c : plus de sous-menu slot, message
-# "MOCKINGBOARD NON COMPILEE" a la place -- l'entree Options elle-meme reste
-# toujours presente, le test des sons au haut-parleur y fonctionne).
-#
-# Le slot se choisit A LA MAIN dans le menu Options : il n'y a AUCUNE detection
-# automatique, un balayage ecrirait dans sept cartes inconnues. Le slot designe
-# est en revanche verifie avant usage (cf. mb_probe).
-MOCKINGBOARD ?= 0
-ifeq ($(MOCKINGBOARD),1)
-  CFLAGS  += -DA2ADV_MOCKINGBOARD
-else
-  SOURCES := $(filter-out $(SRCDIR)/snd_mb.c,$(SOURCES))
-endif
 
 OBJECTS  := $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,\
               $(patsubst $(SRCDIR)/%.s,$(BUILDDIR)/%.o,\

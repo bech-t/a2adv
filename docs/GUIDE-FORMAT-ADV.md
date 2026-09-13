@@ -360,6 +360,8 @@ disponibles, avec leur valeur par défaut en français :
 | `opt_back` | RETOUR |
 | `snd_title` | TEST DES SONS |
 | `snd_all` | TOUT JOUER |
+| `opt_info` | INFO SYSTEME |
+| `sysinfo_title` | INFO SYSTEME |
 
 ---
 
