@@ -3,71 +3,26 @@
  * Portable : sur hote (gcc, test) les fonctions sont neutres (pas d'acces
  * materiel). Sur Apple II (cc65), on bascule le haut-parleur en boucle calibree.
  * Les valeurs de pitch/duree sont indicatives et se reglent a l'oreille.
- */
+ *
+ * Pas de musique de fond possible sur ce materiel (un haut-parleur 1 bit
+ * bloquerait le jeu le temps de la jouer) : snd_menu_music() ne fait rien.
+ * L'intro (snd_intro) est en assembleur, cf. snd_intro.s. */
 
 #include "snd.h"
-#include "scr.h"   /* scr_idle_hook : la musique avance pendant l'attente */
 
-/* Backend Mockingboard : optionnel, active a la compilation par
- * -DA2ADV_MOCKINGBOARD (cf. Makefile MOCKINGBOARD=1). Sinon : haut-parleur seul,
- * et snd_mb.c n'est pas linke. */
-#if defined(__CC65__) && defined(A2ADV_MOCKINGBOARD)
-#include "snd_mb.h"
-#define MB_ENABLED 1
-#else
-#define MB_ENABLED 0
-#endif
-
-u8 snd_backend = 0;      /* 0 = haut-parleur (defaut), 1 = Mockingboard */
-u8 snd_mb_slot = 0;      /* slot Mockingboard actif (1..7), 0 = haut-parleur */
-
-void snd_use_mockingboard(u8 slot)
+void snd_menu_music(u8 on)
 {
-#if MB_ENABLED
-    /* On SONDE le slot que le joueur vient de designer avant d'y ecrire pour
-     * de bon. Ce n'est pas la detection automatique qu'on refuse : celle-la
-     * balaierait sept slots inconnus. Ici on ne touche qu'a celui qu'il a
-     * choisi, et une faute de frappe retombe sur le haut-parleur au lieu de
-     * pousser des octets dans une carte quelconque.
-     *
-     * Le refus n'a pas besoin de message : le menu Options affiche la sortie
-     * courante, qui restera "HAUT-PARLEUR". C'est le retour. */
-    if (slot && mb_probe(slot)) {
-        mb_init(slot);
-        snd_backend = 1;
-        snd_mb_slot = slot;
-        /* La musique avancera desormais dans chaque attente clavier. */
-        scr_idle_hook = mb_music_tick;
-    } else {
-        mb_music_stop();
-        scr_idle_hook = 0;
-        snd_backend = 0;
-        snd_mb_slot = 0;
-    }
-#else
-    (void)slot;
-#endif
+    (void)on;             /* haut-parleur 1 bit : pas de musique de fond possible */
 }
 
-void snd_music(u8 id)
-{
-#if MB_ENABLED
-    const MbTune *t;
-    if (!snd_backend)                  /* haut-parleur : pas de musique de fond */
-        return;
-    t = (id == MUS_NONE) ? 0 : mb_tune(id);
-    if (t) mb_music_play(t, 1);        /* en boucle */
-    else   mb_music_stop();
-#else
-    (void)id;
-#endif
-}
+/* snd_intro (cf. snd.h) : definie en assembleur sur cc65 (snd_intro.s), en
+ * bouchon C ci-dessous sur l'hote. */
 
 #ifdef __CC65__
 
 #define SPKR  (*(volatile unsigned char *)0xC030)
 
-void snd_tone(u8 pitch, u16 dur)
+static void snd_tone(u8 pitch, u16 dur)
 {
     u16 i;
     volatile u8 d;
@@ -92,7 +47,11 @@ static void snd_rest(u8 pitch, u16 dur)
 
 #else  /* hote : pas de materiel */
 
-void snd_tone(u8 pitch, u16 dur)
+void snd_intro(void)
+{
+}
+
+static void snd_tone(u8 pitch, u16 dur)
 {
     (void)pitch;
     (void)dur;
@@ -115,9 +74,6 @@ void snd_play(u8 id)
 {
     u8 p;
 
-#if MB_ENABLED
-    if (snd_backend) { mb_play(id); return; }   /* backend Mockingboard */
-#endif
     switch (id) {
     case SND_SELECT: snd_tone(40, 40); break;
     case SND_ERROR:  snd_tone(150, 60); snd_tone(190, 70); break;

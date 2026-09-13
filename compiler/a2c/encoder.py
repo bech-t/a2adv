@@ -16,7 +16,7 @@ from .translit import normalize_display
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
 MAGIC_LANG = b"A2LG"
-VERSION = 6                 # v6 : masque des stats masquees (@stat ... hidden)
+VERSION = 7                 # v7 : @version de l'aventure (optionnelle, "" sinon)
                             # v5 : socle d'UI dans APP.LNG, l'aventure ne porte
                             #      plus que ses surcharges (v4 : index par fichier)
 LANG_VERSION = 1
@@ -169,6 +169,7 @@ def _encode_preamble(story: M.Story) -> bytes:
     for it in story.items:
         out += _lenstr(it.label if it.label else it.name)
     out += _lenstr(story.title)                       # titre (pour le menu)
+    out += _lenstr(story.version)                      # version (@version, "" si absente)
     for idx in story.intro_index:                     # scènes d'intro
         out += struct.pack("<H", idx)
     # Chaînes d'UI : SEULES LES SURCHARGES (v5). Le socle des 28 chaînes vit
@@ -300,8 +301,9 @@ def _encode_effect(e: M.Effect, sym: Symbols) -> bytes:
 def encode_lang(lang: str, strings: dict[str, str]) -> bytes:
     """Socle de chaines d'interface -> APP.LNG.
 
-    Positionnel : les 28 chaines dans l'ordre figé de UI_KEYS. Toutes sont
-    exigées — un socle incomplet laisserait le player muet sur une clé.
+    Positionnel : les chaines dans l'ordre figé de UI_KEYS (cf. son
+    len() ci-dessous, jamais recopié en dur). Toutes sont exigées — un
+    socle incomplet laisserait le player muet sur une clé.
     """
     missing = [k for k, _d in M.UI_KEYS if k not in strings]
     if missing:

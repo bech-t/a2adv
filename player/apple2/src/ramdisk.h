@@ -41,6 +41,11 @@ void ram_ensure(u8 id);
 /* Le fichier id est-il disponible en disque RAM (quel que soit le volume) ? */
 u8 ram_has(u8 id);
 
+/* Au moins un volume /RAM ou /RAM2 present et utilisable ? Informatif (cf.
+ * sysinfo.c) -- ram_has()/ram_path() restent la seule verite pour un
+ * FICHIER donne, ceci ne dit que si le disque RAM existe du tout. */
+u8 ram_ready(void);
+
 /* --- Fichiers quelconques (images) -------------------------------------- */
 /*
  * Les images sont le vrai poste d'attente : 8 192 o piece, contre ~1 Ko pour

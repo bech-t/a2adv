@@ -87,6 +87,8 @@ UI_KEYS = [
     ("opt_back",     "RETOUR"),
     ("snd_title",    "TEST DES SONS"),
     ("snd_all",      "TOUT JOUER"),
+    ("opt_info",       "INFO SYSTEME"),
+    ("sysinfo_title",  "INFO SYSTEME"),
 ]
 UI_KEY_SET = {k for k, _ in UI_KEYS}
 
@@ -279,6 +281,7 @@ class Section:
 @dataclass
 class Story:
     title: str = ""
+    version: str = ""          # @version, optionnelle -- "" si absente
     author: str = ""
     start: str = ""
     stats: list[StatDecl] = field(default_factory=list)

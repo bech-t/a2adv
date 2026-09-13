@@ -38,3 +38,16 @@ u8 zx_getbyte(void)
     }
     return zxbuf[zx_pos++];
 }
+
+#ifndef __CC65__
+/* Sur cc65 (cible reelle), la decompression est en assembleur (zx02.s, non
+ * lie ici pour eviter un symbole en double). Bouchon pour les tests hote
+ * (cf. player/apple2/Makefile:hosttest) : hosttest ne charge aucune image
+ * (coeur narratif/combat seulement), donc cache_load_compressed() -- la
+ * seule appelante -- n'est jamais REELLEMENT invoquee ; ce bouchon n'existe
+ * que pour satisfaire l'edition de liens. */
+void zx02_unpack(void *dst)
+{
+    (void)dst;
+}
+#endif
