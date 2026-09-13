@@ -4,6 +4,15 @@ player/apple2/build/
 *.d
 *.map
 
+# Player Atari ST : ROM TOS tierce (EmuTOS, GPL mais a recuperer soi-meme,
+# meme logique que prodos.dsk cote Apple II) + .PRG/.o compiles.
+player/atarist/**/*.img
+player/atarist/**/AUTO/
+player/atarist/build/
+player/atarist/smoketest/
+player/atarist/**/*.prg
+player/atarist/**/*.PRG
+
 *.jar
 
 # Sorties / images disque
@@ -57,6 +66,7 @@ editor/dist/
 # Specification technique interne : document de travail, non distribue.
 # Reste en local ; la doc publique du format vit dans docs/.
 spec.md
+spec-atarist.md
 
 # Instructions Claude Code specifiques a ce depot 
 CLAUDE.md

@@ -1,4 +1,4 @@
-# a2adv — des livres-jeu qui tournent sur un vrai Apple II
+# a2adv — des livres-jeu qui tournent sur des ordinateurs retro
 
 > **Une note d'honnêteté.** Ce projet est en partie écrit avec l'aide de l'IA.
 > Ça remplace la bonne équipe de quinquagénaires passionnés qu'il aurait fallu
@@ -10,27 +10,35 @@
 > pour le rendre plus lisible ... bref c'est criticable ou non, votre choix, c'est le miens en tout cas !
 
 **a2adv** est une chaîne d'outils complète pour écrire des livres dont vous êtes
-le héros et les faire tourner sur un Apple II de 1979 — pas sur un émulateur qui
-fait semblant, mais sur une **disquette ProDOS bootable** qu'une machine
+le héros et les faire tourner sur de vrais ordinateurs rétro — pas sur un
+émulateur qui fait semblant, mais sur un support d'époque qu'une machine
 d'époque avale sans broncher.
 
+Le projet est parti de l'**Apple II** de 1979 : une **disquette ProDOS
+bootable**, moteur écrit en C et assembleur 6502 — c'est la plateforme de
+référence, la plus aboutie et la seule vérifiée sur matériel réel. Il s'étend
+maintenant à d'autres machines de la même génération : un portage **Atari ST**
+(68000) est en cours dans [`player/atarist/`](player/atarist/), avec le même
+format d'aventure et le même compilateur.
+
 Vous écrivez l'aventure dans un format texte lisible, sur un ordinateur moderne.
-Un compilateur la transforme en données binaires compactes. Un moteur écrit en C
-et en assembleur 6502 les lit et joue l'histoire.
+Un compilateur la transforme en données binaires **neutres vis-à-vis de la
+plateforme cible**. Un moteur par machine — sa propre boucle de jeu, son
+propre affichage, son propre disque — les lit et joue l'histoire.
 
 ```
-      aventure.adv           a2c (Python)        STORYnn.DAT        player 6502
-   ┌────────────────┐     ┌───────────────┐     ┌────────────┐     ┌────────────┐
-   │  texte, choix  │ ──▶ │  compilateur  │ ──▶ │  binaire   │ ──▶ │  Apple II  │
-   │  conditions    │     │  + QA         │     │  + images  │     │  ProDOS    │
-   └────────────────┘     └───────────────┘     └────────────┘     └────────────┘
+      aventure.adv           a2c (Python)        STORYnn.DAT        player (par plateforme)
+   ┌────────────────┐     ┌───────────────┐     ┌────────────┐     ┌─────────────────────┐
+   │  texte, choix  │ ──▶ │  compilateur  │ ──▶ │  binaire   │ ──▶ │  Apple II  (6502)   │
+   │  conditions    │     │  + QA         │     │  neutre    │     │  Atari ST  (68000)  │
+   └────────────────┘     └───────────────┘     └────────────┘     └─────────────────────┘
 ```
 
 ---
 
 ## À quoi ça ressemble
 
-Quatre captures de *L'Homme en Costume Blanc*, prises sur la disquette produite
+Quatre captures de *L'Homme en Costume Blanc*  sur Apple 2, prises sur la disquette produite
 par la chaîne d'outils.
 
 | | |
@@ -53,6 +61,11 @@ octets.** Les contraintes de 1979 sont respectées à la lettre — mais elles s
 absorbées par le compilateur, pas subies par l'auteur.
 
 ## Les objectifs qui gouvernent le projet
+
+Ces objectifs viennent du player historique, l'**Apple II** — le plus abouti et
+le seul vérifié sur matériel réel — mais ils gouvernent tout le projet : un
+nouveau player (Atari ST, ou une autre machine demain) doit s'y conformer lui
+aussi, avec ses propres contraintes matérielles.
 
 **Compatibilité maximale.** La machine de destination, c'est l'**Apple II** : le
 moteur vise le **6502** et tient dans les **64 Ko de RAM principale** — le
@@ -88,7 +101,7 @@ variable — et l'ordre figé des déclarations rend les sauvegardes stables.
 sections inatteignables, les culs-de-sac, les fins injoignables, les objets
 requis mais jamais donnés.
 
-## Ce qui marche aujourd'hui
+## Ce qui marche aujourd'hui (Apple II)
 
 - **Narration** : sections, choix conditionnels, effets, drapeaux, objets,
   caractéristiques bornées, score et compteur de mouvements.
@@ -117,6 +130,16 @@ Non fait à ce jour : sauvegardes multi-emplacements, échange de disquettes ré
 > a eu le dernier mot sur des bugs qu'aucun test hôte n'aurait révélés — un jeu
 > de caractères alternatif laissé actif par la machine rendait toute vidéo
 > inverse illisible en 80 colonnes.
+
+## Le portage Atari ST
+
+Un second player, indépendant, réutilise **le même cœur C et le même format
+`STORY.DAT`** sans aucune modification (`story.c`, `state.c`, `combat.c`, ...) :
+seuls l'affichage (console VT52, images basse résolution 320×200/16 couleurs),
+le son (YM2149) et l'accès disque sont réécrits pour la machine. Narration,
+menus, combat, saisie et images fonctionnent et sont vérifiés à l'écran sous
+Hatari ; le son n'est pas encore vérifié à l'oreille. Détails et état
+d'avancement dans [`player/atarist/README.md`](player/atarist/README.md).
 
 ## Démarrage rapide
 
@@ -150,6 +173,7 @@ cd player/apple2 && make hosttest
 |---|---|
 | `compiler/` | `a2c`, le compilateur Python — parseur, validation, encodeur, analyseur QA. Aucune dépendance externe. |
 | `player/apple2/` | Le moteur cc65 : pilote écran, streaming, combat, saisie, son, cache `/RAM`. |
+| `player/atarist/` | Portage Atari ST (68000) du même moteur, en cours — cf. [son README](player/atarist/README.md). |
 | `adventures/` | Une aventure par dossier : source `.adv`, images, disquette produite. |
 | `editor/` | Éditeur visuel `.adv` (Angular, v0) : hiérarchie, graphe des choix, import/export. |
 | `docs/` | La documentation du format `.adv` : référence, bonnes pratiques, présentation. |
@@ -167,8 +191,8 @@ Blanc](adventures/homme_costume_blanc/)**, 60 sections, quatre chapitres.
 
 ## Licence
 
-Le code (compilateur `a2c` et player `player/apple2/`) est sous licence
-**[MIT](LICENSE)**.
+Le code (compilateur `a2c` et les players `player/apple2/` et
+`player/atarist/`) est sous licence **[MIT](LICENSE)**.
 
 Les aventures livrées dans `adventures/` portent leurs propres licences de
 contenu, une par dossier :

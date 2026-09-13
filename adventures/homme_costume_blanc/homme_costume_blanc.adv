@@ -308,7 +308,6 @@ pleine de gravats jusqu'au bord. Autour de la margelle court une phrase, en
 glyphes que vous savez lire.
 
 >> JE SUIS CE QUE L'ON REVÊT QUAND ON L'A ÔTÉ. <<
-
 >> ON ME PORTE À L'ENVERS. QUI ME NOMME OUVRE. <<
 
 {flag fresques_lues} Vingt mètres de paroi, la même scène vingt fois : le dieu qui se dépouille et endosse sa dépouille à l'envers. Vous avez la réponse depuis tout à l'heure.
@@ -532,6 +531,7 @@ fond d'un temple.
 ~ restore ENDURANCE
 ~ take urne
 ~ take emeraude
+~ take machette
 New York, trois semaines plus tard. Le paquebot glisse sous une forêt de
 gratte-ciel ; klaxons, vapeur, néons. Sur les colonnes Morris, votre nom côtoie
 celui du Musée d'Histoire naturelle : *L'OR DES DIEUX PERDUS*, grande soirée
@@ -547,14 +547,14 @@ l'*Œil de Quetzalcoatl*.
 :: img_musee
 @mode image_text
 @image musee
-Le Musée d'Histoire naturelle, sous ses lustres : votre soirée de gloire.
+Le Musée d'Histoire naturelle : votre soirée de gloire.
 
 * [Entrer] -> musee_expo
 
 :: musee_expo
 {not flag q_gala} Smokings, flashs de magnésium, serveurs grimés en Aztèques. Le gratin est là : politiques, journalistes, gens du spectacle.
 {not flag q_gala and not flag jean_fusillade} Dans un coin, deux visages connus vous saluent, narquois : les frères Jean, tirés à quatre épingles.
-{not flag q_gala and flag jean_fusillade} Dans un coin, deux visages connus qui ne vous saluent pas : les frères Jean. Vous leur avez tiré dessus.
+{not flag q_gala and flag jean_fusillade} Dans un coin, deux visages connus qui ne vous saluent pas : les frères Jean. (Vous leur avez tiré dessus !)
 {not flag q_gala} Une heure avant le discours — pour serrer des mains, ou regarder ce que personne d'autre ne regarde.
 {flag q_gala} Le brouhaha vous recouvre à nouveau. Il vous reste un peu de temps avant l'estrade.
 
@@ -565,7 +565,7 @@ Le Musée d'Histoire naturelle, sous ses lustres : votre soirée de gloire.
   ~ set q_photographe
 * {not flag q_invites} [Détailler les invités] -> gala_invites
   ~ set q_invites
-* {not flag q_serveurs} [Écouter les serveurs « aztèques »] -> gala_serveurs
+* {not flag q_serveurs} [Écouter les serveurs] -> gala_serveurs
   ~ set q_serveurs
 * {not flag q_rival} [Subir les compliments d'une douairière] -> gala_rival
   ~ set q_rival
@@ -666,15 +666,16 @@ ceux qu'on ne raconte pas au dîner.
 
 :: discours
 Le conservateur tapote son verre ; le silence se fait. Il commence son éloge de
-votre expédition, la voix mal assurée, le front luisant. C'est l'instant que le
-chaos choisit.
+votre expédition, la voix mal assurée, le front luisant. 
 
 * [Écouter, prêt à bondir] -> braquage
 
 :: braquage
+C'est l'instant que le chaos choisit.
+
 Tout va très vite. Profitant de l'attention détournée, des invités nouent des
 foulards sur leur visage, sortent colts et Thompson, et matent la salle en
-quelques cris : *le braquage Moretti*. Les gardes de l'émeraude opposent une
+quelques cris : *un braquage*. Les gardes de l'émeraude opposent une
 résistance de principe, puis se couchent — ils sont payés pour ça.
 Dans la panique, une partie des serveurs « aztèques » se glisse vers la
 ziggourat reconstituée : ils raflent la momie de l'urne et deux autres, et
@@ -778,7 +779,7 @@ plus qu'un trophée.
   ~ set q_conservateur
 * {not flag q_recherche} [Fouiller les archives du musée sur Xipe Totec] -> piste_recherche
   ~ set q_recherche
-* {flag lead_moretti and not flag q_moretti} [Descendre chez les Moretti, dans le quartier italien] -> piste_moretti
+* {flag q_conservateur and not flag q_moretti} [Descendre chez les Moretti, dans le quartier italien] -> piste_moretti
   ~ set q_moretti
 * {flag q_moretti and not flag adresse_peruvien and not flag q_jean} [Une carte de visite glissée sous votre porte : « J. » ] -> piste_jean
   ~ set q_jean
