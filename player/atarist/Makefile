@@ -9,8 +9,10 @@
 # .ST (FAT12, via mtools) dans adventures/<ADV>/build/.
 #
 # Images ST-specifiques (format different de l'Apple II, cf. img2st.py) :
-# adventures/<ADV>/img/atarist/*.HGR, si le dossier existe -- a cote de
+# adventures/<ADV>/img/atarist/*.PI1, si le dossier existe -- a cote de
 # adventures/<ADV>/img/ (Apple II), pas dedans, pour ne rien lui melanger.
+# Extension .PI1 (Degas reel, cf. img2st.py) et non .HGR (Apple II) : cf.
+# IMG_EXT dans src/platform.h, la seule reference a ne pas dedoubler.
 
 CC := m68k-atari-mint-gcc
 CFLAGS := -mshort -O2 -Wall
@@ -21,16 +23,27 @@ IMGDIR   := ../../adventures/$(ADV)/img/atarist
 BUILDDIR := build
 AUTO     := $(BUILDDIR)/AUTO
 PRG      := $(AUTO)/A2ADV.PRG
+COMMONDIR:= ../common
 
 TOS := etos512fr.img
 
-SRC := $(wildcard src/*.c)
-OBJ := $(SRC:src/%.c=$(BUILDDIR)/%.o)
+# Le gros du moteur (parsing, streaming, UI, menu...) vit dans $(COMMONDIR),
+# partage avec le player Apple II (cf. ../apple2/Makefile) ; ne reste ici que
+# ce qui est reellement specifique Atari ST (scr.c, snd.c, diskio.c/
+# assetcache.c -- backends de player/common/include/, z2_intro.c,
+# zx02_unpack.c).
+CFLAGS += -I src -I $(COMMONDIR)/include
+SRC := $(wildcard src/*.c) $(wildcard $(COMMONDIR)/src/*.c)
+OBJ := $(patsubst src/%.c,$(BUILDDIR)/%.o,\
+         $(patsubst $(COMMONDIR)/src/%.c,$(BUILDDIR)/%.o,$(SRC)))
 
 .PHONY: all dsk st dist run clean
 all: $(PRG)
 
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/%.o: $(COMMONDIR)/src/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(PRG): $(OBJ) | $(AUTO)
@@ -55,11 +68,11 @@ dsk: $(PRG)
 	cp $(ADVBUILD)/STORY*.DAT $(ADVBUILD)/APP.LNG $(BUILDDIR)/
 	@# Splash du player, pas de l'aventure : contrairement a l'Apple II (ou
 	@# BOOT00.HGR est toujours fourni par l'aventure, cf. adventures/*/img/),
-	@# ce BOOT00.HGR-la vit a la racine du player ST et s'affiche avant TOUTE
+	@# ce BOOT00.PI1-la vit a la racine du player ST et s'affiche avant TOUTE
 	@# aventure qui n'en fournit pas le sien -- easter egg assume, pas un
 	@# reste de test.
-	@test -f BOOT00.HGR && cp BOOT00.HGR $(BUILDDIR)/ || true
-	@test -d $(IMGDIR) && cp $(IMGDIR)/*.HGR $(BUILDDIR)/ || true
+	@test -f BOOT00.PI1 && cp BOOT00.PI1 $(BUILDDIR)/ || true
+	@test -d $(IMGDIR) && cp $(IMGDIR)/*.PI1 $(BUILDDIR)/ || true
 
 # HFLAGS : options Hatari, par defaut un moniteur monochrome (--monitor mono
 # force la haute resolution, Getrez()=2 -- `--tos-res med` seul (RGB, moyenne
@@ -92,9 +105,9 @@ $(ST_IMG): dsk
 	mmd -i $@ ::AUTO
 	mcopy -i $@ $(AUTO)/A2ADV.PRG ::AUTO/
 	mcopy -i $@ $(BUILDDIR)/STORY*.DAT $(BUILDDIR)/APP.LNG ::
-	@test -f $(BUILDDIR)/BOOT00.HGR && mcopy -i $@ $(BUILDDIR)/BOOT00.HGR :: || true
-	@for f in $(BUILDDIR)/*.HGR; do \
-	  [ -e "$$f" ] && [ "$$(basename $$f)" != "BOOT00.HGR" ] && mcopy -i $@ "$$f" :: || true; \
+	@test -f $(BUILDDIR)/BOOT00.PI1 && mcopy -i $@ $(BUILDDIR)/BOOT00.PI1 :: || true
+	@for f in $(BUILDDIR)/*.PI1; do \
+	  [ -e "$$f" ] && [ "$$(basename $$f)" != "BOOT00.PI1" ] && mcopy -i $@ "$$f" :: || true; \
 	done
 	@echo "Image disquette prete : $@"
 

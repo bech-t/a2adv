@@ -8,6 +8,7 @@
 #include "snd.h"
 #include "simage.h"
 #include "game.h"
+#include "platform.h"
 
 /* Ecran d'options son actif seulement si la Mockingboard est compilee. */
 #if defined(__CC65__) && defined(A2ADV_MOCKINGBOARD)
@@ -20,7 +21,7 @@
  * pour le menu semi-graphique (fenetre mixte, toujours 40 col qu'importe
  * scr_cols) ; `width` = scr_cols pour le repli texte plein ecran -- sans
  * quoi ce dernier reste cale sur 40 meme en 80 colonnes (bug reel, constate
- * en pratique le 2026-09-09, corrige ici et cote apple2/). */
+ * en pratique le 2026-09-09 en portant sur Atari ST, corrige ici aussi). */
 static void menu_center(const char *s, u8 y, u8 inverse, u8 width)
 {
     u8 len = 0;
@@ -164,20 +165,24 @@ static u8 menu_loop(void)
     char line[64];
 
     for (;;) {                 /* boucle : redessine apres un retour d'Options */
-        /* Pas de musique de menu sur ST (divergence deliberee par rapport a
-         * l'Apple II, cf. player/apple2/src/smenu.c) -- snd_music(MUS_TITLE)
-         * retire ici. */
+#if HAS_MENU_MUSIC
+        /* (Re)lance le theme a CHAQUE dessin du menu, pas seulement a la
+         * premiere entree : choisir un slot dans les Options passe par
+         * mb_init, qui remet les deux AY a zero et coupe la musique. Sans ce
+         * rappel, on revenait des Options en silence. */
+        snd_music(MUS_TITLE);
+#endif
 
-        /* --- menu semi-graphique (image MENU.HGR + titre + choix en bas) --- */
-        if (img_load("MENU.HGR") == 0) {
-            scr_gfx_mixed();                   /* image en haut, ligne d'air puis 4 lignes en bas */
-            menu_center(g_title, 21, 1, 40);   /* titre */
+        /* --- menu semi-graphique (image MENU + titre + choix en bas) --- */
+        if (img_load("MENU." IMG_EXT) == 0) {
+            scr_gfx_mixed();                   /* image en haut, 4 lignes en bas */
+            menu_center(g_title, MENU_ROW_TITLE, 1, 40);   /* titre */
             build_choices(line);
-            menu_center(line, 23, 0, 40);       /* 1) 2) 3) */
+            menu_center(line, MENU_ROW_CHOICES, 0, 40);    /* 1) 2) 3) */
             line[0] = '\0';
             strcat(line, "Q) "); strcat(line, ui_str[UI_MENU_QUIT]);
-            menu_center(line, 24, 0, 40);       /* Q) quitter, ligne centree */
-            scr_flush();               /* le chargement de MENU.HGR peut etre long */
+            menu_center(line, MENU_ROW_QUIT, 0, 40);       /* Q) quitter, ligne centree */
+            scr_flush();               /* le chargement de l'image peut etre long */
             for (;;) {
                 c = scr_getkey();
                 if (c == '1') { scr_gfx_off(); return ACT_NEW; }
@@ -188,7 +193,7 @@ static u8 menu_loop(void)
             continue;                  /* revient dessiner le menu */
         }
 
-        /* --- menu texte de repli (pas de MENU.HGR) --- */
+        /* --- menu texte de repli (pas d'image MENU) --- */
         scr_gfx_off();
         for (;;) {
             ui_clear();

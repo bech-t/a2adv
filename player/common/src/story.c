@@ -1,30 +1,13 @@
 /* story.c -- chargement de STORY.DAT et streaming des sections.
  *
- * VARIANTE ST (diverge deliberement de player/apple2/src/story.c, cf. regle
- * "chaque portage evolue separement") : `fseek()` de la libc (mintlib,
- * cross-mint-essential) echoue silencieusement sur un fichier ouvert par
- * fopen() sous l'emulation GEMDOS-HDD de Hatari -- confirme le 2026-09-09 et
- * isole via smoketest/fseek_test.c (l'appel GEMDOS BRUT Fseek(), lui,
- * fonctionne). Plutot que contourner fseek() a chaque site
- * d'appel (3, avec le risque de desynchroniser un tampon stdio partage), on
- * charge le fichier STORYnn.DAT COURANT entierement en memoire au premier
- * acces : chaque STORYn.DAT fait au plus DEFAULT_MAX_FILE = 0xFC00 o (~63 Ko,
- * verrouille cote compilateur, cf. a2c/encoder.py), large comme un boisseau
- * dans le Mo de RAM d'un ST -- ce que l'Apple II (64 Ko en tout) ne peut pas
- * se permettre, d'ou le streaming plus prudent de la version apple2/. Une
- * fois le fichier en RAM, "seek" devient un simple index dans un tableau :
- * plus aucun appel a fseek()/ftell() dans ce fichier. */
+ * L'acces au support (stdio+ProDOS sur Apple II, chargement pleine RAM sur
+ * Atari ST) est enterement delegue a diskio.h/assetcache.h : ce fichier ne
+ * fait plus que de la logique de format, commune aux deux portages. */
 
-#include <string.h>
-#include <osbind.h>
 #include "story.h"
 #include "state.h"
-#include "ramdisk.h"
-
-#define FILEBUF_MAX 0xFC00   /* = DEFAULT_MAX_FILE cote compilateur (a2c/encoder.py) */
-static u8  filebuf[FILEBUF_MAX];
-static u32 filesize;   /* octets reellement charges pour le fichier COURANT */
-static u32 fpos;       /* curseur de lecture "virtuel" -- remplace fseek/ftell */
+#include "diskio.h"
+#include "assetcache.h"
 
 u8  g_nstats, g_nitems, g_nflags;
 u16 g_nsections;
@@ -112,26 +95,10 @@ static u16 file_first[FILE_FIRST_MAX + 1];
 
 /* --- Petites lectures depuis le fichier -------------------------------- */
 
-/* Sur ST, le fichier est deja entierement charge dans filebuf[] (cf. entete
- * de ce fichier) : "remplir" ne fait plus qu'un controle de bornes -- garde
- * la meme signature/le meme usage que la version apple2/ (fichier tronque =
- * erreur, comme avant), mais il n'y a plus de tampon separe a alimenter. */
-static signed char buf_fill(u16 n)
-{
-    if (n == 0 || fpos + (u32)n > filesize)
-        return -1;
-    return 0;
-}
-
-static u8 f_u8(void)
-{
-    return filebuf[fpos++];
-}
-
 static u16 f_u16(void)
 {
-    u16 lo = f_u8();
-    return lo | ((u16)f_u8() << 8);
+    u16 lo = dio_u8();
+    return lo | ((u16)dio_u8() << 8);
 }
 
 static u32 f_u32(void)
@@ -143,11 +110,11 @@ static u32 f_u32(void)
 /* Lit une chaîne préfixée (u8 len + octets) vers dst (tronquée à cap-1). */
 static void f_lenstr(char *dst, u8 cap)
 {
-    u8 len = f_u8();
+    u8 len = dio_u8();
     u8 i, keep;
     keep = (len < cap - 1) ? len : (u8)(cap - 1);
     for (i = 0; i < len; ++i) {
-        u8 c = f_u8();
+        u8 c = dio_u8();
         if (i < keep)
             dst[i] = (char)c;
     }
@@ -169,38 +136,23 @@ static void set_path(const char *path)
     g_digit = (i >= 6) ? (u8)(i - 6) : 0;
 }
 
-/* Charge integralement `path` dans filebuf[] via GEMDOS brut (Fopen/Fread :
- * fseek()/fopen() de la libc sont evites ici, cf. entete de ce fichier).
- * 0 = ok, -1 = fichier absent (ou trop gros pour FILEBUF_MAX -- ne devrait
- * jamais arriver, cf. DEFAULT_MAX_FILE cote compilateur). */
-static signed char load_whole_file(const char *path)
-{
-    long h, n;
-    h = Fopen(path, 0);          /* 0 = lecture seule */
-    if (h < 0)
-        return -1;
-    n = Fread(h, (long)FILEBUF_MAX, filebuf);
-    Fclose(h);
-    if (n < 0)
-        return -1;
-    filesize = (u32)n;
-    fpos = 0;
-    return 0;
-}
-
 /* Ouvre le fichier STORYnn.DAT (remplace les 2 chiffres dans g_path).
- * Cache /RAM d'abord, repli disquette sinon. */
+ * Cache (cf. assetcache.h) d'abord, repli disquette sinon. cache_prepare()
+ * est a la charge de l'APPELANT (cf. story_load_section) : l'ouverture
+ * initiale du fichier 0 dans story_open() n'a pas a y passer. */
 static signed char open_file(u8 id)
 {
-    signed char r = -1;
-    if (ram_has(id))
-        r = load_whole_file(ram_path(id));
-    if (r != 0) {                                   /* repli : la disquette */
-        g_path[g_digit]     = (char)('0' + id / 10);   /* 2 chiffres : 00..99 */
-        g_path[g_digit + 1] = (char)('0' + id % 10);
-        r = load_whole_file(g_path);
+    const char *cached;
+
+    g_path[g_digit]     = (char)('0' + id / 10);   /* 2 chiffres : 00..99 */
+    g_path[g_digit + 1] = (char)('0' + id % 10);
+
+    cached = cache_story_path(id);
+    if (cached != 0 && dio_open(cached) == 0) {
+        cur_file = id;
+        return 0;
     }
-    if (r != 0) {
+    if (dio_open(g_path) != 0) {
         cur_file = 0xFF;
         return -1;
     }
@@ -223,13 +175,15 @@ static u8 file_of(u16 idx)
 static signed char load_local(u8 f)
 {
     u16 k;
-    fpos = (f == 0) ? local0_off : 0;
-    if (fpos > filesize)
+    if (dio_seek((f == 0) ? local0_off : 0) != 0)
         return -1;
     cur_count = f_u16();
     if (cur_count > LOCAL_IDX_MAX)
         return -2;
-    if (buf_fill((u16)((cur_count + 1) * 2)) != 0)
+    /* (count+1) offsets d'un bloc. Gain modeste — 10 a 52 octets en pratique,
+     * soit ~20 ms par changement de chapitre — mais secbuf est libre ici (le
+     * corps de section n'est lu qu'apres) et ca ne coute que ces trois lignes. */
+    if (dio_fill((u16)((cur_count + 1) * 2)) != 0)
         return -1;
     for (k = 0; k <= cur_count; ++k)
         local_off[k] = f_u16();
@@ -248,37 +202,37 @@ signed char story_open(const char *path)
         return -1;
 
     /* En-tete : 20 octets en UNE lecture, puis on les consomme depuis secbuf. */
-    if (buf_fill(HEADER_SIZE) != 0)
+    if (dio_fill(HEADER_SIZE) != 0)
         return -2;
     for (i = 0; i < 4; ++i)
-        magic[i] = (char)f_u8();
+        magic[i] = (char)dio_u8();
     if (magic[0] != 'A' || magic[1] != '2' ||
         magic[2] != 'A' || magic[3] != 'D')
         return -2;
 
-    g_story_version = f_u8();
+    g_story_version = dio_u8();
     if (g_story_version != STORY_FORMAT_VERSION)
         return -6;                /* format incompatible : ne PAS lire la suite */
     {
-        u8 hf = f_u8();           /* flags   */
+        u8 hf = dio_u8();         /* flags   */
         g_score_on = (hf & HDR_SCORE) ? 1 : 0;
         g_moves_on = (hf & HDR_MOVES) ? 1 : 0;
     }
     g_nsections = f_u16();
-    g_nstats = f_u8();
-    g_nitems = f_u8();
-    g_nflags = f_u8();
-    g_nintro = f_u8();            /* nb de scenes d'intro */
+    g_nstats = dio_u8();
+    g_nitems = dio_u8();
+    g_nflags = dio_u8();
+    g_nintro = dio_u8();          /* nb de scenes d'intro */
     g_start = f_u16();
     index_offset = f_u32();
-    g_nfiles = f_u8();            /* offset 18 : nombre de fichiers STORYn.DAT */
-    g_local_base = f_u8();        /* offset 19 : 1er index de flag LOCAL */
+    g_nfiles = dio_u8();          /* offset 18 : nombre de fichiers STORYn.DAT */
+    g_local_base = dio_u8();      /* offset 19 : 1er index de flag LOCAL */
 
-    /* Preambule : longueur connue (index_offset le termine). Un seul fread
-     * remplace ici plusieurs centaines d'appels MLI. Au-dela de secbuf, on
-     * retombe sur la lecture directe — correcte, juste plus lente. */
-    if (index_offset > HEADER_SIZE)
-        (void)buf_fill((u16)(index_offset - HEADER_SIZE));
+    /* Preambule : longueur connue (index_offset le termine). Un seul dio_fill
+     * remplace ici plusieurs centaines d'appels bas niveau. */
+    if (index_offset > HEADER_SIZE &&
+        dio_fill((u16)(index_offset - HEADER_SIZE)) != 0)
+        return -2;
 
     if (g_nstats > MAX_STATS || g_nitems > MAX_ITEMS ||
         g_nflags > MAX_FLAGS || g_nintro > MAX_INTRO ||
@@ -288,15 +242,15 @@ signed char story_open(const char *path)
     /* préambule : stat_table[init,min,max] ; le max lu est le DEFAUT (mutable
      * ensuite via ~ setmax) -> stat_maxdef ; state_init en fera stat_max. */
     for (i = 0; i < g_nstats; ++i) {
-        stat_init[i]   = f_u8();
-        stat_min[i]    = f_u8();
-        stat_maxdef[i] = f_u8();
+        stat_init[i]   = dio_u8();
+        stat_min[i]    = dio_u8();
+        stat_maxdef[i] = dio_u8();
     }
-    g_stat_hidden = f_u8();       /* v6 : bit i = stat i absente du bandeau */
+    g_stat_hidden = dio_u8();     /* v6 : bit i = stat i absente du bandeau */
     for (i = 0; i < (g_nitems + 7) / 8; ++i)
-        item_default[i] = f_u8();
+        item_default[i] = dio_u8();
     for (i = 0; i < (g_nflags + 7) / 8; ++i)
-        flag_default[i] = f_u8();
+        flag_default[i] = dio_u8();
     for (i = 0; i < g_nstats; ++i)
         f_lenstr(stat_name[i], STAT_NAME_LEN);
     for (i = 0; i < g_nitems; ++i)
@@ -309,36 +263,35 @@ signed char story_open(const char *path)
      * par-dessus le socle deja charge depuis APP.LNG. Une aventure qui ne
      * surcharge rien n'a rien ici. */
     {
-        u8 nover = f_u8();
+        u8 nover = dio_u8();
         for (i = 0; i < nover; ++i) {
-            u8 k = f_u8();
+            u8 k = dio_u8();
             if (k < UI_COUNT) {
                 f_lenstr(ui_str[k], UI_STR_LEN);
             } else {
-                u8 sl = f_u8();      /* cle inconnue : saute la chaine */
-                while (sl--) (void)f_u8();
+                u8 sl = dio_u8();    /* cle inconnue : saute la chaine */
+                while (sl--) (void)dio_u8();
             }
         }
     }
 
     /* attributs de combat par objet (atk, dmg, armor) — signés */
     for (i = 0; i < g_nitems; ++i) {
-        item_atk[i]   = (signed char)f_u8();
-        item_dmg[i]   = (signed char)f_u8();
-        item_armor[i] = (signed char)f_u8();
+        item_atk[i]   = (signed char)dio_u8();
+        item_dmg[i]   = (signed char)dio_u8();
+        item_armor[i] = (signed char)dio_u8();
     }
     /* config de combat : stat d'attaque, stat de PV, dégâts de base */
-    g_combat_att     = f_u8();
-    g_combat_hp      = f_u8();
-    g_combat_basedmg = f_u8();
+    g_combat_att     = dio_u8();
+    g_combat_hp      = dio_u8();
+    g_combat_basedmg = dio_u8();
 
     /* v4 : table file_first (resident) puis index local de STORY00 (courant) */
     {
         u16 k;
-        fpos = index_offset;
-        if (fpos > filesize)
+        if (dio_seek(index_offset) != 0)
             return -4;
-        if (buf_fill((u16)((g_nfiles + 1) * 2)) != 0)   /* jusqu'a 202 octets */
+        if (dio_fill((u16)((g_nfiles + 1) * 2)) != 0)   /* jusqu'a 202 octets */
             return -4;
         for (k = 0; k <= g_nfiles; ++k)
             file_first[k] = f_u16();
@@ -353,6 +306,7 @@ signed char story_open(const char *path)
 
 void story_close(void)
 {
+    dio_close();
     cur_file = 0xFF;
 }
 
@@ -364,7 +318,8 @@ signed char story_load_section(u16 idx)
     u16 slot, off;
 
     if (f != cur_file) {                 /* changement de fichier : recharge l'index local */
-        ram_ensure(f);                   /* fenetre glissante */
+        dio_close();                     /* AVANT cache_prepare : une copie en cache peut */
+        cache_prepare(f);                /* avoir besoin de tampons/place que fp occupe   */
         if (open_file(f) != 0)
             return -1;
         if (load_local(f) != 0)
@@ -376,9 +331,10 @@ signed char story_load_section(u16 idx)
     seclen = (u16)(local_off[slot + 1] - off);
     if (seclen > SECTION_MAX)
         return -3;
-    if ((u32)off + seclen > filesize)
+    if (dio_seek(off) != 0)
         return -4;
-    memcpy(secbuf, filebuf + off, seclen);
+    if (dio_read(secbuf, seclen) != 0)
+        return -5;
 
     cpos = 0;
     return 0;

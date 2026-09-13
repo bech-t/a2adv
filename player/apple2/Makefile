@@ -22,6 +22,7 @@ LOADADDR  ?= 0x4000
 
 # Dossiers
 SRCDIR   := src
+COMMONDIR:= ../common
 BUILDDIR := build
 
 # --- Aventure a embarquer ----------------------------------------------
@@ -45,8 +46,12 @@ DATADIR  := $(ADVDIR)/build
 STORY    := STORY00.DAT
 VOLNAME  := A2ADV
 
-# Sources / objets
-SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s)
+# Sources / objets. Le gros du moteur (parsing, streaming, UI, menu...) vit
+# dans $(COMMONDIR), partage avec le player Atari ST (cf. ../atarist/Makefile) ;
+# ne reste ici que ce qui est reellement specifique Apple II (scr.c, snd.c,
+# snd_mb.c, diskio.c/assetcache.c -- backends de player/common/include/,
+# z2_intro.s, zx02.s).
+SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s) $(wildcard $(COMMONDIR)/src/*.c)
 
 # Options de compilation.
 # Pile C reduite a 1 Ko (defaut 2 Ko) : pas de recursion profonde ici.
@@ -64,7 +69,7 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*.s)
 # -Os : inline les fonctions standard courtes (strlen, memcpy...). Mesure a
 # 84 octets gagnes. --codesize, lui, fait GROSSIR le code dans les deux sens :
 # le defaut (100) est deja l'optimum ici.
-CFLAGS   := -t $(TARGET) -O -Os -Cl
+CFLAGS   := -t $(TARGET) -O -Os -Cl -I $(SRCDIR) -I $(COMMONDIR)/include
 LDFLAGS  := -t $(TARGET) --start-addr $(LOADADDR) -Wl -D,__STACKSIZE__=0x0400
 
 # --- Place code --------------------------------------------------------
@@ -118,7 +123,8 @@ else
 endif
 
 OBJECTS  := $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,\
-              $(patsubst $(SRCDIR)/%.s,$(BUILDDIR)/%.o,$(SOURCES)))
+              $(patsubst $(SRCDIR)/%.s,$(BUILDDIR)/%.o,\
+                $(patsubst $(COMMONDIR)/src/%.c,$(BUILDDIR)/%.o,$(SOURCES))))
 
 # Binaire Apple II generique (partage par toutes les aventures)
 BIN      := $(BUILDDIR)/$(PROGRAM).bin
@@ -157,8 +163,11 @@ $(DATAOUT) &: $(ADVSRC) $(LNGSRC) $(A2CSRC)
 $(BIN): $(OBJECTS)
 	$(CL65) $(LDFLAGS) -o $@ $(OBJECTS)
 
-# Compilation C -> objet
+# Compilation C -> objet (specifique Apple II, puis commun -- cf. COMMONDIR)
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
+	$(CL65) $(CFLAGS) --create-dep $(BUILDDIR)/$*.d -c -o $@ $<
+
+$(BUILDDIR)/%.o: $(COMMONDIR)/src/%.c | $(BUILDDIR)
 	$(CL65) $(CFLAGS) --create-dep $(BUILDDIR)/$*.d -c -o $@ $<
 
 # Assemblage .s -> objet
@@ -174,9 +183,9 @@ HOSTBIN := $(BUILDDIR)/hostplay
 DEMO_DATA := /tmp/a2adv_demo
 hosttest:
 	( cd ../../compiler && python3 -m a2c ../adventures/demo_simple/demo_simple.adv -o $(DEMO_DATA) )
-	gcc -std=c99 -Wall -I$(SRCDIR) test/hostplay.c \
-	    $(SRCDIR)/story.c $(SRCDIR)/state.c $(SRCDIR)/snd.c $(SRCDIR)/combat.c \
-	    $(SRCDIR)/ramdisk.c \
+	gcc -std=c99 -Wall -I$(SRCDIR) -I$(COMMONDIR)/include test/hostplay.c \
+	    $(COMMONDIR)/src/story.c $(COMMONDIR)/src/state.c $(COMMONDIR)/src/combat.c \
+	    $(SRCDIR)/snd.c $(SRCDIR)/ramdisk.c $(SRCDIR)/diskio.c $(SRCDIR)/assetcache.c \
 	    -o $(HOSTBIN)
 	@echo "== parcours victoire =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 2 1 1 1 1 | tail -2
 	@echo "== parcours defaite  =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 1 1 1     | tail -2

@@ -17,7 +17,7 @@
 #include "scombat.h"
 #include "sinput.h"
 #include "smenu.h"
-#include "ramdisk.h"
+#include "assetcache.h"
 #include "lang.h"
 #include "game.h"
 #include "z2_intro.h"
@@ -357,7 +357,7 @@ int main(void)
      * chaines que l'aventure surcharge. */
     lang_load();
 
-    ram_boot_fill(0, boot_progress);
+    cache_boot_fill(0, boot_progress);
 
     {
         /* Messages en dur : ils precedent la lecture des donnees, donc aussi

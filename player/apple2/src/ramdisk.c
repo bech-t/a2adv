@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "ramdisk.h"
 #include "story.h"
+#include "platform.h"
 #ifdef __CC65__
 #include "simage.h"      /* img_load_from_disk : decompression .ZX2 des images.
                           * Pas cote hote : hosttest ne compile ni simage.c ni
@@ -341,10 +342,10 @@ static u8 evict_farthest(u8 from)
  * reviennent. Renvoie NULL au-dela de la serie. */
 static const char *extra_name(u8 i)
 {
-    static char n[] = "IMG00.HGR";
+    static char n[] = "IMG00." IMG_EXT;
 
     if (i == 0)
-        return "MENU.HGR";
+        return "MENU." IMG_EXT;
     --i;
     if (i >= 100)
         return 0;
