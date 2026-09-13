@@ -349,19 +349,19 @@ int main(void)
     z2_intro();       /* jingle haut-parleur : occupe l'attente sur le dernier
                        * splash pendant que /RAM et STORY0.DAT se chargent. */
 
-    /* Cache /RAM des STORYnn.DAT (spec §7quater) : AVANT story_open, ou seuls
+    /* Cache /RAM des STORYnn.DAT : AVANT story_open, ou seuls
      * 2 tampons ProDOS sont necessaires. Sans /RAM (64 Ko) : aucun effet, et
      * le splash reste a l'ecran puisque la barre n'est jamais appelee. */
     /* Socle d'interface EN PREMIER : la barre de chargement /RAM ci-dessous
      * l'utilise deja, et story_open posera ensuite par-dessus les seules
-     * chaines que l'aventure surcharge (spec §6.1). */
+     * chaines que l'aventure surcharge. */
     lang_load();
 
     ram_boot_fill(0, boot_progress);
 
     {
         /* Messages en dur : ils precedent la lecture des donnees, donc aussi
-         * celle des chaines d'UI (seule exception admise, cf. spec §6.1). */
+         * celle des chaines d'UI (seule exception admise). */
         signed char err = story_open(STORY_FILE);
         if (err != 0) {
             scr_gfx_off();           /* quitter le splash pour un ecran texte */

@@ -1,4 +1,4 @@
-/* ramdisk.h -- cache des STORYnn.DAT en disque RAM ProDOS (cf. spec §7quater).
+/* ramdisk.h -- cache des STORYnn.DAT en disque RAM ProDOS.
  *
  * Sur 128 Ko (//e / //c), ProDOS cree un volume /RAM en memoire auxiliaire
  * (~119 blocs, ~59,5 Ko). Y recopier les STORYnn.DAT supprime les acces

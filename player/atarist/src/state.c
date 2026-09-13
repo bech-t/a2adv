@@ -169,7 +169,7 @@ u16 state_apply_effects(void)
             break;
         case OP_GOTO:
             target = a0 | ((u16)a1 << 8);
-            return target;   /* saut immédiat (spec §5.2) */
+            return target;   /* saut immédiat */
         }
     }
     return target;

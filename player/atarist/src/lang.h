@@ -1,4 +1,4 @@
-/* lang.h -- socle de chaines d'interface, charge depuis APP.LNG (spec §6.1).
+/* lang.h -- socle de chaines d'interface, charge depuis APP.LNG.
  *
  * Le player ne contient AUCUN texte de langue. APP.LNG porte les UI_COUNT
  * chaines dans l'ordre fige de l'enum UI_* ; l'aventure ne fournit ensuite que

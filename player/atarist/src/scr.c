@@ -96,15 +96,26 @@ u8  scr_cols;
 u16 scr_entropy;
 void (*scr_idle_hook)(void);
 
-/* Colonne courante -- ce fichier doit la suivre LUI-MEME, comme la version
- * Apple II (page texte directe, cx/cy). ui.c s'appuie dessus : son propre
- * compteur de colonne se remet a 0 SANS emettre de saut de ligne des qu'il
- * pense que l'ecran a "enroule" (cf. ui_wrap : `if (col >= scr_cols) col =
- * 0;`), en confiance que scr_putc() vient de le faire. Un simple Cconout()
- * qui compte sur l'auto-wrap du terminal VT52 dessynchronise les deux :
- * constate en pratique (2026-09-09) -- la fin des phrases disparaissait,
- * ecrasee sur la meme ligne au lieu de descendre. */
+/* Colonne/rangee courantes -- ce fichier doit les suivre LUI-MEME, comme la
+ * version Apple II (page texte directe, cx/cy). ui.c s'appuie sur cx : son
+ * propre compteur de colonne se remet a 0 SANS emettre de saut de ligne des
+ * qu'il pense que l'ecran a "enroule" (cf. ui_wrap : `if (col >= scr_cols)
+ * col = 0;`), en confiance que scr_putc() vient de le faire. Un simple
+ * Cconout() qui compte sur l'auto-wrap du terminal VT52 dessynchronise les
+ * deux : constate en pratique (2026-09-09) -- la fin des phrases
+ * disparaissait, ecrasee sur la meme ligne au lieu de descendre.
+ *
+ * cy sert a autre chose : borner la derniere rangee, cf. st_newline. */
 static u8 cx;
+static u8 cy;
+
+/* Derniere rangee valide de la console VT52 -- 25 rangees (0-24) quelle que
+ * soit la resolution : basse et moyenne resolution ST affichent toutes deux
+ * 200 lignes avec la meme police 8x8 (haute resolution mono : 400 lignes,
+ * meme police -> 50 rangees, mais scr_gfx_mixed n'est de toute facon jamais
+ * utilise sur mono, cf. st_mono). Identique en esprit au `if (cy < 23)` de
+ * apple2/src/scr.c:newline(). */
+#define SCR_MAX_ROW 24
 
 /* _frclock (cf. mint/sysvars.h) : compteur d'interruptions VBL reelles --
  * incremente au rythme d'affichage EFFECTIF de la machine (50 Hz PAL, 60 Hz
@@ -165,13 +176,26 @@ void scr_clear(void)
 {
     (void)Cconws("\033E");
     cx = 0;
+    cy = 0;
 }
 
+/* Descend d'une ligne -- SAUF sur la derniere rangee (cf. SCR_MAX_ROW),
+ * ou seul le retour chariot est emis : rester sur place plutot que de
+ * laisser la console VT52 faire son propre scroll materiel. Ce scroll
+ * porte sur l'ECRAN PHYSIQUE ENTIER (meme framebuffer que les graphismes,
+ * cf. l'en-tete de ce fichier) : en mode mixte il ferait donc remonter
+ * l'image d'une rangee a chaque ligne ecrite en bas de la fenetre de
+ * texte -- constate a l'ecran. Identique en esprit a apple2/src/scr.c:
+ * newline() (`if (cy < 23) ++cy`), qui n'a pas ce risque : la page texte
+ * de l'Apple II est ecrite directement, sans notion de scroll materiel. */
 static void st_newline(void)
 {
     Cconout('\r');
-    Cconout('\n');
     cx = 0;
+    if (cy < SCR_MAX_ROW) {
+        Cconout('\n');
+        ++cy;
+    }
 }
 
 void scr_putc(char c)
@@ -208,6 +232,7 @@ void scr_gotoxy(u8 x, u8 y)
     Cconout(32 + y);
     Cconout(32 + x);
     cx = x;
+    cy = y;
 }
 
 char scr_getkey(void)
