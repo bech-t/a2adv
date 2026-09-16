@@ -164,9 +164,11 @@ def _decode_section(r: _Reader) -> DecSection:
         win_fx = _decode_effects(r)
         lose_fx = _decode_effects(r)
         flee_fx = _decode_effects(r)
+        win_msg, lose_msg, flee_msg = r.lenstr(), r.lenstr(), r.lenstr()
         combat = dict(name=cname, att=att, hp=hp, dmg=dmg, armor=armor,
                       image=cimg, win=win, lose=lose, flee=flee,
-                      win_fx=win_fx, lose_fx=lose_fx, flee_fx=flee_fx)
+                      win_fx=win_fx, lose_fx=lose_fx, flee_fx=flee_fx,
+                      win_msg=win_msg, lose_msg=lose_msg, flee_msg=flee_msg)
     inp = None
     if r.u8():                          # bloc saisie présent ?
         prompt = r.lenstr()

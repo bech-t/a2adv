@@ -31,17 +31,32 @@ _RENAMED = {"@victoire": "@win", "@defaite": "@lose", "@fuite": "@flee",
             "victoire": "win", "defaite": "lose", "fuite": "flee"}
 
 
-def _strip_comment(line: str) -> str:
-    """Retire un commentaire de fin de ligne (`#`) hors guillemets, pour les
-    lignes structurelles (@, ::, *, ~). Les lignes de texte gardent leur `#`."""
+def split_comment(line: str) -> tuple[str, str | None]:
+    """Sépare une ligne structurelle (@, ::, *, ~) de son commentaire de fin
+    (`#` hors guillemets), s'il y en a un. Renvoie (code, commentaire)."""
     out, in_str = [], False
-    for ch in line:
+    for i, ch in enumerate(line):
         if ch == '"':
             in_str = not in_str
         if ch == "#" and not in_str:
-            break
+            comment = line[i + 1:]
+            if comment.startswith(" "):
+                comment = comment[1:]
+            return "".join(out).rstrip(), comment
         out.append(ch)
-    return "".join(out).rstrip()
+    return "".join(out).rstrip(), None
+
+
+def _strip_comment(line: str) -> str:
+    """Retire un commentaire de fin de ligne (`#`) hors guillemets, pour les
+    lignes structurelles (@, ::, *, ~). Les lignes de texte gardent leur `#`."""
+    return split_comment(line)[0]
+
+
+def comment_lead(text: str) -> str:
+    """Contenu d'une ligne de commentaire pleine ligne (`# texte` -> `texte`)."""
+    body = text[1:]
+    return body[1:] if body.startswith(" ") else body
 
 
 def _parse_style_prefix(content: str) -> tuple[int, str]:
@@ -78,6 +93,7 @@ def parse(text: str) -> Story:
     seen_section = False
     pending: dict | None = None      # paragraphe de texte en cours d'accumulation
     chapter = 0                      # chapitre courant (frontiere de decoupage fichier)
+    lead: list[str] = []             # commentaires pleine ligne en attente d'attache
 
     def flush():
         """Termine le paragraphe courant : les lignes consecutives ont ete
@@ -95,19 +111,26 @@ def parse(text: str) -> Story:
             continue
         first = stripped[0]
 
-        # commentaire pleine ligne
+        # commentaire pleine ligne : mis en attente, attache au prochain
+        # element rencontre (section/choix/declaration/directive). Survit aux
+        # lignes vides (les blocs de commentaires sont souvent separes de leur
+        # cible par une ligne vide), mais pas a une ligne de texte narratif
+        # (pas de point d'attache pour un commentaire avant un paragraphe).
         if first == "#":
             flush()
+            lead.append(comment_lead(stripped))
             continue
 
         # --- section ---------------------------------------------------
         if stripped.startswith("::"):
             flush()
-            body = _strip_comment(stripped)
+            body, trail = split_comment(stripped)
             name = body[2:].strip()
             if not re.fullmatch(_ID, name):
                 raise A2Error(f"nom de section invalide: '{name}'", n)
-            cur = Section(name=name, line=n, chapter=chapter)
+            cur = Section(name=name, line=n, chapter=chapter,
+                         lead=lead, trail=trail or "")
+            lead = []
             story.sections.append(cur)
             # par defaut, les '~' avant le 1er choix sont des effets d'entree
             # (on_enter implicite) ; @on_enter reste la forme explicite.
@@ -118,7 +141,8 @@ def parse(text: str) -> Story:
         # --- directive -------------------------------------------------
         if first == "@":
             flush()
-            body = _strip_comment(stripped)
+            body, trail = split_comment(stripped)
+            directive_lead, lead = lead, []
             # @chapter : frontiere de decoupage (nouveau fichier au compilateur).
             # Purement compile-time ; les sections suivantes changent de chapitre.
             if body.split(None, 1)[0] == "@chapter":
@@ -128,8 +152,9 @@ def parse(text: str) -> Story:
                 continue
             _parse_directive(body, n, story, cur, seen_section,
                              set_attach=lambda a: None)
-            # @on_enter / @on_exit redirigent les '~' suivants
             key0 = body.split(None, 1)[0]
+            _attach_directive_comment(story, key0[1:], body, directive_lead, trail)
+            # @on_enter / @on_exit redirigent les '~' suivants
             if key0 == "@on_enter":
                 if cur is None:
                     raise A2Error("@on_enter hors d'une section", n)
@@ -158,13 +183,16 @@ def parse(text: str) -> Story:
             flush()
             if cur is None:
                 raise A2Error("choix hors d'une section", n)
-            m = _CHOICE_RE.match(_strip_comment(stripped))
+            code, trail = split_comment(stripped)
+            m = _CHOICE_RE.match(code)
             if not m:
                 raise A2Error("syntaxe de choix invalide "
                               "(attendu: * {cond} [libellé] -> cible)", n)
             cond = _parse_condition(m.group("cond"), n)
             choice = Choice(label=m.group("label").strip(),
-                            target=m.group("target"), cond=cond, line=n)
+                            target=m.group("target"), cond=cond, line=n,
+                            lead=lead, trail=trail or "")
+            lead = []
             cur.choices.append(choice)
             attach = choice.effects
             continue
@@ -174,10 +202,15 @@ def parse(text: str) -> Story:
             flush()
             if cur is None or attach is None:
                 raise A2Error("effet '~' hors d'une section", n)
-            attach.append(_parse_effect(_strip_comment(stripped)[1:].strip(), n))
+            code, trail = split_comment(stripped)
+            eff = _parse_effect(code[1:].strip(), n)
+            eff.trail = trail or ""
+            lead = []   # pas de point d'attache pour un lead sur un effet
+            attach.append(eff)
             continue
 
         # --- texte narratif (éventuellement conditionnel) --------------
+        lead = []   # idem : pas de point d'attache pour un lead sur du texte
         if cur is None:
             raise A2Error(f"texte hors d'une section: '{stripped}'", n)
         cond = Condition(line=n)
@@ -348,6 +381,35 @@ def _require_section(cur: Section | None, n: int) -> None:
         raise A2Error("directive de section hors d'une section", n)
 
 
+# Directives scalaires du preambule : pas de dataclass a elles (juste un champ
+# sur Story), donc leurs commentaires vont dans Story.directive_comments.
+_SCALAR_DIRECTIVES = {"title", "author", "version", "start", "lang", "score",
+                      "moves", "combat_attack", "combat_hp", "combat_basedmg",
+                      "intro"}
+
+
+def _attach_directive_comment(story: Story, bare: str, body: str,
+                              lead: list[str], trail: str | None) -> None:
+    """Rattache un commentaire capture avant/apres une directive `@...` a
+    l'endroit du modele qui lui correspond. Les directives de section
+    (@mode/@image/@ending/@combat/@win/.../@on_enter/@on_exit) n'ont pas de
+    point d'attache dedie : leur commentaire est perdu, comme avant."""
+    if not lead and not trail:
+        return
+    if bare == "stat":
+        story.stats[-1].lead, story.stats[-1].trail = lead, trail or ""
+    elif bare == "item":
+        story.items[-1].lead, story.items[-1].trail = lead, trail or ""
+    elif bare == "flag":
+        story.flags[-1].lead, story.flags[-1].trail = lead, trail or ""
+    elif bare == "ui":
+        parts = body.split(None, 2)
+        if len(parts) >= 2:
+            story.directive_comments[f"ui:{parts[1]}"] = {"lead": lead, "trail": trail or ""}
+    elif bare in _SCALAR_DIRECTIVES:
+        story.directive_comments[bare] = {"lead": lead, "trail": trail or ""}
+
+
 def _parse_stat(args: list[str], n: int, story: Story) -> None:
     # @stat NOM init [min max] [hidden]
     hidden = False
@@ -446,35 +508,52 @@ def _parse_ask(body: str, n: int) -> Input:
     return inp
 
 
-def parse_lang(text: str) -> tuple[str, dict[str, str]]:
-    """Lit un fichier de langue `.lng` -> (code, {clé: texte}).
+def parse_lang(text: str) -> tuple[str, dict[str, str], dict]:
+    """Lit un fichier de langue `.lng` -> (code, {clé: texte}, commentaires).
 
     Même famille que le `.adv` mais volontairement minimal : `@lang <code>` et
     une ligne `@ui <clé> "texte"` par chaine. Rien d'autre n'est accepté — un
     fichier de langue n'a pas de sections.
+
+    Le 3e element suit la meme convention que `Story.directive_comments` :
+    {"lang": {"lead":[...], "trail":"..."}, "ui:<cle>": {...}, ...}.
     """
     lang = "fr"
     strings: dict[str, str] = {}
+    comments: dict[str, dict] = {}
+    lead: list[str] = []
     for n, raw in enumerate(text.splitlines(), 1):
         line = raw.strip()
-        if not line or line.startswith("#"):
+        if not line:
             continue
-        parts = line.split()
+        if line.startswith("#"):
+            lead.append(comment_lead(line))
+            continue
+        code, trail = split_comment(line)
+        parts = code.split()
+        if not parts:
+            lead = []
+            continue
         if parts[0] == "@lang":
             if len(parts) != 2 or not re.fullmatch(r"[a-z]{2}", parts[1]):
                 raise A2Error("@lang attend un code de 2 lettres minuscules", n)
             lang = parts[1]
+            if lead or trail:
+                comments["lang"] = {"lead": lead, "trail": trail or ""}
         elif parts[0] == "@ui":
             if len(parts) < 2 or parts[1] not in UI_KEY_SET:
                 raise A2Error(f"@ui: clé inconnue '{parts[1] if len(parts) > 1 else ''}'", n)
-            m = re.search(r'"([^"]*)"', line)
+            m = re.search(r'"([^"]*)"', code)
             if not m:
                 raise A2Error("@ui: texte attendu entre guillemets", n)
             strings[parts[1]] = m.group(1)
+            if lead or trail:
+                comments[f"ui:{parts[1]}"] = {"lead": lead, "trail": trail or ""}
         else:
             raise A2Error(f"ligne inattendue dans un fichier de langue : "
                           f"'{parts[0]}' (attendu @lang ou @ui)", n)
-    return lang, strings
+        lead = []
+    return lang, strings, comments
 
 
 def _parse_flag(args: list[str], n: int, story: Story) -> None:

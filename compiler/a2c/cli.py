@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
                           f"({lng_src}). Langues disponibles : "
                           + (", ".join(sorted(p.stem for p in LANG_DIR.glob("*.lng")))
                              or "(aucune)"))
-        lang_code, lang_strings = parse_lang(lng_src.read_text(encoding="utf-8"))
+        lang_code, lang_strings, _ = parse_lang(lng_src.read_text(encoding="utf-8"))
         lang_bin = encode_lang(lang_code, lang_strings)
     except A2Error as e:
         print(f"a2c: {src.name}: {e}", file=sys.stderr)

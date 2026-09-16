@@ -130,7 +130,8 @@ TXT_INV_TOGGLE = 0x01
 # Sons predefinis : ORDRE FIGE (doit correspondre a l'enum SND_* du player,
 # format.h). Reference par l'effet DSL `~ sound <nom>`.
 SOUND_NAMES = ["select", "error", "win", "lose",
-               "pickup", "hit", "magic", "door", "page"]
+               "pickup", "hit", "magic", "door", "page",
+               "dread", "bonus"]
 SOUND_INDEX = {n: i for i, n in enumerate(SOUND_NAMES)}
 
 # Limites du player (doivent correspondre a format.h). Le player REFUSE une
@@ -149,6 +150,8 @@ class StatDecl:
     hi: int = 255
     line: int = 0
     hidden: bool = False    # utilisable en condition, absente du bandeau d'etat
+    lead: list[str] = field(default_factory=list)   # commentaires '#' juste au-dessus
+    trail: str = ""                                  # commentaire '#' en fin de ligne
 
 
 @dataclass
@@ -161,6 +164,8 @@ class ItemDecl:
     atk: int = 0       # bonus a l'attaque (2d6 + ATT)
     dmg: int = 0       # bonus aux degats
     armor: int = 0     # reduction des degats subis
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -169,6 +174,8 @@ class FlagDecl:
     default_on: bool = False
     line: int = 0
     is_local: bool = False    # remis a 0 a chaque changement de chapitre
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 # --- Conditions & effets (noms symboliques ; résolus en indices à l'encodage) -
@@ -200,6 +207,7 @@ class Effect:
     value: int = 0
     cond: "Condition" = field(default_factory=lambda: Condition())  # garde optionnelle
     line: int = 0
+    trail: str = ""    # commentaire '#' en fin de ligne (pas de lead : jamais observé en pratique)
 
 
 # --- Sections & choix -------------------------------------------------------
@@ -220,6 +228,8 @@ class Choice:
     effects: list[Effect] = field(default_factory=list)
     line: int = 0
     target_index: int = -1             # rempli à la résolution
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -276,6 +286,8 @@ class Section:
     chapter: int = 0                   # index de chapitre (pilote le decoupage fichier)
     combat: "Combat | None" = None     # section de combat (@combat) sinon None
     input: "Input | None" = None       # section a saisie (@ask) sinon None
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -292,6 +304,11 @@ class Story:
     ui: dict = field(default_factory=dict)              # surcharges de chaînes d'UI
     score_on: bool = True     # compteur de points (désactivable via @score off)
     moves_on: bool = True     # compteur de mouvements (désactivable via @moves off)
+    # commentaires '#' des directives scalaires du preambule (celles qui n'ont
+    # pas de dataclass a elles : @title/@author/@version/@start/@lang/@score/
+    # @moves/@combat_attack/@combat_hp/@combat_basedmg/@intro, et chaque
+    # ligne @ui sous la cle "ui:<cle>"). {"lead": [...], "trail": "..."}.
+    directive_comments: dict = field(default_factory=dict)
     chapters: list[str] = field(default_factory=lambda: [""])  # titres, index=chapitre
     # combat : quelles stats jouent l'attaque et les PV du héros (par nom -> index)
     combat_attack: str = ""   # @combat_attack STAT

@@ -38,6 +38,51 @@ Détecte les défauts de conception : sections inatteignables, culs-de-sac, fins
 non joignables, objets requis jamais octroyés, flags/objets morts. Reachabilité
 optimiste (conditions ignorées).
 
+## Convertir en JSON
+
+```bash
+python3 -m a2c.jsonconv ../adventures/demo_simple/demo_simple.adv   # -> demo_simple.json
+python3 -m a2c.jsonconv demo_simple.json                            # -> demo_simple.adv
+```
+
+Le sens de conversion suit l'extension du fichier source (`-o` pour choisir
+la sortie). Utile pour manipuler une aventure depuis un outil externe (un
+éditeur, un script) sans réimplémenter le parser ligne-à-ligne. Le JSON
+reflète le modèle du parser (mêmes déclarations, textes, choix, effets) ; le
+retour vers `.adv` produit un source valide et recompilable, mais pas
+forcément identique octet pour octet à l'original (la mise en forme —
+indentation, largeur de ligne — n'est pas conservée).
+
+Les commentaires `#` sont conservés là où ils apparaissent réellement dans
+les aventures du dépôt : en tête de fichier/déclaration (`@stat`/`@item`/
+`@flag`/`@ui`/directives scalaires du préambule), en tête de section et de
+choix, et en fin de ligne sur ces mêmes constructions ainsi que sur les
+effets (`~`). Un commentaire ailleurs (avant un paragraphe de texte, à
+l'intérieur d'un bloc `@combat`/`@ask`) reste perdu.
+
+### Paquet "global" (`--bundle`)
+
+Une aventure `.adv` seule ne dit pas tout : les chaînes d'interface (menu,
+combat, etc.) viennent d'un socle `.lng` séparé (`lang/<code>.lng`, partagé
+entre plusieurs aventures). `--bundle` produit un JSON unique qui embarque
+les deux :
+
+```bash
+python3 -m a2c.jsonconv --bundle ../adventures/combat_demo/combat_demo.adv \
+    -o combat_demo.bundle.json
+# -> {"adventure": {...}, "lang": {"code": "fr", "ui": {...}, "comments": {...}}}
+
+python3 -m a2c.jsonconv combat_demo.bundle.json -o combat_demo.adv
+# -> combat_demo.adv + combat_demo.lng (sens .json -> .adv détecté
+#    automatiquement à la présence de la clé "adventure")
+```
+
+Le retour écrit le `.lng` reconstruit à côté de l'`.adv` (`<sortie>.lng`),
+jamais directement dans `lang/` : ce socle est partagé par plusieurs
+aventures, l'écraser sans le demander explicitement serait une action à
+l'aveugle. À toi de le recopier dans `lang/` si tu veux qu'il devienne le
+nouveau socle partagé.
+
 ## Tests
 
 ```bash
@@ -55,6 +100,7 @@ python3 tests/test_compile.py       # ou: pytest
 | `a2c/encoder.py` | modèle -> `STORY0.DAT` / `ASSETS.IDX` (little-endian) |
 | `a2c/decode.py`  | relecture du binaire (tests + dump) |
 | `a2c/analyze.py` | analyse de graphe / QA (reachabilité, culs-de-sac, objets morts) |
+| `a2c/jsonconv.py`| conversion bidirectionnelle `.adv` <-> JSON |
 | `a2c/cli.py`     | interface `python -m a2c` |
 
 Aucune dépendance externe (bibliothèque standard uniquement).

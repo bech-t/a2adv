@@ -523,10 +523,16 @@ qu'un combat se termine.
 ~ sound magic
 ```
 
-Neuf effets sonores prédéfinis, communs à toute aventure : `select`, `error`,
-`win`, `lose`, `pickup`, `hit`, `magic`, `door`, `page`. `~ sound` accepte
-n'importe lequel de ces identifiants ; il n'y a pas d'import de sons
-personnalisés.
+Onze effets sonores prédéfinis, communs à toute aventure : `select`, `error`,
+`win`, `lose`, `pickup`, `hit`, `magic`, `door`, `page`, `dread`, `bonus`.
+`~ sound` accepte n'importe lequel de ces identifiants ; il n'y a pas
+d'import de sons personnalisés.
+
+`pickup` accompagne un `~ give` (objet concret) ; `bonus` accompagne un
+`~ add` sur une stat ou une ressource abstraite (or, force, magie...) sans
+objet physique. `magic` reste réservé aux évènements surnaturels ; `dread`
+couvre les moments de tension/pressentiment qui font perdre une stat sans
+rien de magique (peur, sang-froid entamé...).
 
 ---
 
