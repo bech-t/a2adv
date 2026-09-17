@@ -91,6 +91,26 @@ imprévisible, donc autant les compter.
 > après l'astérisque qui tranche. `* [Ouvrir]` est un choix ; `*ouvrir*` en
 > milieu de texte est une mise en relief.
 
+### Afficher une stat dans le texte : `%NOM%`
+
+N'importe où dans un paragraphe, un libellé de choix, un message d'issue de
+combat (`@win_msg`/`@lose_msg`/`@flee_msg`) ou l'invite d'un `@ask`,
+`%NOM%` affiche la valeur **courante** de la stat `NOM` :
+
+```
+Il vous reste %JOURS% jours.
+* [Attendre encore %JOURS% jours] -> attente
+```
+
+La valeur affichée n'est jamais connue à la compilation : c'est le player
+qui la lit au moment de l'affichage, exactement comme pour le bandeau de
+stats en haut de l'écran. Pas d'option de format (pas de zéros de tête, pas
+de largeur fixe) — juste le nombre, tel quel.
+
+`%NOM%` ne fonctionne **pas** dans une réponse `@answer` (elle ne sert qu'à
+comparer la saisie du joueur, jamais affichée) : un `%` y reste un caractère
+littéral, sans effet spécial.
+
 ### Accents et jeu de caractères
 
 Écrivez votre français normalement dans le fichier source, avec tous ses

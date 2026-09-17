@@ -39,7 +39,7 @@ from pathlib import Path
 from . import model as M
 from .errors import A2Error
 from .parser import parse, parse_lang
-from .symbols import Symbols, resolve
+from .symbols import Symbols, resolve, substitute_stat_refs
 
 LANG_DIR = Path(__file__).resolve().parents[2] / "lang"
 
@@ -93,16 +93,22 @@ def _effects(effects: list[M.Effect], sym: Symbols) -> list[dict]:
     return [_effect(e, sym) for e in effects]
 
 
+def _display_text(text: str, sym: Symbols) -> str:
+    """%NOM% -> reference de stat, *...* -> octet-bascule inverse (invisible) --
+    meme codage que cote binaire (cf. encoder.py:_encode_section), deja
+    valide par resolve(). RichText.tsx/rich-text.ts cote web attendent deja
+    ce codage pour '*' ; l'extension %NOM% suit le meme principe."""
+    return substitute_stat_refs(text, sym).replace("*", chr(M.TXT_INV_TOGGLE))
+
+
 def _text(t: M.TextSegment, sym: Symbols) -> dict:
-    # marqueurs inline *...* -> octet-bascule inverse (invisible), cf.
-    # encoder.py:_encode_text -- RichText.tsx cote web attend deja ce codage.
-    body = t.text.replace("*", chr(M.TXT_INV_TOGGLE))
+    body = _display_text(t.text, sym)
     return {"cond": _cond(t.cond, sym), "style": t.style, "text": body}
 
 
 def _choice(c: M.Choice, sym: Symbols) -> dict:
     return {"cond": _cond(c.cond, sym), "effects": _effects(c.effects, sym),
-            "target": c.target_index, "label": c.label}
+            "target": c.target_index, "label": _display_text(c.label, sym)}
 
 
 def _combat(cb: M.Combat, sym: Symbols) -> dict:
@@ -113,13 +119,16 @@ def _combat(cb: M.Combat, sym: Symbols) -> dict:
         "winFx": _effects(cb.win_effects, sym),
         "loseFx": _effects(cb.lose_effects, sym),
         "fleeFx": _effects(cb.flee_effects, sym),
-        "winMsg": cb.win_msg, "loseMsg": cb.lose_msg, "fleeMsg": cb.flee_msg,
+        "winMsg": _display_text(cb.win_msg, sym),
+        "loseMsg": _display_text(cb.lose_msg, sym),
+        "fleeMsg": _display_text(cb.flee_msg, sym),
     }
 
 
 def _input(ip: M.Input, sym: Symbols) -> dict:
     return {
-        "prompt": ip.prompt, "maxlen": ip.maxlen, "answers": list(ip.answers),
+        "prompt": _display_text(ip.prompt, sym), "maxlen": ip.maxlen,
+        "answers": list(ip.answers),
         "correct": ip.correct_index, "wrong": ip.wrong_index,
         "correctFx": _effects(ip.correct_effects, sym),
         "wrongFx": _effects(ip.wrong_effects, sym),

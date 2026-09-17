@@ -32,6 +32,13 @@
  * Produit par le compilateur a partir des marqueurs *...* du .adv. */
 #define TXT_INV_TOGGLE 0x01
 
+/* Reference de stat inline (invisible), suivie d'un octet d'index dans
+ * stat_val[] : 2 octets fixes quelle que soit la valeur reelle (jamais
+ * connue a la compilation). Produit par le compilateur a partir des
+ * marqueurs %NOM% du .adv (cf. symbols.substitute_stat_refs) ; ui_wrap/
+ * ui_paragraph (ui.c) l'expandent a l'affichage. */
+#define TXT_STAT_REF 0x02
+
 /* Comparateurs (STAT_CMP) */
 #define CMP_EQ 0
 #define CMP_NE 1

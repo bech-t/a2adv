@@ -7,10 +7,14 @@ par l'encodeur binaire.
 
 from __future__ import annotations
 
+import re
+
 from . import model as M
 from .errors import A2Error
 from .model import Atom, Condition, Effect, Mode, Section, Story
 from .translit import to_match_key
+
+_STAT_REF_RE = re.compile(r"%([A-Za-z_][A-Za-z0-9_]*)%")
 
 
 class Symbols:
@@ -20,6 +24,28 @@ class Symbols:
         self.items = {it.name: i for i, it in enumerate(story.items)}
         self.flags = {fl.name: i for i, fl in enumerate(story.flags)}
         self.sections = {s.name: i for i, s in enumerate(story.sections)}
+
+
+def substitute_stat_refs(text: str, sym: Symbols, line: int = 0) -> str:
+    """Remplace chaque %NOM% (valeur de stat) par TXT_STAT_REF suivi de
+    l'index de la stat -- deux caracteres bruts embarques dans le texte,
+    meme convention que '*...*' -> TXT_INV_TOGGLE (cf. encoder.py/
+    webjson.py, qui appellent cette fonction chacun de son cote juste avant
+    d'encoder/serialiser, comme pour '*'). La valeur REELLE n'est connue
+    qu'a l'execution : ce qui est encode ici est une REFERENCE de taille
+    fixe (2 octets, quel que soit le nombre de chiffres de la valeur), pas
+    la valeur elle-meme -- chaque player l'expand a l'affichage.
+
+    Appelee aussi par `resolve()` (resultat ignore) pour valider %NOM% au
+    moment de la compilation plutot qu'a l'encodage : une stat inconnue doit
+    etre signalee comme n'importe quelle autre reference non declaree."""
+    def repl(m: re.Match) -> str:
+        name = m.group(1)
+        if name not in sym.stats:
+            raise A2Error(f"%{name}% : stat inconnue "
+                          "(ajouter @stat au préambule)", line)
+        return chr(M.TXT_STAT_REF) + chr(sym.stats[name])
+    return _STAT_REF_RE.sub(repl, text)
 
 
 def resolve(story: Story) -> list[str]:
@@ -113,6 +139,7 @@ def _resolve_section(sec: Section, sym: Symbols,
         _resolve_effect(e, sym)
     for t in sec.texts:
         _resolve_condition(t.cond, sym)
+        substitute_stat_refs(t.text, sym, t.line)   # valide %NOM% (résultat ignoré ici)
     for c in sec.choices:
         _resolve_condition(c.cond, sym)
         for e in c.effects:
@@ -120,6 +147,7 @@ def _resolve_section(sec: Section, sym: Symbols,
         if c.target not in sym.sections:
             raise A2Error(f"choix vers une section inconnue: '{c.target}'", c.line)
         c.target_index = sym.sections[c.target]
+        substitute_stat_refs(c.label, sym, c.line)
 
     if sec.combat is not None:
         cb = sec.combat
@@ -143,6 +171,8 @@ def _resolve_section(sec: Section, sym: Symbols,
             _resolve_effect(e, sym)
         for e in cb.flee_effects:
             _resolve_effect(e, sym)
+        for msg in (cb.win_msg, cb.lose_msg, cb.flee_msg):
+            substitute_stat_refs(msg, sym, cb.line)
         if not (0 <= cb.att <= 255 and 1 <= cb.hp <= 255 and
                 0 <= cb.dmg <= 255 and 0 <= cb.armor <= 255):
             raise A2Error(f"@combat dans '{sec.name}': valeurs hors bornes "
@@ -167,6 +197,7 @@ def _resolve_section(sec: Section, sym: Symbols,
         # la casse/accentuation d'affichage ne doit pas décider si une
         # réponse est acceptée.
         ip.answers = [to_match_key(a).strip() for a in ip.answers]
+        substitute_stat_refs(ip.prompt, sym, ip.line)
         for e in ip.correct_effects:
             _resolve_effect(e, sym)
         for e in ip.wrong_effects:

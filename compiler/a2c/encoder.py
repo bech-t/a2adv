@@ -10,7 +10,7 @@ import struct
 
 from . import model as M
 from .errors import A2Error
-from .symbols import Symbols
+from .symbols import Symbols, substitute_stat_refs
 from .translit import normalize_display
 
 MAGIC_STORY = b"A2AD"
@@ -213,16 +213,18 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
         out += _encode_effects(cb.win_effects, sym)    # effets par issue
         out += _encode_effects(cb.lose_effects, sym)
         out += _encode_effects(cb.flee_effects, sym)
-        out += _lenstr(cb.win_msg)     # textes d'issue (vides = aucun ecran)
-        out += _lenstr(cb.lose_msg)
-        out += _lenstr(cb.flee_msg)
+        # textes d'issue (vides = aucun ecran) : %NOM% -> reference de stat,
+        # cf. substitute_stat_refs (deja valide par resolve()).
+        out += _lenstr(substitute_stat_refs(cb.win_msg, sym))
+        out += _lenstr(substitute_stat_refs(cb.lose_msg, sym))
+        out += _lenstr(substitute_stat_refs(cb.flee_msg, sym))
     # bloc saisie optionnel (u8 present + invite + reponses + cibles + effets)
     if sec.input is None:
         out += struct.pack("<B", 0)
     else:
         ip = sec.input
         out += struct.pack("<B", 1)
-        out += _lenstr(ip.prompt)
+        out += _lenstr(substitute_stat_refs(ip.prompt, sym))
         out += struct.pack("<B", ip.maxlen)
         out += struct.pack("<B", len(ip.answers))
         for a in ip.answers:
@@ -237,8 +239,12 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
     for t in sec.texts:
         out += _encode_cond(t.cond, sym)
         out += struct.pack("<B", t.style)        # style du paragraphe
-        # marqueurs inline *...* -> octet bascule inverse (invisible)
-        body = _encode_text(t.text).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
+        # %NOM% -> reference de stat (avant l'encodage : normalize_display
+        # ne touche pas aux caracteres de controle qui en resultent, cf.
+        # substitute_stat_refs). marqueurs inline *...* -> octet bascule
+        # inverse (invisible), applique apres coup comme avant.
+        text = substitute_stat_refs(t.text, sym)
+        body = _encode_text(text).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
         if len(body) > 0xFFFF:
             raise A2Error("segment de texte trop long (>65535)", t.line)
         out += struct.pack("<H", len(body)) + body
@@ -248,7 +254,7 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
         out += _encode_cond(c.cond, sym)
         out += _encode_effects(c.effects, sym)
         out += struct.pack("<H", c.target_index)
-        out += _lenstr(c.label)
+        out += _lenstr(substitute_stat_refs(c.label, sym))
     return bytes(out)
 
 

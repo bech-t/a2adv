@@ -127,6 +127,13 @@ STYLE_INVERSE = 0x02
 # cet octet, que le player interprete comme "inverse ON/OFF".
 TXT_INV_TOGGLE = 0x01
 
+# Reference de stat inline (invisible) : les marqueurs %NOM% du texte
+# deviennent cet octet suivi de l'index de la stat (2 octets fixes, quelle
+# que soit la valeur reelle : cf. symbols.substitute_stat_refs) -- le player
+# affiche la valeur COURANTE de la stat a cet endroit, connue seulement a
+# l'execution (jamais a la compilation).
+TXT_STAT_REF = 0x02
+
 # Sons predefinis : ORDRE FIGE (doit correspondre a l'enum SND_* du player,
 # format.h). Reference par l'effet DSL `~ sound <nom>`.
 SOUND_NAMES = ["select", "error", "win", "lose",

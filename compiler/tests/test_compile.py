@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from a2c import model as M              # noqa: E402
 from a2c.decode import decode, _decode_section, _Reader  # noqa: E402
 from a2c.encoder import VERSION, encode_assets, encode_story    # noqa: E402
+from a2c.errors import A2Error          # noqa: E402
 from a2c.jsonconv import (              # noqa: E402
     adv_to_json, bundle_to_dict, dict_to_bundle, dict_to_story, json_to_adv,
     render_adv, story_to_dict,
@@ -296,6 +297,81 @@ def test_to_match_key_toujours_ascii_majuscule():
     """Un clavier Apple II ne tape pas d'accent : la clé de comparaison l'est."""
     src = "Où est l'Œuf, Éléphant ?"
     assert to_match_key(src) == "OU EST L'OEUF, ELEPHANT ?"
+
+
+_STAT_REF_ADV = """\
+@title Test
+@start intro
+@stat JOURS 5 0 10
+
+:: intro
+Il vous reste %JOURS% jours.
+* [Attendre %JOURS% jours restants] -> intro
+"""
+
+
+def test_stat_ref_resolu_identique_en_binaire_et_en_json():
+    """%NOM% (texte narratif ET libelle de choix) s'encode en TXT_STAT_REF +
+    index de stat, meme octets des deux cotes (STORY.DAT et story.json) --
+    la valeur reelle n'est jamais connue a la compilation, seule une
+    reference de taille fixe l'est (cf. symbols.substitute_stat_refs)."""
+    story = parse(_STAT_REF_ADV)
+    resolve(story)
+
+    d = decode(encode_story(story)[0])
+    sec = d["sections"][0]
+    bin_text = sec.texts[0][2]
+    bin_label = sec.choices[0][3]
+    expected_text = "Il vous reste " + chr(M.TXT_STAT_REF) + chr(0) + " jours."
+    expected_label = "Attendre " + chr(M.TXT_STAT_REF) + chr(0) + " jours restants"
+    assert bin_text == expected_text
+    assert bin_label == expected_label
+
+    ui = {k: v for k, v in M.UI_KEYS}
+    j = resolved_to_dict(story, ui)
+    assert j["sections"][0]["texts"][0]["text"] == expected_text
+    assert j["sections"][0]["choices"][0]["label"] == expected_label
+
+
+def test_stat_ref_inconnue_leve_une_erreur_a_la_resolution():
+    bad = _STAT_REF_ADV.replace("%JOURS%", "%NEXISTEPAS%", 1)
+    story = parse(bad)
+    try:
+        resolve(story)
+        assert False, "aurait du lever A2Error"
+    except A2Error as e:
+        assert "NEXISTEPAS" in str(e)
+
+
+def test_stat_ref_dans_le_prompt_ask_et_ignore_dans_les_reponses():
+    """%NOM% fonctionne dans le prompt @ask (affiche au joueur) mais n'a
+    aucun sens dans une reponse @answer (jamais affichee, sert seulement a
+    comparer la saisie du joueur) : jamais substitue, jamais valide -- une
+    reponse peut donc legitimement contenir un '%' litteral sans que ce
+    soit une erreur."""
+    adv = """\
+@title Test
+@start q
+@stat JOURS 5 0 10
+
+:: q
+Question.
+@ask "Il reste %JOURS% jours. Combien font 10% de 50 ?"
+@answer 5
+@answer 5%
+@correct q
+@wrong q
+"""
+    story = parse(adv)
+    resolve(story)   # ne doit pas lever, meme si '%' litteral dans une reponse
+
+    ui = {k: v for k, v in M.UI_KEYS}
+    j = resolved_to_dict(story, ui)
+    prompt = j["sections"][0]["input"]["prompt"]
+    # seul %JOURS% (nom valide) est substitue ; le '%' isole de "10% de 50"
+    # ne matche pas %IDENT% et reste tel quel, sans echappement necessaire.
+    assert prompt == "Il reste " + chr(M.TXT_STAT_REF) + chr(0) + " jours. Combien font 10% de 50 ?"
+    assert j["sections"][0]["input"]["answers"] == ["5", "5%"]
 
 
 def test_copy_web_images_copie_les_trouvees_et_signale_les_manquantes():

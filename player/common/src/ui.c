@@ -8,103 +8,6 @@
 
 static u8 col;   /* colonne courante suivie pour la césure */
 
-void ui_init(void)
-{
-    scr_init();   /* detecte 40/80 col, configure l'ecran */
-}
-
-void ui_clear(void)
-{
-    scr_clear();
-    col = 0;
-}
-
-void ui_newline(void)
-{
-    scr_putc('\n');   /* le pilote gere CR+LF */
-    col = 0;
-}
-
-/* Imprime une chaîne (len octets) avec retour à la ligne aux espaces.
- * Les octets TXT_INV_TOGGLE (issus des marqueurs *...*) basculent l'inverse.
- * Le separateur entre deux mots est imprime AVANT d'appliquer les bascules du
- * mot suivant : ainsi l'espace precedant un mot en surbrillance reste en video
- * normale (tandis qu'un espace INTERNE a une surbrillance reste, lui, inverse). */
-void ui_wrap(const char *s, u16 len)
-{
-    u16 i = 0, ws, we, k;
-    u8 wlen, inv_on = 0;
-
-    while (i < len) {
-        while (i < len && s[i] == ' ')          /* saute les espaces */
-            ++i;
-        if (i >= len)
-            break;
-        /* mot [ws, we) : jusqu'au prochain espace (bascules incluses) */
-        ws = i;
-        while (i < len && s[i] != ' ')
-            ++i;
-        we = i;
-        wlen = 0;                                /* largeur visible (hors bascules) */
-        for (k = ws; k < we; ++k)
-            if (s[k] != TXT_INV_TOGGLE) ++wlen;
-
-        if (col != 0) {                          /* separateur, en video COURANTE */
-            if (col + 1 + wlen > scr_cols) {
-                ui_newline();
-            } else {
-                scr_putc(' ');
-                ++col;
-            }
-        }
-        for (k = ws; k < we; ++k) {              /* le mot (bascules appliquees ici) */
-            if (s[k] == TXT_INV_TOGGLE) {
-                inv_on = (u8)!inv_on;
-                scr_revers(inv_on);
-            } else {
-                scr_putc(s[k]);
-                ++col;
-                if (col >= scr_cols) col = 0;    /* l'écran a enroulé */
-            }
-        }
-    }
-    if (inv_on)
-        scr_revers(0);                           /* securite : on ne laisse pas l'inverse */
-    ui_newline();
-}
-
-/* Imprime un paragraphe avec style : centre (sans cesure) et/ou inverse.
- * Sans style : justifie aux espaces comme ui_wrap. */
-void ui_paragraph(const char *s, u16 len, u8 style)
-{
-    if (style & STYLE_CENTER) {
-        u16 i;
-        u8 vis = 0, pad, inv_on = (style & STYLE_INVERSE) ? 1 : 0;
-        for (i = 0; i < len; ++i)        /* largeur = caracteres visibles */
-            if (s[i] != TXT_INV_TOGGLE) ++vis;
-        pad = (vis < scr_cols) ? (u8)((scr_cols - vis) / 2) : 0;
-        while (pad--)                    /* remplissage centrage (video normale) */
-            scr_putc(' ');
-        if (inv_on)
-            scr_revers(1);
-        for (i = 0; i < len; ++i) {
-            if (s[i] == TXT_INV_TOGGLE) {
-                inv_on = (u8)!inv_on;
-                scr_revers(inv_on);
-            } else {
-                scr_putc(s[i]);
-            }
-        }
-        scr_revers(0);
-        ui_newline();
-    } else {
-        if (style & STYLE_INVERSE)
-            scr_revers(1);
-        ui_wrap(s, len);                 /* justifie ; ui_wrap termine la ligne */
-        scr_revers(0);
-    }
-}
-
 /* Imprime un entier 0..255 sans zeros de tete. */
 static void put_num(u8 v)
 {
@@ -113,7 +16,8 @@ static void put_num(u8 v)
     scr_putc((char)('0' + v % 10));
 }
 
-/* Imprime un entier 16 bits sans zeros de tete. */
+/* Imprime un entier 16 bits sans zeros de tete -- aussi utilise pour
+ * stat_val[] (u8) : promu sans cout, evite un doublon put_num8. */
 static void put_num16(u16 v)
 {
     char buf[6];
@@ -136,6 +40,138 @@ static u8 nw16(u16 v)
     u8 n = 1;
     while (v >= 10) { v /= 10; ++n; }
     return n;
+}
+
+void ui_init(void)
+{
+    scr_init();   /* detecte 40/80 col, configure l'ecran */
+}
+
+void ui_clear(void)
+{
+    scr_clear();
+    col = 0;
+}
+
+void ui_newline(void)
+{
+    scr_putc('\n');   /* le pilote gere CR+LF */
+    col = 0;
+}
+
+/* Imprime une chaîne (len octets) avec retour à la ligne aux espaces.
+ * Les octets TXT_INV_TOGGLE (issus des marqueurs *...*) basculent l'inverse.
+ * Une paire TXT_STAT_REF+index (issue des marqueurs %NOM%, cf. format.h)
+ * s'affiche comme la valeur COURANTE de la stat visee. Le separateur entre
+ * deux mots est imprime AVANT d'appliquer les bascules du mot suivant :
+ * ainsi l'espace precedant un mot en surbrillance reste en video normale
+ * (tandis qu'un espace INTERNE a une surbrillance reste, lui, inverse).
+ *
+ * L'octet d'index d'une reference de stat est une DONNEE, pas un caractere
+ * de mise en forme : sa valeur (0..254) peut coincider par hasard avec un
+ * espace (0x20) ou meme avec TXT_INV_TOGGLE/TXT_STAT_REF. Chaque boucle
+ * ci-dessous saute donc la paire d'un coup (jamais l'octet d'index compare
+ * seul a ' ' ou re-teste comme un marqueur) -- sinon un %NOM% referencant
+ * une stat d'index 32 (la 33e declaree) coupofmot au mauvais endroit. */
+void ui_wrap(const char *s, u16 len)
+{
+    u16 i = 0, ws, we, k;
+    u8 wlen, inv_on = 0;
+
+    while (i < len) {
+        while (i < len && s[i] == ' ')          /* saute les espaces */
+            ++i;
+        if (i >= len)
+            break;
+        /* mot [ws, we) : jusqu'au prochain espace non-protege (bascules et
+         * references de stat incluses) */
+        ws = i;
+        we = i;
+        while (we < len) {
+            if (s[we] == TXT_STAT_REF) { we = (u16)(we + 2); continue; }
+            if (s[we] == ' ') break;
+            ++we;
+        }
+        i = we;
+        wlen = 0;                                /* largeur visible (hors bascules) */
+        for (k = ws; k < we; ++k) {
+            if (s[k] == TXT_STAT_REF) {
+                wlen = (u8)(wlen + nw16(stat_val[(u8)s[k + 1]]));
+                ++k;                              /* +1 ici, +1 via ++k de la boucle */
+            } else if (s[k] != TXT_INV_TOGGLE) {
+                ++wlen;
+            }
+        }
+
+        if (col != 0) {                          /* separateur, en video COURANTE */
+            if (col + 1 + wlen > scr_cols) {
+                ui_newline();
+            } else {
+                scr_putc(' ');
+                ++col;
+            }
+        }
+        for (k = ws; k < we; ++k) {              /* le mot (bascules appliquees ici) */
+            if (s[k] == TXT_STAT_REF) {
+                u8 v = stat_val[(u8)s[k + 1]];
+                put_num16(v);
+                col = (u8)(col + nw16(v));
+                if (col >= scr_cols) col = 0;    /* securite : ecran deja enroule */
+                ++k;                              /* +1 ici, +1 via ++k de la boucle */
+            } else if (s[k] == TXT_INV_TOGGLE) {
+                inv_on = (u8)!inv_on;
+                scr_revers(inv_on);
+            } else {
+                scr_putc(s[k]);
+                ++col;
+                if (col >= scr_cols) col = 0;    /* l'écran a enroulé */
+            }
+        }
+    }
+    if (inv_on)
+        scr_revers(0);                           /* securite : on ne laisse pas l'inverse */
+    ui_newline();
+}
+
+/* Imprime un paragraphe avec style : centre (sans cesure) et/ou inverse.
+ * Sans style : justifie aux espaces comme ui_wrap. */
+void ui_paragraph(const char *s, u16 len, u8 style)
+{
+    if (style & STYLE_CENTER) {
+        u16 i;
+        u8 vis = 0, pad, inv_on = (style & STYLE_INVERSE) ? 1 : 0;
+        for (i = 0; i < len; ++i) {      /* largeur = caracteres visibles */
+            if (s[i] == TXT_STAT_REF) {
+                vis = (u8)(vis + nw16(stat_val[(u8)s[i + 1]]));
+                ++i;
+            } else if (s[i] != TXT_INV_TOGGLE) {
+                ++vis;
+            }
+        }
+        pad = (vis < scr_cols) ? (u8)((scr_cols - vis) / 2) : 0;
+        while (pad--)                    /* remplissage centrage (video normale) */
+            scr_putc(' ');
+        if (inv_on)
+            scr_revers(1);
+        for (i = 0; i < len; ++i) {
+            if (s[i] == TXT_STAT_REF) {
+                put_num16(stat_val[(u8)s[i + 1]]);
+                ++i;
+            } else if (s[i] == TXT_INV_TOGGLE) {
+                inv_on = (u8)!inv_on;
+                scr_revers(inv_on);
+            } else {
+                scr_putc(s[i]);
+            }
+        }
+        scr_revers(0);
+        ui_newline();
+    } else {
+        if (style & STYLE_INVERSE)
+            scr_revers(1);
+        ui_wrap(s, len);                 /* justifie ; ui_wrap termine la ligne */
+        scr_revers(0);
+    }
 }
 
 /* Bandeau d'etat : 1re ligne INVERSE sur toute la largeur.
