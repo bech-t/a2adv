@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -173,6 +174,39 @@ def resolved_to_dict(story: M.Story, ui_strings: dict[str, str]) -> dict:
     }
 
 
+def copy_web_images(assets: list[str], src_dir: Path, out_dir: Path) -> list[str]:
+    """Copie les images NOMMEES vers IMGnn.png, numerotees dans l'ordre de
+    premiere apparition (`story.assets`, resolu par `symbols.resolve` --
+    meme ordre qu'IMAGES.MAP cote natif, cf. cli.py). Source attendue :
+    `<adv>/img/web/<ID EN MAJUSCULES>.png`, a fournir a la main -- meme
+    principe que `img/named/<ID>.HGR` pour l'Apple II ou
+    `img/atarist/<ID>.PI1` pour l'Atari ST (cf. leurs Makefile respectifs) :
+    aucune conversion de palette/resolution n'a de sens pour le web (le
+    navigateur affiche du PNG nativement), donc pas d'outil `img2web.py` --
+    juste une image deja prete, numerotee automatiquement ici pour ne pas
+    desynchroniser un index a la main si l'ordre des `@image` change.
+
+    Une image manquante n'est qu'un avertissement (retourne dans la liste),
+    jamais une erreur : une aventure sans export web de ses visuels reste
+    jouable en texte (cf. player/*/src/**/assets/loader.ts, onError sur
+    <img>)."""
+    if not assets:
+        return []
+    warnings = []
+    found: list[tuple[int, Path]] = []
+    for i, name in enumerate(assets):
+        src = src_dir / f"{name.upper()}.png"
+        if src.exists():
+            found.append((i, src))
+        else:
+            warnings.append(f"image manquante pour @image {name} : {src}")
+    if found:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for i, src in found:
+            shutil.copyfile(src, out_dir / f"IMG{i:02d}.png")
+    return warnings
+
+
 def build_web_json(adv_text: str, lang_dir: Path) -> dict:
     """Parse + resout une source .adv et produit son JSON pour le player web,
     en allant chercher son socle .lng (`@lang`) dans `lang_dir`."""
@@ -190,7 +224,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="a2c.webjson",
         description="Compile une source .adv vers le JSON attendu par le "
-                    "player web (player/web/src/engine)")
+                    "player web (player/web/src/engine), et copie ses "
+                    "images web (img/web/*.png, cf. copy_web_images) a cote "
+                    "du JSON produit.")
     ap.add_argument("source", help="fichier .adv source")
     ap.add_argument("-o", "--out", help="fichier de sortie (defaut: story.json)")
     args = ap.parse_args(argv)
@@ -200,8 +236,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"a2c.webjson: fichier introuvable: {src}", file=sys.stderr)
         return 2
 
+    # Pas d'appel a build_web_json ici : il faut l'objet Story RESOLU (pour
+    # story.assets, cf. copy_web_images plus bas), pas seulement le dict
+    # final qu'il retourne -- meme sequence parse/resolve que build_web_json,
+    # dupliquee ici pour cette seule raison.
     try:
-        data = build_web_json(src.read_text(encoding="utf-8"), LANG_DIR)
+        story = parse(src.read_text(encoding="utf-8"))
+        resolve(story)
+        lng_path = LANG_DIR / f"{story.lang}.lng"
+        if not lng_path.exists():
+            raise A2Error(f"@lang {story.lang} : fichier de langue introuvable "
+                          f"({lng_path})")
+        _, ui_strings, _ = parse_lang(lng_path.read_text(encoding="utf-8"))
+        data = resolved_to_dict(story, ui_strings)
     except A2Error as e:
         print(f"a2c.webjson: {src.name}: {e}", file=sys.stderr)
         return 1
@@ -209,6 +256,11 @@ def main(argv: list[str] | None = None) -> int:
     out = Path(args.out) if args.out else Path("story.json")
     out.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"a2c.webjson: {src} -> {out}")
+
+    img_warnings = copy_web_images(story.assets, src.parent / "img" / "web", out.parent / "img")
+    for w in img_warnings:
+        print(f"a2c.webjson: attention: {w}", file=sys.stderr)
+
     return 0
 
 

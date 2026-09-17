@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -18,7 +19,7 @@ from a2c.encoder import encode_lang     # noqa: E402
 from a2c.translit import normalize_display, to_match_key  # noqa: E402
 from a2c.parser import parse, parse_lang  # noqa: E402
 from a2c.symbols import resolve         # noqa: E402
-from a2c.webjson import resolved_to_dict  # noqa: E402
+from a2c.webjson import copy_web_images, resolved_to_dict  # noqa: E402
 
 ADVENTURES_DIR = Path(__file__).resolve().parents[2] / "adventures"
 LANG_DIR = Path(__file__).resolve().parents[2] / "lang"
@@ -295,6 +296,37 @@ def test_to_match_key_toujours_ascii_majuscule():
     """Un clavier Apple II ne tape pas d'accent : la clé de comparaison l'est."""
     src = "Où est l'Œuf, Éléphant ?"
     assert to_match_key(src) == "OU EST L'OEUF, ELEPHANT ?"
+
+
+def test_copy_web_images_copie_les_trouvees_et_signale_les_manquantes():
+    """cf. copy_web_images : IMGnn.png numerotees par ordre de story.assets,
+    une image absente n'est qu'un avertissement (jamais une exception)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        src_dir = tmp / "web"
+        src_dir.mkdir()
+        (src_dir / "URNE.png").write_bytes(b"fake-png-urne")
+        out_dir = tmp / "out" / "img"
+
+        warnings = copy_web_images(["urne", "musee", "penthouse"], src_dir, out_dir)
+
+        assert (out_dir / "IMG00.png").read_bytes() == b"fake-png-urne"
+        assert not (out_dir / "IMG01.png").exists()
+        assert not (out_dir / "IMG02.png").exists()
+        assert len(warnings) == 2
+        assert "musee" in warnings[0]
+        assert "penthouse" in warnings[1]
+
+
+def test_copy_web_images_rien_a_faire_sans_assets():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        out_dir = tmp / "out" / "img"
+
+        warnings = copy_web_images([], tmp / "web", out_dir)
+
+        assert warnings == []
+        assert not out_dir.exists()  # jamais cree si l'aventure n'a aucune image
 
 
 if __name__ == "__main__":

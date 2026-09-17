@@ -83,6 +83,28 @@ aventures, l'écraser sans le demander explicitement serait une action à
 l'aveugle. À toi de le recopier dans `lang/` si tu veux qu'il devienne le
 nouveau socle partagé.
 
+## Compiler pour le player web (`a2c.webjson`)
+
+```bash
+python3 -m a2c.webjson ../adventures/combat_demo/combat_demo.adv -o story.json
+```
+
+Produit le JSON attendu par `player/web` et `player/webng` (modèle RÉSOLU :
+noms → indices, flags locaux triés, réponses `@ask` normalisées — même
+contenu que `STORY.DAT`/`APP.LNG`, juste sérialisé en JSON). C'est la
+commande lancée par `npm run sync` des deux players web — pas besoin de
+l'invoquer à la main sauf pour déboguer.
+
+**Images** : en plus du JSON, copie les images de l'aventure à côté du
+fichier de sortie (`<dossier de -o>/img/IMGnn.png`), une par id `@image`,
+numérotées dans le même ordre que `IMAGES.MAP`. Source attendue :
+`<adv>/img/web/<ID EN MAJUSCULES>.png` — un PNG déjà prêt, à fournir à la
+main (même principe que `img/named/<ID>.HGR` pour l'Apple II ou
+`img/atarist/<ID>.PI1` pour l'Atari ST : pas de conversion palette/
+résolution à faire pour le web, donc pas d'outil `img2web.py`, juste
+l'image déposée directement). Une image manquante n'est qu'un avertissement
+sur stderr — l'aventure reste jouable en texte sans elle.
+
 ## Tests
 
 ```bash
@@ -100,7 +122,8 @@ python3 tests/test_compile.py       # ou: pytest
 | `a2c/encoder.py` | modèle -> `STORY0.DAT` / `ASSETS.IDX` (little-endian) |
 | `a2c/decode.py`  | relecture du binaire (tests + dump) |
 | `a2c/analyze.py` | analyse de graphe / QA (reachabilité, culs-de-sac, objets morts) |
-| `a2c/jsonconv.py`| conversion bidirectionnelle `.adv` <-> JSON |
+| `a2c/jsonconv.py`| conversion bidirectionnelle `.adv` <-> JSON (modèle SOURCE, pour éditer/round-tripper) |
+| `a2c/webjson.py` | modèle RÉSOLU -> JSON pour le player web (`player/web`, `player/webng`) + copie des images web (cf. ci-dessous) |
 | `a2c/cli.py`     | interface `python -m a2c` |
 
 Aucune dépendance externe (bibliothèque standard uniquement).
