@@ -394,6 +394,67 @@ def test_copy_web_images_copie_les_trouvees_et_signale_les_manquantes():
         assert "penthouse" in warnings[1]
 
 
+_STAT16_ADV = """\
+@title Test
+@start q
+@stat ARGENT 0 0 65535
+
+:: q
+Vous avez %ARGENT% pieces.
+* {stat ARGENT > 300} [Grosse fortune] -> q
+  ~ add ARGENT 20000
+* [Petit pecule] -> q
+  ~ setmax ARGENT 40000
+"""
+
+
+def test_stat_16bits_valeurs_au_dela_de_255_binaire_et_json():
+    """@stat ... 0 0 65535, ~ add ARGENT 20000 et {stat ARGENT > 300} doivent
+    survivre a l'encodage binaire (atome de condition sur 5 o, effet 'add'
+    avec valeur scindee bas/haut sur a1/a2, cf. encoder.py) et redonner
+    exactement la meme valeur cote JSON (webjson.py, qui ne scinde rien --
+    un seul champ JS, cf. decode.py:_decode_effect_atom qui recombine pour
+    comparer les deux a armes egales)."""
+    story = parse(_STAT16_ADV)
+    resolve(story)
+
+    d = decode(encode_story(story)[0])
+    assert d["stat_table"] == [(0, 0, 65535)]
+    sec = d["sections"][0]
+
+    cond, effects, _target, _label = sec.choices[0]
+    assert cond == [(M.OP_STAT_CMP, 0, int(M.Cmp.GT), 300)]
+    assert (M.OP_STAT_ADD, 0, 20000, 0) in effects
+
+    _cond2, effects2, _t2, _l2 = sec.choices[1]
+    assert (M.OP_STAT_SETMAX, 0, 40000, 0) in effects2
+
+    ui = {k: v for k, v in M.UI_KEYS}
+    web = resolved_to_dict(story, ui)
+    wcond = web["sections"][0]["choices"][0]["cond"]["atoms"][0]
+    assert (wcond["op"], wcond["a0"], wcond["a1"], wcond["a2"]) == (M.OP_STAT_CMP, 0, int(M.Cmp.GT), 300)
+    wfx = web["sections"][0]["choices"][0]["effects"][0]
+    assert (wfx["op"], wfx["a0"], wfx["a1"]) == (M.OP_STAT_ADD, 0, 20000)
+
+
+def test_stat_hors_0_65535_leve_une_erreur():
+    bad = _STAT16_ADV.replace("@stat ARGENT 0 0 65535", "@stat ARGENT 0 0 70000")
+    try:
+        parse(bad)
+        assert False, "aurait du lever A2Error"
+    except A2Error as e:
+        assert "65535" in str(e)
+
+
+def test_effet_stat_hors_0_65535_leve_une_erreur():
+    bad = _STAT16_ADV.replace("~ add ARGENT 20000", "~ add ARGENT 70000")
+    try:
+        parse(bad)
+        assert False, "aurait du lever A2Error"
+    except A2Error as e:
+        assert "65535" in str(e)
+
+
 def test_copy_web_images_rien_a_faire_sans_assets():
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)

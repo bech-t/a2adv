@@ -17,7 +17,7 @@ static void put_num(u8 v)
 }
 
 /* Imprime un entier 16 bits sans zeros de tete -- aussi utilise pour
- * stat_val[] (u8) : promu sans cout, evite un doublon put_num8. */
+ * stat_val[] (u16). */
 static void put_num16(u16 v)
 {
     char buf[6];
@@ -113,7 +113,7 @@ void ui_wrap(const char *s, u16 len)
         }
         for (k = ws; k < we; ++k) {              /* le mot (bascules appliquees ici) */
             if (s[k] == TXT_STAT_REF) {
-                u8 v = stat_val[(u8)s[k + 1]];
+                u16 v = stat_val[(u8)s[k + 1]];
                 put_num16(v);
                 col = (u8)(col + nw16(v));
                 if (col >= scr_cols) col = 0;    /* securite : ecran deja enroule */

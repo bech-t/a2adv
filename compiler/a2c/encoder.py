@@ -1,7 +1,11 @@
 """Encodeur binaire : Story -> STORY.DAT + ASSETS.IDX.
 
-Tous les champs multi-octets sont little-endian (natif 6502). Les opcodes de
-condition et d'effet font 4 octets fixes.
+Tous les champs multi-octets sont little-endian (natif 6502). Les opcodes
+d'effet font 4 octets fixes. Les atomes de condition font 4 octets (flag/
+item) ou 5 (stat, dont la valeur est sur 16 bits) : largeur VARIABLE selon
+l'opcode, pour ne pas gaspiller un octet sur les nombreux atomes flag/item
+d'une aventure (cf. _encode_atom, state_eval_cond/state_skip_effects cote
+player).
 """
 
 from __future__ import annotations
@@ -16,7 +20,9 @@ from .translit import normalize_display
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
 MAGIC_LANG = b"A2LG"
-VERSION = 7                 # v7 : @version de l'aventure (optionnelle, "" sinon)
+VERSION = 8                 # v8 : stats sur 16 bits (init/min/max ; @stat 0..65535,
+                            #      atomes de condition 'stat' passes de 4 a 5 octets)
+                            # v7 : @version de l'aventure (optionnelle, "" sinon)
                             # v5 : socle d'UI dans APP.LNG, l'aventure ne porte
                             #      plus que ses surcharges (v4 : index par fichier)
 LANG_VERSION = 1
@@ -154,7 +160,7 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE) -> list[bytes
 def _encode_preamble(story: M.Story) -> bytes:
     out = bytearray()
     for s in story.stats:
-        out += struct.pack("<BBB", s.init, s.lo, s.hi)
+        out += struct.pack("<HHH", s.init, s.lo, s.hi)
     # v6 : masque des stats MASQUEES (bit i = stat i absente du bandeau d'etat).
     # Un seul octet suffit (MAX_STATS = 8), plutot qu'un octet par stat.
     hidden = 0
@@ -266,13 +272,17 @@ def _encode_cond(cond: M.Condition, sym: Symbols) -> bytes:
 
 
 def _encode_atom(a: M.Atom, sym: Symbols) -> bytes:
+    # flag/item : op,a0,a1,a2 tous u8 (4 o, a2 inutilise) -- format inchange.
+    # stat : a2 promu en u16 (5 o) pour porter une valeur jusqu'a 65535
+    # (~ if stat X > N). Largeur VARIABLE selon l'opcode (cf. docstring de
+    # ce module) : _decode_atom et state_eval_cond distinguent sur op.
     op = _ATOM_OP[a.op]
     if a.op in ("flag", "not_flag"):
         return struct.pack("<BBBB", op, sym.flags[a.name], 0, 0)
     if a.op in ("has", "not_has"):
         return struct.pack("<BBBB", op, sym.items[a.name], 0, 0)
     # stat
-    return struct.pack("<BBBB", op, sym.stats[a.name], int(a.cmp), a.value)
+    return struct.pack("<BBBH", op, sym.stats[a.name], int(a.cmp), a.value)
 
 
 def _encode_effects(effects: list[M.Effect], sym: Symbols) -> bytes:
@@ -284,13 +294,17 @@ def _encode_effects(effects: list[M.Effect], sym: Symbols) -> bytes:
 
 
 def _encode_effect(e: M.Effect, sym: Symbols) -> bytes:
+    # Effet : op(u8) a0(u8) a1(u8) a2(u8) = 4 octets fixes, meme pour les
+    # effets 'stat' -- a1/a2 y portent la valeur en petit-boutiste (16 bits,
+    # jusqu'a 65535) au lieu d'un a1 seul + a2 inutilise.
     op = _EFFECT_OP[e.op]
     if e.op in ("set", "clear", "toggle"):
         return struct.pack("<BBBB", op, sym.flags[e.name], 0, 0)
     if e.op in ("give", "take"):
         return struct.pack("<BBBB", op, sym.items[e.name], 0, 0)
     if e.op in ("add", "sub", "setstat", "setmax"):
-        return struct.pack("<BBBB", op, sym.stats[e.name], e.value, 0)
+        return struct.pack("<BBBB", op, sym.stats[e.name],
+                           e.value & 0xFF, (e.value >> 8) & 0xFF)
     if e.op == "restore":                       # valeur = max courant (a1 inutile)
         return struct.pack("<BBBB", op, sym.stats[e.name], 0, 0)
     if e.op == "sound":

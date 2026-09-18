@@ -27,10 +27,10 @@ char ui_str[UI_COUNT][UI_STR_LEN];   /* hote : vrais tableaux (cf. story.h) */
 #endif
 char g_version[VERSION_LEN];
 
-u8  stat_init[MAX_STATS];
-u8  stat_min[MAX_STATS];
-u8  stat_max[MAX_STATS];
-u8  stat_maxdef[MAX_STATS];
+u16 stat_init[MAX_STATS];
+u16 stat_min[MAX_STATS];
+u16 stat_max[MAX_STATS];
+u16 stat_maxdef[MAX_STATS];
 #ifndef __CC65__
 char stat_name[MAX_STATS][STAT_NAME_LEN];     /* hote : vrais tableaux (cf. story.h) */
 char item_label[MAX_ITEMS][ITEM_LABEL_LEN];
@@ -240,12 +240,13 @@ signed char story_open(const char *path)
         g_nfiles > FILE_FIRST_MAX)
         return -3;
 
-    /* préambule : stat_table[init,min,max] ; le max lu est le DEFAUT (mutable
-     * ensuite via ~ setmax) -> stat_maxdef ; state_init en fera stat_max. */
+    /* préambule : stat_table[init,min,max], chacun sur 16 bits ; le max lu
+     * est le DEFAUT (mutable ensuite via ~ setmax) -> stat_maxdef ;
+     * state_init en fera stat_max. */
     for (i = 0; i < g_nstats; ++i) {
-        stat_init[i]   = dio_u8();
-        stat_min[i]    = dio_u8();
-        stat_maxdef[i] = dio_u8();
+        stat_init[i]   = f_u16();
+        stat_min[i]    = f_u16();
+        stat_maxdef[i] = f_u16();
     }
     g_stat_hidden = dio_u8();     /* v6 : bit i = stat i absente du bandeau */
     for (i = 0; i < (g_nitems + 7) / 8; ++i)

@@ -425,8 +425,8 @@ def _parse_stat(args: list[str], n: int, story: Story) -> None:
     except ValueError:
         raise A2Error("@stat: valeurs numériques attendues", n)
     for v in (init, lo, hi):
-        if not 0 <= v <= 255:
-            raise A2Error("@stat: valeurs hors [0,255]", n)
+        if not 0 <= v <= 65535:
+            raise A2Error("@stat: valeurs hors [0,65535]", n)
     if lo > hi:
         raise A2Error("@stat: min > max", n)
     story.stats.append(StatDecl(name, init, lo, hi, line=n, hidden=hidden))
@@ -630,6 +630,8 @@ def _parse_atom(toks: list[str], i: int, n: int) -> tuple[Atom, int]:
             value = int(val)
         except ValueError:
             raise A2Error(f"valeur numérique attendue, reçu '{val}'", n)
+        if not 0 <= value <= 65535:
+            raise A2Error(f"valeur hors [0,65535]: {value}", n)
         return Atom("stat", name, cmp=CMP_FROM_TEXT[op], value=value, line=n), i + 4
     raise A2Error(f"atome de condition invalide: '{t}'", n)
 
@@ -668,7 +670,7 @@ def _parse_effect_body(src: str, n: int) -> Effect:
         if len(a) == 1:
             return Effect("set", a[0], line=n)
         if len(a) == 2:
-            return Effect("setstat", a[0], value=_int(a[1], n), line=n)
+            return Effect("setstat", a[0], value=_int(a[1], n, hi=65535), line=n)
         raise A2Error("effet 'set' invalide (set FLAG | set STAT N)", n)
     if verb in ("give", "take"):
         _need1(a, n, verb)
@@ -676,7 +678,7 @@ def _parse_effect_body(src: str, n: int) -> Effect:
     if verb in ("add", "sub"):
         if len(a) != 2:
             raise A2Error(f"effet '{verb}' attend STAT N", n)
-        return Effect(verb, a[0], value=_int(a[1], n), line=n)
+        return Effect(verb, a[0], value=_int(a[1], n, hi=65535), line=n)
     if verb == "goto":
         _need1(a, n, verb)
         return Effect("goto", a[0], line=n)
@@ -693,7 +695,7 @@ def _parse_effect_body(src: str, n: int) -> Effect:
     if verb == "setmax":
         if len(a) != 2:
             raise A2Error("effet 'setmax' attend STAT N", n)
-        return Effect("setmax", a[0], value=_int(a[1], n), line=n)
+        return Effect("setmax", a[0], value=_int(a[1], n, hi=65535), line=n)
     raise A2Error(f"effet inconnu: '{verb}'", n)
 
 
@@ -708,11 +710,11 @@ def _need1(a: list[str], n: int, verb: str) -> None:
         raise A2Error(f"effet '{verb}' attend un seul argument", n)
 
 
-def _int(s: str, n: int) -> int:
+def _int(s: str, n: int, hi: int = 255) -> int:
     try:
         v = int(s)
     except ValueError:
         raise A2Error(f"valeur numérique attendue, reçu '{s}'", n)
-    if not 0 <= v <= 255:
-        raise A2Error(f"valeur hors [0,255]: {v}", n)
+    if not 0 <= v <= hi:
+        raise A2Error(f"valeur hors [0,{hi}]: {v}", n)
     return v

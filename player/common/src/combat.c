@@ -51,10 +51,13 @@ void combat_begin(u8 att, u8 hp, u8 dmg, u8 armor)
     cb_last_to = 2;
 }
 
-/* retourne les PV du heros */
+/* retourne les PV du heros. u8 : le combat (jets 2d6 + mods) reste toujours
+ * dans cette plage en pratique, meme si la stat qui porte les PV admet des
+ * valeurs jusqu'a 65535 (cf. @stat) -- seul le sous-systeme combat plafonne
+ * a 255, la valeur stockee dans stat_val[] reste exacte. */
 u8 combat_hero_hp(void)
 {
-    return (g_combat_hp == 0xFF) ? 0 : stat_val[g_combat_hp];
+    return (g_combat_hp == 0xFF) ? 0 : (u8)stat_val[g_combat_hp];
 }
 
 /* fait subir des degats au heros */
@@ -63,8 +66,8 @@ static void hero_take(u8 d)
     u8 h;
     if (g_combat_hp == 0xFF)
         return;
-    h = stat_val[g_combat_hp];
-    stat_val[g_combat_hp] = (d >= h) ? 0 : (u8)(h - d);
+    h = (u8)stat_val[g_combat_hp];
+    stat_val[g_combat_hp] = (d >= h) ? 0 : (u16)(h - d);
 }
 
 /* degats effectifs = max(1, base - armure) */

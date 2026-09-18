@@ -30,29 +30,17 @@ static u8 cached[(RAM_MAX_FILES + 7) / 8];
 #define BIT_CLR(i) (cached[(i) >> 3] &= (u8)~(1u << ((i) & 7)))
 #define BIT_TST(i) ((cached[(i) >> 3] >> ((i) & 7)) & 1u)
 
-/* Second bitset : "et il est sur /RAM2 plutot que /RAM" (13 o). Deux bitsets
- * plutot qu'un octet de volume par fichier : 26 octets au lieu de 100, sur une
- * machine ou il en reste moins de deux mille. */
-static u8 on_vol2[(RAM_MAX_FILES + 7) / 8];
-#define V2_SET(i) (on_vol2[(i) >> 3] |= (u8)(1u << ((i) & 7)))
-#define V2_CLR(i) (on_vol2[(i) >> 3] &= (u8)~(1u << ((i) & 7)))
-#define V2_TST(i) ((on_vol2[(i) >> 3] >> ((i) & 7)) & 1u)
-
-#define NVOL 2
-
 /* Deux tampons de chemin distincts : les deux servent dans le meme appel
  * (source sur la disquette, destination en disque RAM). */
 static char dpath[] = "STORY00.DAT";             /* chiffres en 5,6 */
-static char gpath[6 + 14];                       /* "/RAM2/" + nom + NUL */
+static char gpath[5 + 14];                       /* "/RAM/" + nom + NUL */
 
-/* "/RAM/<nom>" ou "/RAM2/<nom>". Sert a TOUT ce qu'on cache, STORYnn.DAT
- * comme images : un seul constructeur, donc une seule facon de se tromper. */
-static const char *gen_path(u8 vol, const char *name)
+/* "/RAM/<nom>". Sert a TOUT ce qu'on cache, STORYnn.DAT comme images : un
+ * seul constructeur, donc une seule facon de se tromper. */
+static const char *gen_path(const char *name)
 {
     char *p = gpath;
-    *p++ = '/'; *p++ = 'R'; *p++ = 'A'; *p++ = 'M';
-    if (vol) *p++ = '2';
-    *p++ = '/';
+    *p++ = '/'; *p++ = 'R'; *p++ = 'A'; *p++ = 'M'; *p++ = '/';
     while (*name != '\0' && p < gpath + sizeof(gpath) - 1)
         *p++ = *name++;
     *p = '\0';
@@ -68,7 +56,7 @@ static const char *disk_path(u8 id)
 
 const char *ram_path(u8 id)
 {
-    return gen_path((u8)V2_TST(id), disk_path(id));
+    return gen_path(disk_path(id));
 }
 
 u8 ram_has(u8 id)
@@ -79,38 +67,36 @@ u8 ram_has(u8 id)
 /* --- Disponibilite de /RAM --------------------------------------------- */
 
 #ifdef __CC65__
-/* Par volume : 0 = pas encore teste, 1 = present, 2 = absent. */
-static u8 vol_state[NVOL];
+/* 0 = pas encore teste, 1 = present, 2 = absent. */
+static u8 vol_state;
 #endif
 
 /* Le volume existe-t-il et accepte-t-il l'ecriture ? On ne se fie pas a un
  * catalogue : la seule reponse fiable est d'y ecrire pour de bon. */
-static u8 vol_ready(u8 vol)
+static u8 vol_ready(void)
 {
 #ifdef __CC65__
     FILE *f;
-    const char *probe = vol ? "/RAM2/A2ADV.TMP" : "/RAM/A2ADV.TMP";
-    if (vol_state[vol] == 0) {
-        f = fopen(probe, "wb");
+    if (vol_state == 0) {
+        f = fopen("/RAM/A2ADV.TMP", "wb");
         if (f != NULL) {
             fclose(f);
-            remove(probe);
-            vol_state[vol] = 1;
+            remove("/RAM/A2ADV.TMP");
+            vol_state = 1;
         } else {
-            vol_state[vol] = 2;
+            vol_state = 2;
         }
     }
-    return (u8)(vol_state[vol] == 1);
+    return (u8)(vol_state == 1);
 #else
-    (void)vol;
     return 0;                                    /* hote : pas de disque RAM */
 #endif
 }
 
-/* Au moins un volume utilisable ? (cf. ramdisk.h) */
+/* /RAM present et utilisable ? (cf. ramdisk.h) */
 u8 ram_ready(void)
 {
-    return (u8)(vol_ready(0) || vol_ready(1));
+    return vol_ready();
 }
 
 /* --- Copie -------------------------------------------------------------- */
@@ -176,36 +162,22 @@ static signed char copy_stream(const char *src_name, const char *dst_path,
     return 0;
 }
 
-/* Copie un fichier nomme sur le PREMIER volume qui l'accepte. Renvoie le
- * volume utilise dans *used. Comme copy_stream sinon. */
-static signed char copy_named_best(const char *name, u8 *used,
+/* Copie un fichier nomme vers /RAM s'il est pret. Comme copy_stream sinon. */
+static signed char copy_named_best(const char *name,
                                    scr_progress_cb cb, u32 *done, u32 total)
 {
-    u8 vol;
-    signed char r = -2;
-
-    for (vol = 0; vol < NVOL; ++vol) {
-        if (!vol_ready(vol))
-            continue;
-        r = copy_stream(name, gen_path(vol, name), cb, done, total);
-        if (r != -2) {
-            *used = vol;
-            return r;
-        }
-    }
-    return r;
+    if (!vol_ready())
+        return -2;
+    return copy_stream(name, gen_path(name), cb, done, total);
 }
 
-/* Un STORYnn.DAT vers le premier volume qui l'accepte, bits de cache poses. */
+/* Un STORYnn.DAT vers /RAM, bit de cache pose. */
 static signed char copy_best(u8 id, scr_progress_cb cb, u32 *done, u32 total)
 {
-    u8 vol = 0;
-    signed char r = copy_named_best(disk_path(id), &vol, cb, done, total);
+    signed char r = copy_named_best(disk_path(id), cb, done, total);
 
-    if (r == 0) {
-        if (vol) V2_SET(id); else V2_CLR(id);    /* AVANT BIT_SET : ram_path lit V2 */
+    if (r == 0)
         BIT_SET(id);
-    }
     return r;
 }
 
@@ -234,66 +206,58 @@ static u32 img_disk_size(const char *hgr_name)
 
 /* Decompresse (ou copie, en repli -- cf. img_load_from_disk) l'image
  * `hgr_name` depuis la disquette, PUIS ecrit le resultat, toujours 8192 o
- * decompresses, sur le premier volume qui l'accepte, sous ce MEME nom :
- * c'est ainsi que ram_file_path la retrouvera ensuite, sans savoir qu'elle
- * a jamais ete compressee. Renvoie le volume utilise dans *used.
+ * decompresses, sur /RAM, sous ce MEME nom : c'est ainsi que ram_file_path
+ * la retrouvera ensuite, sans savoir qu'elle a jamais ete compressee.
  *
  * SANS DANGER pour un splash encore affiche : ce chemin n'est emprunte
  * qu'APRES le premier appel a boot_progress (cf. main.c), qui bascule
  * l'ecran en mode texte avant meme le premier octet copie -- la page HIRES
  * qu'on remplit ici n'est donc jamais celle qu'on regarde a ce moment.
  *
- * 0 = ok, -1 = absente de la disquette (ni .ZX2 ni .HGR), -2 = aucun volume
- * ne l'accepte. */
+ * 0 = ok, -1 = absente de la disquette (ni .ZX2 ni .HGR), -2 = /RAM ne
+ * l'accepte pas. */
 #ifdef __CC65__
-static signed char img_preload_best(const char *hgr_name, u8 *used,
+static signed char img_preload_best(const char *hgr_name,
                                     scr_progress_cb cb, u32 *done, u32 total)
 {
-    u8    vol;
     FILE *dst;
 
     if (img_load_from_disk(hgr_name) != 0)
         return -1;
+    if (!vol_ready())
+        return -2;
 
-    for (vol = 0; vol < NVOL; ++vol) {
-        if (!vol_ready(vol))
-            continue;
-        dst = fopen(gen_path(vol, hgr_name), "wb");
-        if (dst == NULL)
-            continue;
-        if (fwrite(scr_hgr_page(), 1, SCR_HGR_SIZE, dst) == SCR_HGR_SIZE) {
-            fclose(dst);
-            *used = vol;
-            *done += img_disk_size(hgr_name);
-            if (cb != NULL)
-                cb((u16)(*done >> 8), (u16)(total >> 8));
-            return 0;
-        }
+    dst = fopen(gen_path(hgr_name), "wb");
+    if (dst == NULL)
+        return -2;
+    if (fwrite(scr_hgr_page(), 1, SCR_HGR_SIZE, dst) == SCR_HGR_SIZE) {
         fclose(dst);
-        remove(gen_path(vol, hgr_name));     /* jamais laisser un tronque */
+        *done += img_disk_size(hgr_name);
+        if (cb != NULL)
+            cb((u16)(*done >> 8), (u16)(total >> 8));
+        return 0;
     }
+    fclose(dst);
+    remove(gen_path(hgr_name));     /* jamais laisser un tronque */
     return -2;
 }
 #else  /* hote : pas de page HIRES a remplir, cf. le commentaire d'inclusion */
-static signed char img_preload_best(const char *hgr_name, u8 *used,
+static signed char img_preload_best(const char *hgr_name,
                                     scr_progress_cb cb, u32 *done, u32 total)
 {
-    (void)hgr_name; (void)used; (void)cb; (void)done; (void)total;
+    (void)hgr_name; (void)cb; (void)done; (void)total;
     return -1;
 }
 #endif
 
 const char *ram_file_path(const char *name)
 {
-    u8 vol;
     FILE *f;
 
-    for (vol = 0; vol < NVOL; ++vol) {
-        if (!vol_ready(vol))
-            continue;
-        f = fopen(gen_path(vol, name), "rb");    /* pas de table a tenir a jour : */
-        if (f != NULL) {                         /* l'existence du fichier EST    */
-            fclose(f);                           /* l'etat du cache.              */
+    if (vol_ready()) {
+        f = fopen(gen_path(name), "rb");    /* pas de table a tenir a jour : */
+        if (f != NULL) {                    /* l'existence du fichier EST    */
+            fclose(f);                      /* l'etat du cache.              */
             return gpath;
         }
     }
@@ -321,14 +285,12 @@ static u8 evict_farthest(u8 from)
     if (best == 0xFF)
         return 0;
 
-    /* Le chemin est calcule TANT QUE les bits tiennent : ram_path lit V2 pour
-     * choisir le volume, et l'effacer d'abord nous ferait supprimer le mauvais
-     * fichier. Les bits tombent ensuite, AVANT le remove : si celui-ci echoue,
-     * on se contente de relire la disquette. */
+    /* Le chemin est calcule AVANT que le bit ne tombe (sinon ram_has(best)
+     * mentirait a ram_path). Le bit tombe ensuite, AVANT le remove : si
+     * celui-ci echoue, on se contente de relire la disquette. */
     {
         const char *victim = ram_path(best);
         BIT_CLR(best);
-        V2_CLR(best);
         remove(victim);
     }
     return 1;
@@ -356,7 +318,7 @@ static const char *extra_name(u8 i)
 
 void ram_boot_fill(u8 from, scr_progress_cb cb)
 {
-    u8  i, vol = 0;
+    u8  i;
     u32 total = 0, done = 0;
 
     if (!ram_ready())
@@ -401,7 +363,7 @@ void ram_boot_fill(u8 from, scr_progress_cb cb)
         const char *nm = extra_name(i);
         if (nm == 0)
             break;
-        if (img_preload_best(nm, &vol, cb, &done, total) == -2)
+        if (img_preload_best(nm, cb, &done, total) == -2)
             break;                   /* plus de place : inutile d'insister */
     }
 }

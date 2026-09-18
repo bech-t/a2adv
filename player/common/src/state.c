@@ -4,7 +4,7 @@
 #include "story.h"
 #include "snd.h"
 
-u8 stat_val[MAX_STATS];
+u16 stat_val[MAX_STATS];
 u8 item_bits[(MAX_ITEMS + 7) / 8];
 u8 flag_bits[(MAX_FLAGS + 7) / 8];
 u16 g_score;
@@ -71,42 +71,48 @@ static void flag_set(u8 i, u8 v)
 
 /* --- Conditions -------------------------------------------------------- */
 
-static u8 eval_atom(u8 op, u8 a0, u8 a1, u8 a2)
-{
-    u8 v;
-    switch (op) {
-    case OP_FLAG_SET: return flag_get(a0);
-    case OP_FLAG_CLR: return (u8)!flag_get(a0);
-    case OP_HAS_ITEM: return item_get(a0);
-    case OP_NO_ITEM:  return (u8)!item_get(a0);
-    case OP_STAT_CMP:
-        v = stat_val[a0];
-        switch (a1) {
-        case CMP_EQ: return (u8)(v == a2);
-        case CMP_NE: return (u8)(v != a2);
-        case CMP_LT: return (u8)(v <  a2);
-        case CMP_LE: return (u8)(v <= a2);
-        case CMP_GT: return (u8)(v >  a2);
-        case CMP_GE: return (u8)(v >= a2);
-        }
-        return 0;
-    }
-    return 0;
-}
-
 u8 state_eval_cond(void)
 {
     u8 n = b_u8();
     u8 conn = b_u8();     /* 0=AND, 1=OR */
-    u8 result, i, av, op, a0, a1, a2;
+    u8 result, i, av, op, a0, a1, lt, eq;
+    u16 a2, v;
 
     if (n == 0)
         return 1;
 
     result = (conn == 0) ? 1 : 0;   /* AND part de vrai, OR de faux */
     for (i = 0; i < n; ++i) {
-        op = b_u8(); a0 = b_u8(); a1 = b_u8(); a2 = b_u8();
-        av = eval_atom(op, a0, a1, a2);
+        /* atome (op,a0,a1 = 3 o) puis a2 : 16 bits pour 'stat' (valeur
+         * jusqu'a 65535), 8 bits sinon (largeur variable, cf. encoder.py).
+         * Inline (un seul point d'appel) : evite le cout d'un JSR/RTS pour
+         * eval_atom sans rien dupliquer. */
+        op = b_u8(); a0 = b_u8(); a1 = b_u8();
+        a2 = (op == OP_STAT_CMP) ? b_u16() : b_u8();
+        switch (op) {
+        case OP_FLAG_SET: av = flag_get(a0); break;
+        case OP_FLAG_CLR: av = (u8)!flag_get(a0); break;
+        case OP_HAS_ITEM: av = item_get(a0); break;
+        case OP_NO_ITEM:  av = (u8)!item_get(a0); break;
+        case OP_STAT_CMP:
+            /* 2 comparaisons 16 bits ('<' et '==') au lieu de 6 : sur cc65,
+             * chaque comparaison 16 bits distincte coute nettement plus
+             * qu'en 8 bits -- LE/GT/GE/NE se deduisent de lt/eq. */
+            v = stat_val[a0];
+            lt = (u8)(v < a2);
+            eq = (u8)(v == a2);
+            switch (a1) {
+            case CMP_EQ: av = eq; break;
+            case CMP_NE: av = (u8)!eq; break;
+            case CMP_LT: av = lt; break;
+            case CMP_LE: av = (u8)(lt || eq); break;
+            case CMP_GT: av = (u8)(!lt && !eq); break;
+            case CMP_GE: av = (u8)!lt; break;
+            default: av = 0; break;
+            }
+            break;
+        default: av = 0; break;
+        }
         if (conn == 0) result = (u8)(result & av);
         else           result = (u8)(result | av);
     }
@@ -115,45 +121,61 @@ u8 state_eval_cond(void)
 
 /* --- Effets ------------------------------------------------------------ */
 
-static void stat_clamp_set(u8 idx, int nv)
+static void stat_clamp_set(u8 idx, u16 nv)
 {
-    if (nv < (int)stat_min[idx]) nv = stat_min[idx];
-    if (nv > (int)stat_max[idx]) nv = stat_max[idx];
-    stat_val[idx] = (u8)nv;
+    if (nv < stat_min[idx]) nv = stat_min[idx];
+    if (nv > stat_max[idx]) nv = stat_max[idx];
+    stat_val[idx] = nv;
 }
 
 void state_skip_effects(void)
 {
     u8 n = b_u8();
-    u8 i, na;
+    u8 i;
     for (i = 0; i < n; ++i) {
-        na = b_u8();                            /* garde : n_atoms */
-        (void)b_u8();                           /* connective */
-        b_seek((u16)(b_tell() + (u16)na * 4));  /* atomes */
-        b_seek((u16)(b_tell() + 4));            /* op + 3 operandes */
+        /* garde de l'effet : largeur d'atome variable selon op (cf.
+         * state_eval_cond) -- reevaluer et jeter le resultat evite de
+         * dupliquer cette logique ici juste pour avancer le curseur. */
+        (void)state_eval_cond();
+        b_seek((u16)(b_tell() + 4));            /* op + 3 operandes (effet) */
     }
 }
 
 u16 state_apply_effects(void)
 {
     u8 n = b_u8();
-    u8 i, op, a0, a1, ok;
+    u8 i, op, a0, a1, a2, ok;
     u16 target = NO_GOTO;
+    u16 val, nv, cur;
 
     for (i = 0; i < n; ++i) {
         ok = state_eval_cond();                 /* garde de l'effet */
-        op = b_u8(); a0 = b_u8(); a1 = b_u8(); (void)b_u8();  /* a2 inutilisé */
+        op = b_u8(); a0 = b_u8(); a1 = b_u8(); a2 = b_u8();
         if (!ok)
             continue;                           /* garde fausse -> effet ignore */
+        /* valeur 16 bits des effets 'stat' : a1=octet faible, a2=octet fort
+         * (cf. encoder.py:_encode_effect). Inutilise ailleurs. */
+        val = (u16)(a1 | ((u16)a2 << 8));
         switch (op) {
         case OP_SET_FLAG:  flag_set(a0, 1); break;
         case OP_CLR_FLAG:  flag_set(a0, 0); break;
         case OP_TOG_FLAG:  flag_set(a0, (u8)!flag_get(a0)); break;
         case OP_GIVE_ITEM: item_set(a0, 1); break;
         case OP_TAKE_ITEM: item_set(a0, 0); break;
-        case OP_STAT_ADD:  stat_clamp_set(a0, (int)stat_val[a0] + a1); break;
-        case OP_STAT_SUB:  stat_clamp_set(a0, (int)stat_val[a0] - a1); break;
-        case OP_STAT_SET:  stat_clamp_set(a0, (int)a1); break;
+        case OP_STAT_ADD:
+            cur = stat_val[a0];
+            nv = (u16)(cur + val);
+            if (nv < cur) nv = 0xFFFF;   /* debordement 16 bits -> sature haut */
+            stat_clamp_set(a0, nv);
+            break;
+        case OP_STAT_SUB:
+            /* val > courant : sature bas direct (pas de soustraction, pas
+             * de debordement possible) */
+            cur = stat_val[a0];
+            nv = (val > cur) ? 0 : (u16)(cur - val);
+            stat_clamp_set(a0, nv);
+            break;
+        case OP_STAT_SET:  stat_clamp_set(a0, val); break;
         case OP_SOUND:
             snd_play(a0);
             break;
@@ -164,8 +186,8 @@ u16 state_apply_effects(void)
             stat_val[a0] = stat_max[a0];
             break;
         case OP_STAT_SETMAX:                /* ~ setmax STAT N : fixe le max */
-            stat_max[a0] = a1;
-            if (stat_val[a0] > a1) stat_val[a0] = a1;
+            stat_max[a0] = val;
+            if (stat_val[a0] > val) stat_val[a0] = val;
             break;
         case OP_GOTO:
             target = a0 | ((u16)a1 << 8);

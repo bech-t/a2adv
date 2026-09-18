@@ -256,7 +256,7 @@ minuscules. On peut ensuite surcharger n'importe laquelle de ces chaînes avec
 @stat NUITS      0 0 9 hidden
 ```
 
-- `init`, `min`, `max` sont des entiers entre 0 et 255 (`min` peut être omis
+- `init`, `min`, `max` sont des entiers entre 0 et 65535 (`min` peut être omis
   avec `max`, la paire est alors implicitement `0 255`).
 - `hidden` : la caractéristique reste utilisable dans toutes les conditions et
   tous les effets, mais **n'apparaît pas** dans le bandeau d'état du joueur.

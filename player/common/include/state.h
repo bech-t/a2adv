@@ -4,7 +4,7 @@
 
 #include "format.h"
 
-extern u8 stat_val[MAX_STATS];
+extern u16 stat_val[MAX_STATS];
 extern u8 item_bits[(MAX_ITEMS + 7) / 8];
 extern u8 flag_bits[(MAX_FLAGS + 7) / 8];
 
