@@ -89,7 +89,7 @@ enum {
  * LANG_VERSION). Le player REFUSE un fichier d'une autre version : la
  * disposition du preambule change d'une version a l'autre, et une lecture
  * decalee ne produit pas d'erreur, juste du charabia. */
-#define STORY_FORMAT_VERSION 7
+#define STORY_FORMAT_VERSION 8
 #define LANG_FORMAT_VERSION  1
 
 /* Chaines d'interface : ORDRE FIGÉ (doit correspondre a UI_KEYS du compilateur,
