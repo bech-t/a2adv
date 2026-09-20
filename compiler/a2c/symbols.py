@@ -22,8 +22,44 @@ class Symbols:
         self.story = story
         self.stats = {s.name: i for i, s in enumerate(story.stats)}
         self.items = {it.name: i for i, it in enumerate(story.items)}
-        self.flags = {fl.name: i for i, fl in enumerate(story.flags)}
+        self.flags = story.flag_slots           # nom (unique) -> emplacement
         self.sections = {s.name: i for i, s in enumerate(story.sections)}
+        # portee des flags locaux : chapitre -> {nom ecrit ou unique -> nom unique}
+        self.local_scope: dict[int, dict[str, str]] = {}
+        # nom ecrit ou unique d'un local -> chapitres qui le declarent
+        self.local_where: dict[str, list[int]] = {}
+        self.global_flags: set[str] = set()
+        for fl in story.flags:
+            if fl.is_local:
+                scope = self.local_scope.setdefault(fl.chapter, {})
+                scope[fl.base] = scope[fl.name] = fl.name
+                for key in {fl.base, fl.name}:
+                    self.local_where.setdefault(key, []).append(fl.chapter)
+            else:
+                self.global_flags.add(fl.name)
+        self.cur_chapter = 0                    # chapitre de la section en cours de resolution
+
+    def chapter_label(self, c: int) -> str:
+        title = self.story.chapters[c] if c < len(self.story.chapters) else ""
+        return f"« {title} »" if title else f"n°{c}"
+
+    def flag_ref(self, name: str, line: int) -> str:
+        """Nom unique du flag `name` tel que vu depuis le chapitre courant."""
+        if name in self.global_flags:
+            return name
+        scope = self.local_scope.get(self.cur_chapter, {})
+        if name in scope:
+            return scope[name]
+        elsewhere = self.local_where.get(name)
+        if elsewhere:
+            chaps = ", ".join(self.chapter_label(c) for c in elsewhere)
+            raise A2Error(f"flag local '{name}' déclaré dans le chapitre {chaps} "
+                          f"mais utilisé dans le chapitre "
+                          f"{self.chapter_label(self.cur_chapter)} "
+                          "(un flag local n'existe que dans son chapitre : le "
+                          "déclarer ici, ou le rendre global)", line)
+        raise A2Error(f"flag non déclaré: '{name}' (ajouter @flag au préambule, "
+                      "ou @flag NOM local dans le chapitre)", line)
 
 
 def substitute_stat_refs(text: str, sym: Symbols, line: int = 0) -> str:
@@ -52,17 +88,7 @@ def resolve(story: Story) -> list[str]:
     """Valide l'aventure et remplit les index. Renvoie la liste des warnings."""
     warnings: list[str] = []
 
-    # Flags LOCAUX en fin de table : leurs index forment une plage contigue
-    # [local_base, n_flags) que le player efface a chaque changement de
-    # chapitre. L'ordre relatif de chaque groupe est preserve.
-    story.flags.sort(key=lambda fl: fl.is_local)
-    story.local_base = sum(1 for fl in story.flags if not fl.is_local)
-    n_local = len(story.flags) - story.local_base
-    if n_local > M.MAX_LOCAL_FLAGS:
-        raise A2Error(f"{n_local} flags 'local' (> {M.MAX_LOCAL_FLAGS}) : "
-                      "en rendre quelques-uns globaux")
-    if len(story.flags) > M.MAX_FLAGS:
-        raise A2Error(f"{len(story.flags)} flags (> {M.MAX_FLAGS})")
+    _layout_flags(story)
 
     sym = Symbols(story)
 
@@ -81,6 +107,7 @@ def resolve(story: Story) -> list[str]:
         _resolve_section(sec, sym, asset_index, warnings)
 
     story.assets = list(asset_index.keys())
+    _assign_splash(story)
 
     # config de combat : noms de stats -> index (0xFF si non défini)
     for name, attr in ((story.combat_attack, "combat_attack_index"),
@@ -101,7 +128,7 @@ def resolve(story: Story) -> list[str]:
         raise A2Error("trop de sections (> 65535)")
     for lim, what in ((len(story.stats), "stats"),
                       (len(story.items), "items"),
-                      (len(story.flags), "flags"),
+                      (story.n_flag_slots, "flags"),
                       (len(story.assets), "images")):
         if lim > 255 and what != "images":
             raise A2Error(f"trop de {what} (> 255)")
@@ -110,9 +137,85 @@ def resolve(story: Story) -> list[str]:
     return warnings
 
 
+def _layout_flags(story: Story) -> None:
+    """Valide les declarations de flags et leur attribue des emplacements.
+
+    Un flag global occupe un emplacement pour toute la partie. Un flag local
+    n'existe que dans son chapitre : les locaux de chapitres differents
+    partagent les memes emplacements (le player efface la plage
+    [local_base, n_flag_slots) a chaque changement de chapitre). Le budget est
+    donc « au plus MAX_LOCAL_FLAGS locaux dans un meme chapitre ».
+
+    Un nom local declare dans plusieurs chapitres est qualifie (`nom@chapitre`)
+    pour rester unique dans le reste de la chaine (analyse, simulation, JSON) ;
+    `FlagDecl.base` garde le nom ecrit dans la source."""
+    for fl in story.flags:
+        if not fl.base:
+            fl.base = fl.name
+    story.flags.sort(key=lambda fl: fl.is_local)      # globaux d'abord (stable)
+
+    globals_ = [fl for fl in story.flags if not fl.is_local]
+    locals_ = [fl for fl in story.flags if fl.is_local]
+
+    seen: dict[str, int] = {}
+    for fl in globals_:
+        if fl.base in seen:
+            raise A2Error(f"flag '{fl.base}' déclaré deux fois", fl.line)
+        seen[fl.base] = fl.line
+    per_chapter: dict[int, dict[str, int]] = {}
+    for fl in locals_:
+        if fl.base in seen:
+            raise A2Error(f"flag local '{fl.base}' : porte le même nom qu'un "
+                          "flag global", fl.line)
+        chap = per_chapter.setdefault(fl.chapter, {})
+        if fl.base in chap:
+            raise A2Error(f"flag local '{fl.base}' déclaré deux fois dans le "
+                          "même chapitre", fl.line)
+        chap[fl.base] = fl.line
+
+    # noms uniques : on qualifie un local des que son nom apparait dans
+    # plusieurs chapitres
+    chapters_of: dict[str, set[int]] = {}
+    for fl in locals_:
+        chapters_of.setdefault(fl.base, set()).add(fl.chapter)
+    for fl in locals_:
+        fl.name = f"{fl.base}@{fl.chapter}" if len(chapters_of[fl.base]) > 1 else fl.base
+
+    slots: dict[str, int] = {fl.name: i for i, fl in enumerate(globals_)}
+    story.local_base = len(globals_)
+    widest = 0
+    for chap_no in sorted(per_chapter):
+        in_chapter = [fl for fl in locals_ if fl.chapter == chap_no]
+        widest = max(widest, len(in_chapter))
+        if len(in_chapter) > M.MAX_LOCAL_FLAGS:
+            title = story.chapters[chap_no] if chap_no < len(story.chapters) else ""
+            raise A2Error(f"{len(in_chapter)} flags 'local' dans le chapitre "
+                          f"« {title} » (> {M.MAX_LOCAL_FLAGS}) : en rendre "
+                          "quelques-uns globaux")
+        for k, fl in enumerate(in_chapter):
+            slots[fl.name] = story.local_base + k
+    story.flag_slots = slots
+    story.n_flag_slots = story.local_base + widest
+    if story.n_flag_slots > M.MAX_FLAGS:
+        raise A2Error(f"{story.n_flag_slots} emplacements de flags "
+                      f"(> {M.MAX_FLAGS}) : {story.local_base} globaux + "
+                      f"{widest} locaux au plus dans un chapitre")
+
+
+def _assign_splash(story: Story) -> None:
+    """Images purement facultatives : celles que seul un @splash utilise."""
+    required: set[str] = set()
+    for sec in story.sections:
+        if sec.image is not None:
+            required.add(sec.image)
+        if sec.combat is not None and sec.combat.image is not None:
+            required.add(sec.combat.image)
+    story.optional_assets = {a for a in story.assets if a not in required}
+
+
 def _check_unique(story: Story) -> None:
     for coll, what in ((story.stats, "stat"), (story.items, "item"),
-                       (story.flags, "flag"), (story.sections, "section")):
+                       (story.sections, "section")):
         seen: dict[str, int] = {}
         for d in coll:
             if d.name in seen:
@@ -127,12 +230,15 @@ def _resolve_section(sec: Section, sym: Symbols,
         if sec.image is None:
             raise A2Error(f"section '{sec.name}': mode graphique sans @image",
                           sec.line)
+    if sec.splash is not None:
+        sec.splash_asset = asset_index.setdefault(sec.splash, len(asset_index))
     if sec.image is not None:
         if sec.mode == Mode.FULL_TEXT:
             warnings.append(f"ligne {sec.line}: @image ignoré en mode full_text "
                             f"(section '{sec.name}')")
         sec.image_asset = asset_index.setdefault(sec.image, len(asset_index))
 
+    sym.cur_chapter = sec.chapter
     for e in sec.on_enter:
         _resolve_effect(e, sym)
     for e in sec.on_exit:
@@ -220,9 +326,7 @@ def _resolve_condition(cond: Condition, sym: Symbols) -> None:
 
 def _resolve_atom(a: Atom, sym: Symbols) -> None:
     if a.op in ("flag", "not_flag"):
-        if a.name not in sym.flags:
-            raise A2Error(f"flag non déclaré: '{a.name}' "
-                          "(ajouter @flag au préambule)", a.line)
+        a.name = sym.flag_ref(a.name, a.line)
     elif a.op in ("has", "not_has"):
         if a.name not in sym.items:
             raise A2Error(f"objet non déclaré: '{a.name}' "
@@ -236,9 +340,7 @@ def _resolve_atom(a: Atom, sym: Symbols) -> None:
 def _resolve_effect(e: Effect, sym: Symbols) -> None:
     _resolve_condition(e.cond, sym)          # garde optionnelle de l'effet
     if e.op in ("set", "clear", "toggle"):
-        if e.name not in sym.flags:
-            raise A2Error(f"flag non déclaré: '{e.name}' "
-                          "(ajouter @flag au préambule)", e.line)
+        e.name = sym.flag_ref(e.name, e.line)
     elif e.op in ("give", "take"):
         if e.name not in sym.items:
             raise A2Error(f"objet non déclaré: '{e.name}' "

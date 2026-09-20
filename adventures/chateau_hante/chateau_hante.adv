@@ -4,8 +4,9 @@
 
 @title  Le Château Hanté
 @author a2adv
+@description "Un vieux château, une poupée de porcelaine et l'âme d'une petite fille. Explorez dix-huit salles, trouvez les objets et menez le rituel à son terme."
 @start  entree
-@intro  intro_legende intro_quete intro_entree
+@intro  intro_legende intro_quete intro_regles intro_entree
 
 @stat COURAGE 8 0 8
 
@@ -48,6 +49,16 @@ pour délivrer Ligeia, il faut porter sa poupée jusqu'à la terre consacrée du
 Ce soir, la grille s'ouvre devant vous. Prenez garde :
 chaque frayeur entame un peu votre raison, et le spectre de l'enfant,
 prisonnier de sa propre garde, ne vous laissera pas l'approcher sans combattre.
+
+:: intro_regles
+@mode full_text
+=! LE PRIX DE LA PEUR
+
+Un seul chiffre compte, en haut de l'écran : votre *COURAGE*.
+
+Les apparitions, les cris dans les murs, les portraits qui vous suivent des yeux l'entament. Il ne se regagne pas : ménagez-le. Tombé à zéro, la peur l'emporte, et le château garde un visiteur de plus.
+
+Vos objets sont votre meilleure défense. Touchez I pour les voir.
 
 :: intro_entree
 @mode image_text

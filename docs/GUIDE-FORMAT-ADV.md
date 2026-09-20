@@ -211,12 +211,13 @@ compilateur refuse qu'une caractéristique, un objet ou un drapeau soit utilisé
 sans avoir été déclaré ici. C'est un filet contre les fautes de frappe, et
 c'est ce qui garantit que le format des sauvegardes reste stable.
 
-### `@title`, `@version`, `@author`, `@start`, `@intro`
+### `@title`, `@version`, `@author`, `@description`, `@start`, `@intro`
 
 ```
 @title   L'Homme en Costume Blanc
 @version 1.2
 @author  Votre nom
+@description "Une phrase ou deux pour présenter l'aventure."
 @start   premiere_section
 @intro   intro_1 intro_2 intro_3
 ```
@@ -227,6 +228,9 @@ c'est ce qui garantit que le format des sauvegardes reste stable.
   révision de l'aventure elle contient.
 - `@author` est une simple chaîne, gardée par le compilateur (`--summary`)
   mais pas encore affichée en jeu.
+- `@description` (optionnelle) est une présentation courte, sur une seule
+  ligne, entre guillemets. Elle sert au catalogue du player web ; les autres
+  plateformes l'ignorent et elle n'occupe aucune place sur disquette.
 - `@start` est **obligatoire** : c'est la section par laquelle une nouvelle
   partie commence.
 - `@intro` liste des sections jouées automatiquement au lancement, avant
@@ -289,20 +293,22 @@ minuscules. On peut ensuite surcharger n'importe laquelle de ces chaînes avec
 ### `@flag` — les drapeaux
 
 ```
-@flag nom [on|off] [local]
+@flag nom [on|off]        # global : déclaré dans le préambule
+@flag nom local           # local : déclaré DANS son chapitre
 ```
 
 ```
 @flag porte_ouverte
 @flag urne_geole      # commence a off, jamais force
-@flag q_gala   local  # remis a zero a chaque chapitre
 ```
 
 - Un booléen d'histoire ; `off` par défaut.
-- `local` : voir la section dédiée plus bas. Un drapeau local ne peut **pas**
-  démarrer à `on` (`@flag x on local` est refusé) — il vaut toujours `off` au
-  début, par construction.
-- Maximum **128 drapeaux au total**, dont **32 locaux**.
+- `local` : voir la section dédiée plus bas. Un drapeau local se déclare
+  **dans le chapitre** qui l'utilise (juste après son `@chapter`), jamais dans
+  le préambule. Il ne peut **pas** démarrer à `on` (`@flag x on local` est
+  refusé) — il vaut toujours `off` au début, par construction.
+- Maximum **128 emplacements de drapeaux** : les drapeaux globaux, plus le
+  plus grand nombre de locaux déclarés dans **un même chapitre** (32 au plus).
 
 ### `@score`, `@moves`
 
@@ -406,19 +412,47 @@ stat NOM OP VALEUR      comparaison numérique
 Opérateurs de comparaison acceptés pour `stat` : `==`, `!=`, `<`, `<=`, `>`,
 `>=`.
 
-Plusieurs atomes se combinent avec `and` **ou** `or` — un seul des deux à la
-fois dans une même condition, sans parenthèses :
+Les atomes se combinent avec `and`, `or`, `not` et des parenthèses :
 
 ```
 {has torche}
 {not flag porte_ouverte}
 {stat ADRESSE >= 9 and has machette}
 {flag lead_moretti or flag lead_conservateur}
+{(flag lead_moretti or flag lead_conservateur) and has torche}
+{not (flag garde_prevenu and has uniforme)}
+{not stat NUITS >= 5}
 ```
 
-> Il n'existe pas de `not stat …` : pour l'inverse d'une comparaison,
-> utilisez l'opérateur complémentaire (`stat NUITS < 5` plutôt que
-> `not stat NUITS >= 5`).
+- **`and` et `or` ne se mélangent pas sans parenthèses** : `a and b or c` est
+  refusé (on ne devine pas la priorité), on écrit `(a and b) or c`.
+- **`not`** s'applique à un atome ou à un groupe entre parenthèses. `not stat
+  NUITS >= 5` équivaut à `stat NUITS < 5` : le compilateur inverse la
+  comparaison.
+- La condition est ramenée à un « ou » de « et » à la compilation. Si le
+  développement dépasse **16 clauses**, la compilation le signale : il faut
+  alors scinder la condition.
+- Une condition qui se contredit (`flag a and not flag a`) est refusée.
+
+### `else` : le contraire des lignes voisines
+
+Une condition qui commence par `else` reprend « aucune des conditions
+précédentes de la même liste » : on n'écrit plus deux conditions inverses.
+
+```
+{flag riche} Vous payez sans compter.
+{else and stat ARGENT >= 5} Vous comptez chaque pièce.
+{else} Vous n'avez de quoi payer personne.
+
+* {has clef} [Ouvrir] -> salon
+* {else} [Forcer la porte] -> salon
+  ~ sub SANTE 1
+```
+
+La suite s'étend aux lignes conditionnelles voisines d'une même liste (les
+textes d'une section, ses choix, ou les effets d'un même choix) ; une ligne
+sans condition l'interrompt. `{else}` sans ligne conditionnelle avant lui est une
+erreur.
 
 Une ligne de texte conditionnelle ne s'affiche que si sa condition est vraie ;
 un choix dont la condition est fausse **n'apparaît tout simplement pas** dans
@@ -611,6 +645,36 @@ caractères de texte compte pour une ligne, chaque choix aussi). Au-delà, un
 avertissement de compilation invite à passer en `full_text`, faute de place à
 l'écran.
 
+### `@splash` : une image d'ouverture facultative
+
+```
+:: cite_entree
+@splash cite          # attend une touche
+@splash cite 4        # ou : 4 secondes (une touche passe)
+@splash cite always   # ou : rejoué à chaque arrivée
+```
+
+`@splash id [secondes] [always]` affiche une **image plein écran avant le texte**
+de la section, qui reste écrite comme une section `full_text` ordinaire : pas de
+limite de quatre lignes, et aucune contrainte de place.
+
+- **Facultative sur chaque machine.** Si le fichier image de la plateforme
+  n'existe pas (par exemple pas de version Apple II d'une image), rien ne
+  s'affiche et la section commence directement par son texte. Ce n'est ni une
+  erreur ni un avertissement de fabrication : une image utilisée **seulement**
+  par des `@splash` peut manquer sur une plateforme. (`IMAGES.MAP` la marque
+  `optional`.) Un `@image` classique, lui, reste obligatoire.
+- **Durée** : 1 à 31 secondes (une touche passe l'image), ou 0 / absente pour
+  attendre une touche.
+- **Rejeu.** Sans `always`, l'image n'est pas rejouée quand on revient dans la
+  section dont on vient de la voir (typiquement un carrefour). Elle est en
+  revanche rejouée si une autre section avec `@splash` est passée entre-temps.
+- **Pas à la reprise d'une sauvegarde.**
+- Sur une scène d'`@intro`, le web affiche l'image au-dessus du texte ; les
+  players natifs l'affichent en plein écran comme ailleurs.
+- Les images des différentes plateformes se fournissent comme pour `@image`
+  (`img/named/<ID>.HGR` pour l'Apple II, `img/atarist`, `img/dos`, `img/web`).
+
 ---
 
 ## 12. Chapitres
@@ -638,11 +702,28 @@ personnage aux commandes).
 
 Un drapeau déclaré `local` fonctionne exactement comme un drapeau normal —
 seule sa **durée de vie** change : il est remis à `off` **à chaque
-changement de chapitre**, automatiquement.
+changement de chapitre**, automatiquement. Il n'existe que **dans le chapitre
+qui le déclare** : on l'écrit juste après le `@chapter` correspondant.
 
 ```
+@chapter "Le Musee"
 @flag q_gala local
+@flag q_peru local
 ```
+
+Conséquences :
+
+- Le compilateur refuse un local utilisé dans un autre chapitre que le sien
+  (il serait toujours faux) ; s'il doit survivre au chapitre, c'est un
+  drapeau global.
+- Deux chapitres peuvent déclarer le même nom : ce sont deux drapeaux
+  indépendants, sans collision. Un local ne peut en revanche pas porter le
+  nom d'un drapeau global.
+- Les locaux de chapitres différents partagent les mêmes emplacements : le
+  budget est de 32 locaux **par chapitre**, pas 32 au total.
+- Une aventure écrite avec des `@flag ... local` dans le préambule se
+  convertit avec `python3 -m a2c.migrate_locals aventure.adv --write`, sans
+  rien changer au jeu.
 
 C'est fait pour les carrefours et les dialogues à choix multiples, où l'on
 veut retenir « ce sujet a déjà été abordé » **pour la durée du chapitre**,
@@ -669,7 +750,51 @@ repartent à zéro : revisiter Georgio y redevient possible sans rien nettoyer
 
 ---
 
-## 14. Limites à connaître
+## 14. Modèles de sections : `@template` et `@use`
+
+Quand plusieurs sections ne diffèrent que par un nom ou une cible, on écrit
+un modèle une fois et on l'instancie autant de fois que nécessaire :
+
+```
+@template aide(ret)
+:: aide_@ret
+=! AIDE
+Les flèches déplacent, ESPACE valide.
+
+* [Fermer l'aide] -> @ret
+@end
+
+@use aide(carrefour)
+@use aide(marche)
+```
+
+Les deux `@use` produisent les sections `aide_carrefour` et `aide_marche`,
+comme si on les avait écrites à la main.
+
+- **Paramètres.** `@template nom(a, b)` les déclare ; `@template nom` sans
+  parenthèses est un modèle sans paramètre. Dans le corps, `@a` est remplacé
+  par l'argument. Pour coller du texte au nom, l'entourer d'accolades :
+  `sec_@{a}_2`. Tout autre `@mot` reste une directive ordinaire.
+- **Arguments.** Séparés par des virgules ; un argument avec espaces ou
+  virgules se met entre guillemets : `@use fiche("Élise Martin", 3)`. Le
+  nombre d'arguments doit être celui des paramètres.
+- **Où l'écrire.** N'importe où dans le fichier, avant ou après son `@use` ;
+  un modèle peut en utiliser un autre (pas de récursion). Le modèle n'est pas
+  une section : il ne produit rien tant qu'il n'est pas instancié.
+- **Chapitres.** L'instance appartient au chapitre où se trouve l'`@use`, et
+  ses drapeaux locaux sont ceux de ce chapitre. `@chapter` est interdit dans
+  un modèle.
+- **Contrôles.** Un paramètre jamais utilisé, un modèle inconnu, une définition
+  sans `@end` ou un nom de paramètre égal à une directive sont des erreurs.
+  Une erreur dans le texte issu d'un modèle est rapportée à la ligne du `@use`,
+  avec la ligne du modèle entre parenthèses.
+
+Le modèle n'existe qu'à la compilation : le binaire ne change pas, et le
+passage par le JSON de l'éditeur produit un `.adv` déjà développé.
+
+---
+
+## 15. Limites à connaître
 
 | Élément | Limite |
 |---|---|
@@ -680,12 +805,12 @@ repartent à zéro : revisiter Georgio y redevient possible sans rien nettoyer
 | Nom de caractéristique | 12 caractères |
 | Objets | 24 |
 | Libellé d'objet | 20 caractères |
-| Drapeaux (total) | 128, dont 32 `local` |
+| Drapeaux | 128 emplacements : les globaux + les locaux d'un même chapitre (32 au plus) |
 | Titre de l'aventure | 33 caractères |
 | Nom d'ennemi (combat) | 20 caractères |
 | Saisie clavier (`@ask`) | 40 caractères, `maxlen` réglable |
 | Texte d'issue de combat/énigme | 255 caractères |
-| Images | une par section, format HIRES 8 Ko |
+| Images | une `@image` et un `@splash` par section, format HIRES 8 Ko |
 
 La limite qui surprend le plus souvent en pratique est celle de la
 **section** : une description avec plusieurs variantes conditionnelles

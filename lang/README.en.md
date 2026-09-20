@@ -40,3 +40,13 @@ The compiler looks up `lang/<code>.lng` at the repo root (see
 
 To change just one or two strings without writing a full base, an adventure
 can also override any key on the fly with `@ui` directly in its `.adv`.
+
+## Web player override
+
+The web player reads `lang/<code>.lng` first, then applies
+`lang/web/<code>.lng` on top if it exists (see `compiler/a2c/webjson.py`).
+That second file only holds the keys that differ: a browser has mixed case
+and touch buttons, so "Nouvelle partie" or "Annuler" replace `COMMENCER` or
+`ESC) ANNULER`. An adventure can still force its own string with `@ui`, which
+wins over both files. Accents are not transliterated to ASCII on the web. A
+language without a `web/` file simply uses its base.

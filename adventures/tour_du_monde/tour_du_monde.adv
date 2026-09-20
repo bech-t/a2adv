@@ -5,8 +5,9 @@
 @title  Le Tour du Monde en 80 Jours
 @version 0.1
 @author Thomas B.
+@description "D'après Jules Verne : vous êtes Passepartout, et le temps presse. Premier chapitre, de Londres à Suez."
 @start  londres_carte
-@intro  intro_1 intro_2
+@intro  intro_1 intro_2 intro_regles
 @lang   fr
 
 # JOURS : jours restants sur les 80 (masque : on le lit dans le journal).
@@ -78,36 +79,20 @@
 @flag vent_ok
 
 # Carrefours du chapitre en cours (remis a zero a chaque @chapter).
-@flag q_portier   local
-@flag q_membres   local
-@flag q_marchand  local
-@flag q_employe   local
-@flag q_recept    local
-@flag q_conducteur local
-@flag q_voyageur  local
-@flag q_speedy    local
-@flag q_matelot   local
-@flag q_douane    local
-@flag q_marchand_suez local
-@flag q_change    local
-@flag q_epices    local
-@flag q_temple    local
-@flag q_port      local
-@flag q_the       local
-@flag q_barman    local
-@flag q_consul    local
-@flag q_fix       local
-@flag q_mecano    local
-@flag q_passager  local
-@flag q_bunsby    local
-@flag q_arg1      local
-@flag q_arg2      local
-@flag q_arg3      local
 
 # ===========================================================================
 # CHAPITRE 1a : LONDRES ET DOUVRES
 # ===========================================================================
 @chapter "Londres"
+@flag q_portier local
+@flag q_membres local
+@flag q_marchand local
+@flag q_employe local
+@flag q_recept local
+@flag q_conducteur local
+@flag q_voyageur local
+@flag q_matelot local
+@flag q_change local
 
 :: intro_1
 @mode full_text
@@ -133,6 +118,22 @@ Il est dix-neuf heures trente. Fogg vous a donné ses ordres : la valise, le
 passeport, et rendez-vous au train de *20h45*, gare de Paddington.
 
 Vous avez un peu de temps. Et peu d'argent.
+
+:: intro_regles
+@mode full_text
+=! CE QUI SE JOUE
+
+Le bandeau du haut suit Passepartout :
+
+*ARGENT* : vos livres. Chaque course, chaque pourboire compte.
+*MORAL* : l'humeur. Les déconvenues l'entament, les bons tours le remontent.
+*SANTE* : vos forces, y compris au combat.
+*INTEL* : la tête froide : marchandages, énigmes, bonnes idées.
+*ADRESSE* : l'agilité, et votre coup de poing.
+
+Le temps, lui, n'a pas de cadran : le journal de Fogg dit où vous en êtes.
+
+Quatre-vingts jours, pas un de plus. Et un maître qui ne doit jamais savoir à quel point vous avez tremblé.
 
 :: londres_carte
 @mode full_text
@@ -595,6 +596,8 @@ Votre vrai voyage commence.
 # CHAPITRE 1b : LA TRAVERSEE
 # ===========================================================================
 @chapter "Mongolia"
+@flag q_speedy local
+@flag q_matelot local
 
 :: traversee_pont
 @mode full_text
@@ -677,6 +680,8 @@ canal : tout est neuf pour vous.
 # CHAPITRE 1c : SUEZ
 # ===========================================================================
 @chapter "Suez"
+@flag q_douane local
+@flag q_marchand_suez local
 
 :: suez_carte
 @mode full_text
@@ -867,6 +872,15 @@ annonce Bombay.
 # CHAPITRE 2 : L'INDE
 # ===========================================================================
 @chapter "Bombay"
+@flag q_epices local
+@flag q_temple local
+@flag q_port local
+@flag q_fix local
+@flag q_passager local
+@flag q_bunsby local
+@flag q_arg1 local
+@flag q_arg2 local
+@flag q_arg3 local
 
 :: bombay_arrivee
 @mode full_text
@@ -1425,6 +1439,8 @@ bonne chance. »
 # CHAPITRE 2b : CALCUTTA
 # ===========================================================================
 @chapter "Calcutta"
+@flag q_consul local
+@flag q_bunsby local
 
 :: calcutta_arrivee
 @mode full_text
@@ -1656,6 +1672,11 @@ Passepartout. »
 # CHAPITRE 3 : L'ASIE
 # ===========================================================================
 @chapter "Mer de Chine"
+@flag q_change local
+@flag q_the local
+@flag q_fix local
+@flag q_mecano local
+@flag q_passager local
 
 :: tankadere_depart
 @mode full_text
@@ -2100,6 +2121,8 @@ derniers jours de traversée sont maigres.
 # CHAPITRE 3b : YOKOHAMA
 # ===========================================================================
 @chapter "Yokohama"
+@flag q_the local
+@flag q_fix local
 
 :: yokohama_arrivee
 @mode full_text
@@ -2320,6 +2343,11 @@ Dix-huit jours de mer, sur le Pacifique.
 # CHAPITRE 4 : L'AMERIQUE
 # ===========================================================================
 @chapter "San Francisco"
+@flag q_port local
+@flag q_the local
+@flag q_barman local
+@flag q_mecano local
+@flag q_passager local
 
 :: sf_arrivee
 @mode full_text
@@ -2721,6 +2749,7 @@ soupape. Le train repart enfin, en retard.
 # CHAPITRE 4b : NEW YORK
 # ===========================================================================
 @chapter "New York"
+@flag q_port local
 
 :: ny_arrivee
 @mode full_text
@@ -2983,6 +3012,9 @@ Neuf jours de mer. Il vous reste peu de marge.
 # CHAPITRE 5 : LE RETOUR
 # ===========================================================================
 @chapter "Henrietta"
+@flag q_arg1 local
+@flag q_arg2 local
+@flag q_arg3 local
 
 :: henrietta_debut
 @mode full_text

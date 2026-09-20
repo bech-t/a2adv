@@ -3,6 +3,7 @@
 #define A2ADV_SIMAGE_H
 
 #include "format.h"
+#include "scene.h"
 
 /* Charge une image par son nom, via le cache d'assets (cf. assetcache.h).
  * Renvoie comme scr_load_hgr : 0 si l'image est chargee. */
@@ -17,8 +18,18 @@ signed char img_load(const char *name);
 signed char img_load_from_disk(const char *hgr_name);
 
 /* Affiche l'image d'un asset puis revient en texte.
- * timed=1 : ~3 s ou touche ; timed=0 : attend une touche. Renvoie la touche. */
-char show_image(u16 asset, u8 timed);
+ * secs = 0 : attend une touche ; sinon ~secs secondes, une touche passe.
+ * Image introuvable : rien ne s'affiche. Renvoie la touche. */
+char show_image(u16 asset, u8 secs);
+
+/* @splash de la section `idx` : image plein ecran AVANT le texte, facultative.
+ * secs = 0 : attend une touche ; sinon ~secs secondes, une touche passe.
+ * Sans `always`, l'image n'est pas rejouee quand on revient dans la section
+ * dont on vient de la montrer (carrefour). Image absente de la disquette :
+ * rien ne s'affiche, la section commence directement par son texte.
+ * splash_reset : au debut d'une partie. */
+void show_splash(u16 idx, const SecHeader *h);
+void splash_reset(void);
 
 /* Scene d'intro AVEC image : mode mixte (image + fenetre texte), invite en bas.
  * Rend les paragraphes de la section (curseur deja sur le bloc texte). */

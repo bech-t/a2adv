@@ -73,48 +73,52 @@ static void flag_set(u8 i, u8 v)
 
 u8 state_eval_cond(void)
 {
-    u8 n = b_u8();
-    u8 conn = b_u8();     /* 0=AND, 1=OR */
-    u8 result, i, av, op, a0, a1, lt, eq;
+    u8 nc = b_u8();       /* clauses (OU) ; 0 = pas de condition */
+    u8 n, op, a0, a1, av, lt, eq, ok, result = 0;
     u16 a2, v;
 
-    if (n == 0)
+    if (nc == 0)
         return 1;
 
-    result = (conn == 0) ? 1 : 0;   /* AND part de vrai, OR de faux */
-    for (i = 0; i < n; ++i) {
-        /* atome (op,a0,a1 = 3 o) puis a2 : 16 bits pour 'stat' (valeur
-         * jusqu'a 65535), 8 bits sinon (largeur variable, cf. encoder.py).
-         * Inline (un seul point d'appel) : evite le cout d'un JSR/RTS pour
-         * eval_atom sans rien dupliquer. */
-        op = b_u8(); a0 = b_u8(); a1 = b_u8();
-        a2 = (op == OP_STAT_CMP) ? b_u16() : b_u8();
-        switch (op) {
-        case OP_FLAG_SET: av = flag_get(a0); break;
-        case OP_FLAG_CLR: av = (u8)!flag_get(a0); break;
-        case OP_HAS_ITEM: av = item_get(a0); break;
-        case OP_NO_ITEM:  av = (u8)!item_get(a0); break;
-        case OP_STAT_CMP:
-            /* 2 comparaisons 16 bits ('<' et '==') au lieu de 6 : sur cc65,
-             * chaque comparaison 16 bits distincte coute nettement plus
-             * qu'en 8 bits -- LE/GT/GE/NE se deduisent de lt/eq. */
-            v = stat_val[a0];
-            lt = (u8)(v < a2);
-            eq = (u8)(v == a2);
-            switch (a1) {
-            case CMP_EQ: av = eq; break;
-            case CMP_NE: av = (u8)!eq; break;
-            case CMP_LT: av = lt; break;
-            case CMP_LE: av = (u8)(lt || eq); break;
-            case CMP_GT: av = (u8)(!lt && !eq); break;
-            case CMP_GE: av = (u8)!lt; break;
+    /* Une condition est un OU de ET (forme disjonctive, cf. a2c/cond.py) :
+     * chaque clause est une suite d'atomes tous vrais. On lit TOUT, sans
+     * court-circuit : le curseur doit finir apres la condition. */
+    while (nc--) {
+        n = b_u8();
+        ok = 1;
+        while (n--) {
+            /* atome (op,a0,a1 = 3 o) puis a2 : 16 bits pour 'stat' (valeur
+             * jusqu'a 65535), 8 bits sinon (largeur variable, cf. encoder.py).
+             * Inline (un seul point d'appel) : evite le cout d'un JSR/RTS. */
+            op = b_u8(); a0 = b_u8(); a1 = b_u8();
+            a2 = (op == OP_STAT_CMP) ? b_u16() : b_u8();
+            switch (op) {
+            case OP_FLAG_SET: av = flag_get(a0); break;
+            case OP_FLAG_CLR: av = (u8)!flag_get(a0); break;
+            case OP_HAS_ITEM: av = item_get(a0); break;
+            case OP_NO_ITEM:  av = (u8)!item_get(a0); break;
+            case OP_STAT_CMP:
+                /* 2 comparaisons 16 bits ('<' et '==') au lieu de 6 : sur cc65,
+                 * chaque comparaison 16 bits distincte coute nettement plus
+                 * qu'en 8 bits -- LE/GT/GE/NE se deduisent de lt/eq. */
+                v = stat_val[a0];
+                lt = (u8)(v < a2);
+                eq = (u8)(v == a2);
+                switch (a1) {
+                case CMP_EQ: av = eq; break;
+                case CMP_NE: av = (u8)!eq; break;
+                case CMP_LT: av = lt; break;
+                case CMP_LE: av = (u8)(lt || eq); break;
+                case CMP_GT: av = (u8)(!lt && !eq); break;
+                case CMP_GE: av = (u8)!lt; break;
+                default: av = 0; break;
+                }
+                break;
             default: av = 0; break;
             }
-            break;
-        default: av = 0; break;
+            ok = (u8)(ok & av);
         }
-        if (conn == 0) result = (u8)(result & av);
-        else           result = (u8)(result | av);
+        result = (u8)(result | ok);
     }
     return result;
 }

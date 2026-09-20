@@ -10,7 +10,7 @@ l'UNIQUE endroit qui fait le travail de resolution/validation ; ce module ne
 fait QUE le serialiser, comme `encoder.py` le fait pour le binaire (memes
 tables d'opcodes, dupliquees ici car `encoder.py` les garde privees).
 
-Cote web, `player/web/src/engine/story.ts` (`loadStoryJson`) fait l'inverse :
+Cote web, `player/webng/src/app/engine/story.ts` (`loadStoryJson`) fait l'inverse :
 JSON -> les memes structures en memoire (`StoryData`/`SectionBody`) que
 produisait jusqu'ici le decodage du binaire -- le reste du moteur TS
 (state.ts/combat.ts/engine.ts) ne voit aucune difference.
@@ -24,15 +24,14 @@ Contrairement a l'encodeur binaire, le texte n'est PAS passe par
 `translit.normalize_display` (aplatissement des ligatures/guillemets
 courbes) : cet aplatissement existe uniquement parce qu'aucune police
 materielle cible (Apple II, Atari ST, DOS/VGA) ne sait rendre ces
-caracteres, une limite que le DOM n'a pas (cf. player/web/src/engine/
-reader.ts). Le texte JSON garde donc sa typographie d'origine.
+caracteres, une limite que le DOM n'a pas (cf. player/webng/src/app/
+engine/). Le texte JSON garde donc sa typographie d'origine.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
 from pathlib import Path
 
@@ -66,7 +65,7 @@ def _atom(a: M.Atom, sym: Symbols) -> dict:
 
 
 def _cond(cond: M.Condition, sym: Symbols) -> dict:
-    return {"conn": cond.connective, "atoms": [_atom(a, sym) for a in cond.atoms]}
+    return {"clauses": [[_atom(a, sym) for a in clause] for clause in cond.clauses]}
 
 
 def _effect(e: M.Effect, sym: Symbols) -> dict:
@@ -139,6 +138,8 @@ def _section(sec: M.Section, sym: Symbols) -> dict:
     return {
         "mode": int(sec.mode), "ending": int(sec.ending),
         "image": sec.image_asset,
+        "splash": ({"asset": sec.splash_asset, "secs": sec.splash_secs,
+                    "always": sec.splash_always} if sec.splash else None),
         "combat": _combat(sec.combat, sym) if sec.combat else None,
         "input": _input(sec.input, sym) if sec.input else None,
         "onEnter": _effects(sec.on_enter, sym),
@@ -173,7 +174,7 @@ def resolved_to_dict(story: M.Story, ui_strings: dict[str, str]) -> dict:
         "items": [{"label": it.label or it.name, "defaultOn": it.default_on,
                    "atk": it.atk, "dmg": it.dmg, "armor": it.armor}
                  for it in story.items],
-        "flags": [{"defaultOn": fl.default_on} for fl in story.flags],
+        "flags": [{"defaultOn": on} for on in story.flag_defaults()],
         "introIndex": list(story.intro_index),
         "combatAttackIndex": story.combat_attack_index,
         "combatHpIndex": story.combat_hp_index,
@@ -183,37 +184,28 @@ def resolved_to_dict(story: M.Story, ui_strings: dict[str, str]) -> dict:
     }
 
 
-def copy_web_images(assets: list[str], src_dir: Path, out_dir: Path) -> list[str]:
-    """Copie les images NOMMEES vers IMGnn.png, numerotees dans l'ordre de
-    premiere apparition (`story.assets`, resolu par `symbols.resolve` --
-    meme ordre qu'IMAGES.MAP cote natif, cf. cli.py). Source attendue :
-    `<adv>/img/web/<ID EN MAJUSCULES>.png`, a fournir a la main -- meme
-    principe que `img/named/<ID>.HGR` pour l'Apple II ou
-    `img/atarist/<ID>.PI1` pour l'Atari ST (cf. leurs Makefile respectifs) :
-    aucune conversion de palette/resolution n'a de sens pour le web (le
-    navigateur affiche du PNG nativement), donc pas d'outil `img2web.py` --
-    juste une image deja prete, numerotee automatiquement ici pour ne pas
-    desynchroniser un index a la main si l'ordre des `@image` change.
+def load_ui_strings(lang: str, lang_dir: Path = LANG_DIR) -> dict[str, str]:
+    """Chaines d'interface du player web : le socle `<lang>.lng`, surcharge
+    par `web/<lang>.lng` s'il existe (libelles adaptes au tactile et a la
+    casse mixte du navigateur, cf. lang/README.md). Le fichier web ne
+    redonne que les cles qui different."""
+    base = lang_dir / f"{lang}.lng"
+    if not base.exists():
+        raise A2Error(f"@lang {lang} : fichier de langue introuvable ({base})")
+    _, ui_strings, _ = parse_lang(base.read_text(encoding="utf-8"))
+    overlay = lang_dir / "web" / f"{lang}.lng"
+    if overlay.exists():
+        _, over, _ = parse_lang(overlay.read_text(encoding="utf-8"))
+        ui_strings.update(over)
+    return ui_strings
 
-    Une image manquante n'est qu'un avertissement (retourne dans la liste),
-    jamais une erreur : une aventure sans export web de ses visuels reste
-    jouable en texte (cf. player/*/src/**/assets/loader.ts, onError sur
-    <img>)."""
-    if not assets:
-        return []
-    warnings = []
-    found: list[tuple[int, Path]] = []
-    for i, name in enumerate(assets):
-        src = src_dir / f"{name.upper()}.png"
-        if src.exists():
-            found.append((i, src))
-        else:
-            warnings.append(f"image manquante pour @image {name} : {src}")
-    if found:
-        out_dir.mkdir(parents=True, exist_ok=True)
-        for i, src in found:
-            shutil.copyfile(src, out_dir / f"IMG{i:02d}.png")
-    return warnings
+
+def compile_story(src: Path, lang_dir: Path = LANG_DIR) -> tuple[M.Story, dict]:
+    """Parse + resout une source .adv : (Story resolue, JSON du player web).
+    La Story est rendue aussi pour ses metadonnees (`title`, `assets`...)."""
+    story = parse(src.read_text(encoding="utf-8"))
+    resolve(story)
+    return story, resolved_to_dict(story, load_ui_strings(story.lang, lang_dir))
 
 
 def build_web_json(adv_text: str, lang_dir: Path) -> dict:
@@ -221,21 +213,15 @@ def build_web_json(adv_text: str, lang_dir: Path) -> dict:
     en allant chercher son socle .lng (`@lang`) dans `lang_dir`."""
     story = parse(adv_text)
     resolve(story)
-    lng_path = lang_dir / f"{story.lang}.lng"
-    if not lng_path.exists():
-        raise A2Error(f"@lang {story.lang} : fichier de langue introuvable "
-                      f"({lng_path})")
-    _, ui_strings, _ = parse_lang(lng_path.read_text(encoding="utf-8"))
-    return resolved_to_dict(story, ui_strings)
+    return resolved_to_dict(story, load_ui_strings(story.lang, lang_dir))
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="a2c.webjson",
         description="Compile une source .adv vers le JSON attendu par le "
-                    "player web (player/web/src/engine), et copie ses "
-                    "images web (img/web/*.png, cf. copy_web_images) a cote "
-                    "du JSON produit.")
+                    "player web (player/webng/src/app/engine). Pour un site "
+                    "complet (catalogue, images), voir a2c.site.")
     ap.add_argument("source", help="fichier .adv source")
     ap.add_argument("-o", "--out", help="fichier de sortie (defaut: story.json)")
     args = ap.parse_args(argv)
@@ -244,20 +230,8 @@ def main(argv: list[str] | None = None) -> int:
     if not src.exists():
         print(f"a2c.webjson: fichier introuvable: {src}", file=sys.stderr)
         return 2
-
-    # Pas d'appel a build_web_json ici : il faut l'objet Story RESOLU (pour
-    # story.assets, cf. copy_web_images plus bas), pas seulement le dict
-    # final qu'il retourne -- meme sequence parse/resolve que build_web_json,
-    # dupliquee ici pour cette seule raison.
     try:
-        story = parse(src.read_text(encoding="utf-8"))
-        resolve(story)
-        lng_path = LANG_DIR / f"{story.lang}.lng"
-        if not lng_path.exists():
-            raise A2Error(f"@lang {story.lang} : fichier de langue introuvable "
-                          f"({lng_path})")
-        _, ui_strings, _ = parse_lang(lng_path.read_text(encoding="utf-8"))
-        data = resolved_to_dict(story, ui_strings)
+        _, data = compile_story(src)
     except A2Error as e:
         print(f"a2c.webjson: {src.name}: {e}", file=sys.stderr)
         return 1
@@ -265,11 +239,6 @@ def main(argv: list[str] | None = None) -> int:
     out = Path(args.out) if args.out else Path("story.json")
     out.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"a2c.webjson: {src} -> {out}")
-
-    img_warnings = copy_web_images(story.assets, src.parent / "img" / "web", out.parent / "img")
-    for w in img_warnings:
-        print(f"a2c.webjson: attention: {w}", file=sys.stderr)
-
     return 0
 
 

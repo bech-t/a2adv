@@ -76,10 +76,9 @@ class Simulator:
         return _CMP[a.cmp](st.value[a.name], a.value)
 
     def _cond(self, st: _State, cond) -> bool:
-        if not cond.atoms:
+        if not cond.clauses:
             return True
-        results = [self._atom(st, a) for a in cond.atoms]
-        return any(results) if cond.connective == 1 else all(results)
+        return any(all(self._atom(st, a) for a in clause) for clause in cond.clauses)
 
     def _clamp(self, st: _State, name: str) -> None:
         st.value[name] = max(self.floor[name], min(st.cap[name], st.value[name]))

@@ -195,9 +195,11 @@ cd player/apple2 && make hosttest
 | `player/apple2/` | Le moteur cc65 : pilote écran, streaming, combat, saisie, son, cache `/RAM`. |
 | `player/atarist/` | Portage Atari ST (68000) du même moteur, en cours — cf. [son README](player/atarist/README.md). |
 | `player/dos/` | Portage PC DOS (VGA/EGA) du même moteur, en cours — cf. [son README](player/dos/README.md). |
+| `player/webng/` | Player web (Angular) : catalogue d'aventures, jeu dans le navigateur, hors ligne — cf. [son README](player/webng/README.md). |
 | `adventures/` | Une aventure par dossier : source `.adv`, images, disquette produite. |
 | `editor/` | Éditeur visuel `.adv` (Angular, v0) : hiérarchie, graphe des choix, import/export. |
 | `docs/` | La documentation du format `.adv` : référence, bonnes pratiques, présentation. |
+| `EVOLUTIONS.md` | Idées d'évolution du format et des outils, classées par priorité. |
 
 ## Écrire une aventure
 
@@ -212,8 +214,8 @@ Blanc](adventures/homme_costume_blanc/)**, 60 sections, quatre chapitres.
 
 ## Licence
 
-Le code (compilateur `a2c` et les players `player/apple2/`, `player/atarist/`
-et `player/dos/`) est sous licence **[MIT](LICENSE)**. La police bitmap
+Le code (compilateur `a2c` et les players `player/apple2/`, `player/atarist/`,
+`player/dos/` et `player/webng/`) est sous licence **[MIT](LICENSE)**. La police bitmap
 `player/dos/src/font8x8.h` est dans le domaine public (cf. son entête pour
 la provenance).
 

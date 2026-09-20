@@ -1,0 +1,41 @@
+# web/fr.lng -- surcharge du socle fr.lng pour le player web.
+# Le navigateur a la casse mixte et des boutons tactiles : les libelles en
+# majuscules et les raccourcis clavier du player natif ("S)", "ESC)"...)
+# n'y ont pas de sens. Seules les cles qui different du socle figurent ici ;
+# les autres (options son, info systeme...) ne sont pas utilisees par le web.
+
+@lang fr
+
+@ui menu_new     "Nouvelle partie"
+@ui menu_load    "Continuer"
+@ui inv_hud      "Inventaire"
+@ui anykey       "Continuer"
+@ui intro_hint   "Continuer"
+@ui end_win      "Victoire !"
+@ui end_lose     "Défaite"
+@ui end_generic  "Fin"
+@ui saved        "Partie sauvegardée."
+@ui save_fail    "Échec de la sauvegarde."
+@ui no_save      "Aucune sauvegarde trouvée."
+@ui inventory    "Inventaire"
+@ui inv_empty    "Inventaire vide"
+@ui no_exit      "Aucune issue possible"
+@ui section_err  "Erreur de chargement de la section"
+@ui quit_confirm "Revenir au menu ?"
+@ui quit_save    "Sauvegarder et revenir"
+@ui quit_nosave  "Revenir sans sauvegarder"
+@ui quit_cancel  "Annuler"
+@ui loading      "Chargement"
+@ui saving       "Sauvegarde"
+@ui score        "Score"
+@ui moves        "Mvt"
+@ui cbt_atk      "Att"
+@ui cbt_dmg      "Dég"
+@ui cbt_arm      "Arm"
+@ui cb_hp        "PV"
+@ui cb_dice      "Dés"
+@ui cb_you       "Vous"
+@ui cb_parry     "Parade"
+@ui cb_attack    "Attaquer"
+@ui cb_flee      "Fuir"
+@ui opt_back     "Retour"

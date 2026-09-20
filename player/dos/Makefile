@@ -10,6 +10,9 @@
 #   curl -Lo ow-snapshot.tar.xz \
 #     https://github.com/open-watcom/open-watcom-v2/releases/download/Last-CI-build/ow-snapshot.tar.xz
 #   tar xJf ow-snapshot.tar.xz ./binl ./lib286 ./h
+# Emplacement : ~/opt (binl/wcc, binl/wlink, h/, lib286/). Il n'est PAS dans
+# le PATH : `which wcc` ne le trouve pas, c'est normal. Pour un autre dossier :
+# make WATCOM=/autre/chemin.
 # Emulateur de test : DOSBox -- sudo apt install dosbox.
 #
 # make dsk ADV=combat_demo : compile le player + les donnees de l'aventure
@@ -29,6 +32,9 @@
 # seul, sans -I explicite possible cote link (contrairement a wcc, cf.
 # CPATHS plus bas).
 export WATCOM ?= $(HOME)/opt
+ifeq ($(wildcard $(WATCOM)/binl/wcc),)
+$(error Open Watcom introuvable dans $(WATCOM) : installer le snapshot dans ~/opt (cf. en-tete) ou passer WATCOM=/chemin)
+endif
 CC       := $(WATCOM)/binl/wcc
 LD       := $(WATCOM)/binl/wlink
 INCLUDE  := $(WATCOM)/h

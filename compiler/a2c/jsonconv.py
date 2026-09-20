@@ -62,8 +62,19 @@ def _with_comment(d: dict, lead: list[str], trail: str) -> dict:
 
 
 def _cond_to_json(cond: Condition) -> dict:
-    return {"connective": "or" if cond.connective else "and",
-            "atoms": [_atom_to_json(a) for a in cond.atoms]}
+    """Condition simple (un seul ET, ou un seul OU d'atomes) : forme historique
+    {connective, atoms}. Condition composee : {clauses: [[atomes]...]}. `src`
+    garde l'expression ecrite (parentheses, not, else) pour la reecrire."""
+    d: dict[str, Any]
+    if len(cond.clauses) == 1:
+        d = {"connective": "and", "atoms": [_atom_to_json(a) for a in cond.clauses[0]]}
+    elif all(len(c) == 1 for c in cond.clauses):
+        d = {"connective": "or", "atoms": [_atom_to_json(c[0]) for c in cond.clauses]}
+    else:
+        d = {"clauses": [[_atom_to_json(a) for a in c] for c in cond.clauses]}
+    if cond.src:
+        d["src"] = cond.src
+    return d
 
 
 def _atom_to_json(a: Atom) -> dict:
@@ -135,6 +146,9 @@ def _section_to_json(s: Section) -> dict:
                           "mode": _MODE_TO_TEXT[s.mode]}
     if s.image:
         d["image"] = s.image
+    if s.splash:
+        d["splash"] = {"id": s.splash, "secs": s.splash_secs,
+                       "always": s.splash_always}
     if s.ending != Ending.NONE:
         d["ending"] = _ENDING_TO_TEXT[s.ending]
     if s.on_enter:
@@ -158,6 +172,7 @@ def story_to_dict(story: Story) -> dict:
         "title": story.title,
         "version": story.version,
         "author": story.author,
+        "description": story.description,
         "start": story.start,
         "lang": story.lang,
         "score_on": story.score_on,
@@ -172,8 +187,7 @@ def story_to_dict(story: Story) -> dict:
                                  "default_on": i.default_on, "atk": i.atk,
                                  "dmg": i.dmg, "armor": i.armor}, i.lead, i.trail)
                  for i in story.items],
-        "flags": [_with_comment({"name": f.name, "default_on": f.default_on,
-                                 "local": f.is_local}, f.lead, f.trail)
+        "flags": [_with_comment(_flag_json(f), f.lead, f.trail)
                  for f in story.flags],
         "intro": list(story.intro),
         "ui": dict(story.ui),
@@ -192,17 +206,27 @@ def adv_to_json(text: str) -> dict:
 
 # --- dict JSON -> .adv --------------------------------------------------
 
+def _json_to_atom(a: dict) -> Atom:
+    atom = Atom(op=a["op"], name=a["name"])
+    if a["op"] == "stat":
+        atom.cmp = CMP_FROM_TEXT[a["cmp"]]
+        atom.value = a.get("value", 0)
+    return atom
+
+
 def _json_to_cond(d: dict | None) -> Condition:
     cond = Condition()
     if not d:
         return cond
-    cond.connective = 1 if d.get("connective") == "or" else 0
-    for a in d.get("atoms", []):
-        atom = Atom(op=a["op"], name=a["name"])
-        if a["op"] == "stat":
-            atom.cmp = CMP_FROM_TEXT[a["cmp"]]
-            atom.value = a.get("value", 0)
-        cond.atoms.append(atom)
+    cond.src = d.get("src", "")
+    if "clauses" in d:
+        cond.clauses = [[_json_to_atom(a) for a in c] for c in d["clauses"]]
+    else:
+        atoms = [_json_to_atom(a) for a in d.get("atoms", [])]
+        if d.get("connective") == "or":
+            cond.clauses = [[a] for a in atoms]
+        elif atoms:
+            cond.clauses = [atoms]
     return cond
 
 
@@ -258,6 +282,10 @@ def _json_to_section(d: dict) -> Section:
                image=d.get("image"),
                ending=_TEXT_TO_ENDING[d.get("ending")],
                lead=list(d.get("lead", [])), trail=d.get("trail", ""))
+    if d.get("splash"):
+        sp = d["splash"]
+        s.splash, s.splash_secs = sp["id"], sp.get("secs", 0)
+        s.splash_always = sp.get("always", False)
     s.on_enter = [_json_to_effect(e) for e in d.get("on_enter", [])]
     s.on_exit = [_json_to_effect(e) for e in d.get("on_exit", [])]
     s.texts = [_json_to_text(t) for t in d.get("texts", [])]
@@ -273,7 +301,8 @@ def dict_to_story(d: dict) -> Story:
     """Reconstruit un modele Story a partir d'un dict JSON (inverse de `story_to_dict`)."""
     story = Story(
         title=d.get("title", ""), version=d.get("version", ""),
-        author=d.get("author", ""), start=d.get("start", ""),
+        author=d.get("author", ""), description=d.get("description", ""),
+        start=d.get("start", ""),
         lang=d.get("lang", "fr"), score_on=d.get("score_on", True),
         moves_on=d.get("moves_on", True),
         combat_attack=d.get("combat_attack", ""),
@@ -291,6 +320,8 @@ def dict_to_story(d: dict) -> Story:
                   for i in d.get("items", [])]
     story.flags = [FlagDecl(f["name"], f.get("default_on", False),
                             is_local=f.get("local", False),
+                            chapter=f.get("chapter", 0) if f.get("local") else 0,
+                            base=f["name"],
                             lead=list(f.get("lead", [])), trail=f.get("trail", ""))
                   for f in d.get("flags", [])]
     story.intro = list(d.get("intro", []))
@@ -333,10 +364,16 @@ def _fmt_atom(a: Atom) -> str:
 
 
 def _fmt_cond(cond: Condition) -> str:
-    if not cond.atoms:
+    if not cond.clauses:
         return ""
-    joiner = " or " if cond.connective else " and "
-    return joiner.join(_fmt_atom(a) for a in cond.atoms)
+    if cond.src:                       # tel qu'ecrit (parentheses, not, else)
+        return cond.src
+    if len(cond.clauses) == 1:
+        return " and ".join(_fmt_atom(a) for a in cond.clauses[0])
+    if all(len(c) == 1 for c in cond.clauses):
+        return " or ".join(_fmt_atom(c[0]) for c in cond.clauses)
+    return " or ".join("(" + " and ".join(_fmt_atom(a) for a in c) + ")"
+                       for c in cond.clauses)
 
 
 def _fmt_effect(e: Effect) -> str:
@@ -355,6 +392,14 @@ def _fmt_effect(e: Effect) -> str:
         raise A2Error(f"effet inconnu: {e.op}")
     trail = f"  # {e.trail}" if e.trail else ""
     return f"~ {guard}{body}{trail}"
+
+
+def _flag_json(f: FlagDecl) -> dict:
+    d: dict[str, Any] = {"name": f.base or f.name, "default_on": f.default_on,
+                         "local": f.is_local}
+    if f.is_local:
+        d["chapter"] = f.chapter
+    return d
 
 
 def _decl_lines(lead: list[str], trail: str, text: str) -> list[str]:
@@ -413,6 +458,9 @@ def _fmt_section(s: Section) -> list[str]:
         lines.append(f"@mode {_MODE_TO_TEXT[s.mode]}")
     if s.image:
         lines.append(f"@image {s.image}")
+    if s.splash:
+        lines.append(f"@splash {s.splash}" + (f" {s.splash_secs}" if s.splash_secs else "")
+                     + (" always" if s.splash_always else ""))
     if s.ending != Ending.NONE:
         lines.append(f"@ending {_ENDING_TO_TEXT[s.ending]}")
     if s.combat is not None:
@@ -461,6 +509,8 @@ def render_adv(story: Story) -> str:
     lines: list[str] = directive("title", f'@title "{story.title}"')
     if story.author:
         lines += directive("author", f'@author "{story.author}"')
+    if story.description:
+        lines += directive("description", f'@description "{story.description}"')
     if story.version:
         lines += directive("version", f'@version "{story.version}"')
     lines += directive("lang", f"@lang {story.lang}")
@@ -479,12 +529,11 @@ def render_adv(story: Story) -> str:
                 parts.append(f"{k}={v}")
         lines += _decl_lines(it.lead, it.trail, " ".join(parts))
     for fl in story.flags:
-        parts = [f"@flag {fl.name}"]
-        if fl.default_on:
-            parts.append("on")
-        if fl.is_local:
-            parts.append("local")
-        lines += _decl_lines(fl.lead, fl.trail, " ".join(parts))
+        if not fl.is_local:            # les locaux se declarent dans leur chapitre
+            parts = [f"@flag {fl.name}"]
+            if fl.default_on:
+                parts.append("on")
+            lines += _decl_lines(fl.lead, fl.trail, " ".join(parts))
     if story.intro:
         lines += directive("intro", f"@intro {' '.join(story.intro)}")
     for key, val in story.ui.items():
@@ -503,15 +552,25 @@ def render_adv(story: Story) -> str:
     if story.combat_base_dmg != 2 or "combat_basedmg" in story.directive_comments:
         lines += directive("combat_basedmg", f"@combat_basedmg {story.combat_base_dmg}")
 
+    def chapter_marker(c: int) -> list[str]:
+        title = story.chapters[c] if c < len(story.chapters) else ""
+        out = ["", f'@chapter "{title}"']
+        for fl in story.flags:
+            if fl.is_local and fl.chapter == c:
+                out += _decl_lines(fl.lead, fl.trail, f"@flag {fl.base or fl.name} local")
+        return out
+
     last_chapter = 0
     for s in story.sections:
         while last_chapter < s.chapter:
             last_chapter += 1
-            title = story.chapters[last_chapter] if last_chapter < len(story.chapters) else ""
-            lines.append("")
-            lines.append(f'@chapter "{title}"')
+            lines += chapter_marker(last_chapter)
         lines.append("")
         lines += _fmt_section(s)
+    # chapitres sans section, mais qui portent des flags locaux
+    for c in range(last_chapter + 1, len(story.chapters)):
+        if any(fl.is_local and fl.chapter == c for fl in story.flags):
+            lines += chapter_marker(c)
 
     return "\n".join(lines) + "\n"
 

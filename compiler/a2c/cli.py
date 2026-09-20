@@ -78,7 +78,12 @@ def main(argv: list[str] | None = None) -> int:
     # (img/named/<ID>.HGR) : l'auteur n'a jamais a compter/nommer un index a
     # la main, et reordonner les @image ne desynchronise plus rien en
     # silence.
-    images_map = "".join(f"{i:02d} {name}\n" for i, name in enumerate(story.assets))
+    # Une image utilisee UNIQUEMENT par @splash est facultative : la 3e colonne
+    # `optional` dit au Makefile de la plateforme de ne pas echouer si son
+    # fichier manque (le player affiche alors directement le texte).
+    images_map = "".join(
+        f"{i:02d} {name}" + (" optional" if name in story.optional_assets else "") + "\n"
+        for i, name in enumerate(story.assets))
     (out / "IMAGES.MAP").write_text(images_map, encoding="ascii")
 
     names = ", ".join(f"STORY{i:02d}.DAT" for i in range(len(story_files)))

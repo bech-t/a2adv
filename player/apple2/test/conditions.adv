@@ -1,0 +1,39 @@
+# Conditions composees (OU de ET, not, else) : test de player/apple2 (make hosttest).
+# Sorties attendues : voir check_conditions.py.
+
+@title T
+@start a
+@flag x
+@flag y
+@item i "Objet"
+@stat N 5 0 9
+
+:: a
+~ set x
+Depart.
+* [go] -> b
+
+:: b
+{(flag x or flag y) and has i} A : (x ou y) et i.
+{else and not flag y} B : sinon, et pas y.
+{else} C : sinon.
+{not (flag x and flag y)} D : pas (x et y).
+{not stat N >= 6} E : N < 6.
+* {(flag x and not has i) or flag y} [1 : (x et non i) ou y] -> c
+* {else} [2 : else] -> c
+* {not flag x or flag y} [3 : non x ou y] -> c
+
+:: c
+~ give i
+* [suite] -> d
+
+:: d
+{(flag x or flag y) and has i} A : (x ou y) et i.
+{else and not flag y} B
+{else} C : sinon.
+* {(flag x and not has i) or flag y} [1] -> w
+* {else} [2 : else] -> w
+
+:: w
+@ending win
+Fin.

@@ -55,6 +55,9 @@ class DecSection:
     choices: list = field(default_factory=list)
     combat: dict = None
     input: dict = None
+    splash_asset: int | None = None     # None : pas de @splash
+    splash_secs: int = 0
+    splash_always: bool = False
 
 
 def decode(buf: bytes) -> dict:
@@ -147,8 +150,9 @@ def _decode_atom(r: _Reader) -> tuple:
 
 
 def _decode_cond(r: _Reader) -> list:
-    n = r.u8(); r.u8()  # connective
-    return [_decode_atom(r) for _ in range(n)]
+    """Condition : liste de clauses (OU), chacune une liste d'atomes (ET) ;
+    liste vide = pas de condition (toujours vrai)."""
+    return [[_decode_atom(r) for _ in range(r.u8())] for _ in range(r.u8())]
 
 
 def _decode_effect_atom(r: _Reader) -> tuple:
@@ -173,9 +177,14 @@ def _decode_effects(r: _Reader) -> list:
 
 
 def _decode_section(r: _Reader) -> DecSection:
-    mode = r.u8()
+    mode_byte = r.u8()
+    mode = mode_byte & 0x03
+    splash_always = bool(mode_byte & 0x04)
     ending = r.u8()
     image_asset = r.u16()
+    splash_asset, splash_secs = None, 0
+    if mode_byte & 0x80:
+        splash_asset, splash_secs = r.u16(), r.u8()
     combat = None
     if r.u8():                         # bloc combat présent ?
         att, hp, dmg, armor = r.u8(), r.u8(), r.u8(), r.u8()
@@ -216,7 +225,8 @@ def _decode_section(r: _Reader) -> DecSection:
         label = r.lenstr()
         choices.append((cond, effects, target, label))
     return DecSection(mode, ending, image_asset, on_enter, on_exit, texts,
-                      choices, combat, inp)
+                      choices, combat, inp, splash_asset, splash_secs,
+                      splash_always)
 
 
 def _dump(path: str) -> None:

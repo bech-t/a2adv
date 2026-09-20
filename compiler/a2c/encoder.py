@@ -20,7 +20,11 @@ from .translit import normalize_display
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
 MAGIC_LANG = b"A2LG"
-VERSION = 8                 # v8 : stats sur 16 bits (init/min/max ; @stat 0..65535,
+VERSION = 10                # v10 : conditions en OU de ET (u8 clauses, puis u8 atomes par
+                            #      clause ; pas de condition = 1 seul octet a 0)
+                            # v9 : @splash (octet de mode : bit 7 = splash present, bit 2 =
+                            #      toujours ; alors u16 asset + u8 duree apres l'image de section)
+                            # v8 : stats sur 16 bits (init/min/max ; @stat 0..65535,
                             #      atomes de condition 'stat' passes de 4 a 5 octets)
                             # v7 : @version de l'aventure (optionnelle, "" sinon)
                             # v5 : socle d'UI dans APP.LNG, l'aventure ne porte
@@ -118,7 +122,7 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE) -> list[bytes
         + struct.pack("<BB", VERSION, flags)
         + struct.pack("<H", n)
         + struct.pack("<BBBB", len(story.stats), len(story.items),
-                      len(story.flags), len(story.intro_index))
+                      story.n_flag_slots, len(story.intro_index))
         + struct.pack("<H", story.start_index)
         + struct.pack("<I", HEADER_SIZE + len(preamble))   # -> table file_first
         # offset 18 : n_files ; offset 19 : 1er index de flag LOCAL
@@ -169,7 +173,8 @@ def _encode_preamble(story: M.Story) -> bytes:
             hidden |= 1 << i
     out += struct.pack("<B", hidden)
     out += _bitset(len(story.items), lambda i: story.items[i].default_on)
-    out += _bitset(len(story.flags), lambda i: story.flags[i].default_on)
+    defaults = story.flag_defaults()
+    out += _bitset(len(defaults), lambda i: defaults[i])
     for s in story.stats:
         out += _lenstr(s.name)
     for it in story.items:
@@ -204,8 +209,13 @@ def _lenstr(text: str) -> bytes:
 
 def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
     out = bytearray()
-    out += struct.pack("<BB", int(sec.mode), int(sec.ending))
+    mode = int(sec.mode)
+    if sec.splash is not None:
+        mode |= 0x80 | (0x04 if sec.splash_always else 0)
+    out += struct.pack("<BB", mode, int(sec.ending))
     out += struct.pack("<H", sec.image_asset if sec.image else NO_IMAGE)
+    if sec.splash is not None:
+        out += struct.pack("<HB", sec.splash_asset, sec.splash_secs)
     # bloc combat optionnel (u8 présent + données ennemi + cibles)
     if sec.combat is None:
         out += struct.pack("<B", 0)
@@ -265,9 +275,13 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
 
 
 def _encode_cond(cond: M.Condition, sym: Symbols) -> bytes:
-    out = bytearray(struct.pack("<BB", len(cond.atoms), cond.connective))
-    for a in cond.atoms:
-        out += _encode_atom(a, sym)
+    """OU de ET : u8 nombre de clauses (0 = pas de condition : un seul octet),
+    puis pour chaque clause u8 nombre d'atomes et les atomes."""
+    out = bytearray(struct.pack("<B", len(cond.clauses)))
+    for clause in cond.clauses:
+        out += struct.pack("<B", len(clause))
+        for a in clause:
+            out += _encode_atom(a, sym)
     return bytes(out)
 
 

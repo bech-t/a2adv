@@ -91,11 +91,13 @@ def test_local_flags_reset_at_chapter_change():
     sim = _sim("""
 @title T
 @start a
+@chapter "Un"
 @flag l local
 :: a
 ~ set l
 * [suite] -> b
 @chapter "Deux"
+@flag l local
 :: b
 * {flag l} [ne doit pas apparaître] -> w
 :: w
@@ -104,6 +106,28 @@ def test_local_flags_reset_at_chapter_change():
     outcome, section, _, _ = _play(sim)
     assert outcome == DEAD_END
     assert section == "b"
+
+
+def test_local_flag_is_reset_when_the_chapter_is_left_and_reentered():
+    sim = _sim("""
+@title T
+@start a
+@chapter "Un"
+@flag l local
+:: a
+~ set l
+* [suite] -> b
+:: c
+* {flag l} [ne doit pas apparaître] -> w
+@chapter "Deux"
+:: b
+* [retour] -> c
+:: w
+@ending win
+""")
+    outcome, section, _, _ = _play(sim)
+    assert outcome == DEAD_END
+    assert section == "c"
 
 
 def test_same_seed_same_games():

@@ -38,6 +38,20 @@ Détecte les défauts de conception : sections inatteignables, culs-de-sac, fins
 non joignables, objets requis jamais octroyés, flags/objets morts. Reachabilité
 optimiste (conditions ignorées).
 
+## Migrer les flags locaux (`a2c.migrate_locals`)
+
+Un flag `local` se déclare dans son chapitre. Pour convertir une aventure dont
+les `@flag ... local` sont encore dans le préambule :
+
+```bash
+python3 -m a2c.migrate_locals ../adventures/mon_aventure/mon_aventure.adv          # compte rendu
+python3 -m a2c.migrate_locals ../adventures/mon_aventure/mon_aventure.adv --write  # applique
+```
+
+Chaque flag est redéclaré dans tous les chapitres où il sert (sans changer le
+jeu), les flags inutilisés sont supprimés, et un local lu dans un chapitre où
+il n'est jamais posé est signalé.
+
 ## Simuler des parties (`a2c.simulate`)
 
 ```bash
@@ -152,27 +166,48 @@ aventures, l'écraser sans le demander explicitement serait une action à
 l'aveugle. À toi de le recopier dans `lang/` si tu veux qu'il devienne le
 nouveau socle partagé.
 
-## Compiler pour le player web (`a2c.webjson`)
+## Compiler pour le player web (`a2c.webjson`, `a2c.site`)
 
 ```bash
 python3 -m a2c.webjson ../adventures/combat_demo/combat_demo.adv -o story.json
+python3 -m a2c.site -o ../player/webng/public combat_demo chateau_hante
 ```
 
-Produit le JSON attendu par `player/web` et `player/webng` (modèle RÉSOLU :
+`a2c.webjson` produit le JSON attendu par `player/webng` (modèle RÉSOLU :
 noms → indices, flags locaux triés, réponses `@ask` normalisées — même
-contenu que `STORY.DAT`/`APP.LNG`, juste sérialisé en JSON). C'est la
-commande lancée par `npm run sync` des deux players web — pas besoin de
-l'invoquer à la main sauf pour déboguer.
+contenu que `STORY.DAT`/`APP.LNG`, juste sérialisé en JSON). Les chaînes
+d'interface viennent de `lang/<code>.lng`, surchargé par `lang/web/<code>.lng`
+s'il existe (libellés adaptés au navigateur, cf. `lang/README.md`). Pour
+déboguer seulement : le player n'a besoin que de `a2c.site`.
 
-**Images** : en plus du JSON, copie les images de l'aventure à côté du
-fichier de sortie (`<dossier de -o>/img/IMGnn.png`), une par id `@image`,
-numérotées dans le même ordre que `IMAGES.MAP`. Source attendue :
-`<adv>/img/web/<ID EN MAJUSCULES>.png` — un PNG déjà prêt, à fournir à la
-main (même principe que `img/named/<ID>.HGR` pour l'Apple II ou
-`img/atarist/<ID>.PI1` pour l'Atari ST : pas de conversion palette/
-résolution à faire pour le web, donc pas d'outil `img2web.py`, juste
-l'image déposée directement). Une image manquante n'est qu'un avertissement
-sur stderr — l'aventure reste jouable en texte sans elle.
+`a2c.site` exporte des aventures **et leur catalogue** dans un dossier (celui
+que `npm run sync` du player remplit) :
+
+```
+catalog.json                               titre, auteur, description, couverture, fichiers…
+adventures/<nom>/<hash>/story.json         l'histoire
+adventures/<nom>/<hash>/img/IMGnn.webp     les images @image, dans l'ordre de IMAGES.MAP
+adventures/<nom>/<hash>/cover.webp         la couverture du catalogue
+```
+
+Le `<hash>` est celui du contenu du dossier : une aventure corrigée change de
+dossier, et un fichier d'un dossier donné ne change jamais. Le player peut donc
+le garder indéfiniment en cache pour le jeu hors ligne. Chaque entrée de
+`catalog.json` liste ses `files` (tout le dossier) et sa taille en octets.
+
+- **Images** : source `<adv>/img/web/<ID EN MAJUSCULES>.png`, un PNG déjà
+  prêt à fournir à la main (même principe que `img/named/<ID>.HGR` pour
+  l'Apple II). Elles sont redimensionnées (960 px de large au plus) et
+  converties en WebP : quelques dizaines de Ko au lieu de plusieurs Mo. Une
+  image manquante n'est qu'un avertissement sur stderr — l'aventure reste
+  jouable en texte.
+- **Couverture** : `<adv>/img/web/MENU.png`, ou à défaut l'écran-titre Apple II
+  `<adv>/img/MENU.HGR`, converti avec ses couleurs de trame.
+- Les noms d'aventures se passent en arguments, ou dans un fichier avec
+  `@liste.txt` (un nom par ligne, cf. `player/webng/adventures.txt`). Les
+  dossiers d'aventures qui ne figurent plus dans la liste sont supprimés.
+- **Pillow** (`pip install pillow`) est requis dès qu'une aventure a des
+  images ; c'est la seule dépendance hors bibliothèque standard.
 
 ## Tests
 
@@ -185,6 +220,7 @@ python3 tests/test_simulate.py
 
 | module | rôle |
 |--------|------|
+| `a2c/template.py`| préprocesseur `@template` / `@use` (expansion textuelle avant le parser) |
 | `a2c/parser.py`  | DSL `.adv` -> modèle (orienté lignes) |
 | `a2c/model.py`   | dataclasses + constantes du format (opcodes) |
 | `a2c/symbols.py` | validation + résolution des noms en indices |
@@ -194,7 +230,8 @@ python3 tests/test_simulate.py
 | `a2c/analyze.py` | analyse de graphe / QA (reachabilité, culs-de-sac, objets morts) |
 | `a2c/simulate.py`| simulation de parties au hasard (impasses, boucles, équilibrage) |
 | `a2c/jsonconv.py`| conversion bidirectionnelle `.adv` <-> JSON (modèle SOURCE, pour éditer/round-tripper) |
-| `a2c/webjson.py` | modèle RÉSOLU -> JSON pour le player web (`player/web`, `player/webng`) + copie des images web (cf. ci-dessous) |
+| `a2c/webjson.py` | modèle RÉSOLU -> JSON pour le player web (`player/webng`) |
+| `a2c/site.py`    | site du player web : histoires hachées, images WebP, couvertures, `catalog.json` (cf. ci-dessus) |
 | `a2c/cli.py`     | interface `python -m a2c` |
 
-Aucune dépendance externe (bibliothèque standard uniquement).
+Aucune dépendance externe pour compiler (bibliothèque standard uniquement) ; Pillow n'est requis que par `a2c.site`, pour les images du web.

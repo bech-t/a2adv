@@ -9,12 +9,10 @@ from __future__ import annotations
 
 import re
 
+from .cond import parse_condition
 from .errors import A2Error
-from .model import (
-    CMP_FROM_TEXT, STYLE_CENTER, STYLE_INVERSE, UI_KEY_SET, Atom, Choice,
-    Combat, Condition, Effect, Ending, FlagDecl, Input, ItemDecl, Mode, Section,
-    StatDecl, Story, TextSegment,
-)
+from .template import expand_templates
+from .model import (STYLE_CENTER, STYLE_INVERSE, UI_KEY_SET, Choice, Combat, Condition, Effect, Ending, FlagDecl, Input, ItemDecl, Mode, Section, StatDecl, Story, TextSegment)
 
 _ID = r"[A-Za-z_][A-Za-z0-9_]*"
 _CHOICE_RE = re.compile(
@@ -84,9 +82,33 @@ def _parse_bool_state(tok: str | None, line: int) -> bool:
     raise A2Error(f"état attendu 'on' ou 'off', reçu '{tok}'", line)
 
 
+class _Cursor:
+    """Lignes (numero source, texte) a analyser ; garde l'indice de la ligne
+    en cours pour situer une erreur dans son modele."""
+
+    def __init__(self, items: list[tuple[int, str]]):
+        self.items = items
+        self.i = 0
+
+    def __iter__(self):
+        for self.i, item in enumerate(self.items):
+            yield item
+
+
 def parse(text: str) -> Story:
+    items, notes = expand_templates(text)
+    cursor = _Cursor(items)
+    try:
+        return _parse_lines(cursor)
+    except A2Error as e:
+        note = notes[cursor.i] if cursor.i < len(notes) else None
+        if note and e.line is not None and e.line == items[cursor.i][0]:
+            raise A2Error(f"{e.message} ({note})", e.line) from None
+        raise
+
+
+def _parse_lines(lines: _Cursor) -> Story:
     story = Story()
-    lines = text.splitlines()
 
     cur: Section | None = None       # section courante
     attach: list[Effect] | None = None   # cible des lignes '~' (on_enter ou choix)
@@ -94,6 +116,9 @@ def parse(text: str) -> Story:
     pending: dict | None = None      # paragraphe de texte en cours d'accumulation
     chapter = 0                      # chapitre courant (frontiere de decoupage fichier)
     lead: list[str] = []             # commentaires pleine ligne en attente d'attache
+    # suites de conditions `{else ...}` : une cellule par liste (textes, choix,
+    # et chaque liste d'effets), remise a zero a chaque section.
+    chains: dict = {"text": [None], "choice": [None], "fx": {}}
 
     def flush():
         """Termine le paragraphe courant : les lignes consecutives ont ete
@@ -104,7 +129,7 @@ def parse(text: str) -> Story:
                                          style=pending["style"], line=pending["line"]))
         pending = None
 
-    for n, raw in enumerate(lines, start=1):
+    for n, raw in lines:
         stripped = raw.strip()
         if not stripped:
             flush()                  # ligne vide = fin de paragraphe
@@ -130,6 +155,7 @@ def parse(text: str) -> Story:
                 raise A2Error(f"nom de section invalide: '{name}'", n)
             cur = Section(name=name, line=n, chapter=chapter,
                          lead=lead, trail=trail or "")
+            chains = {"text": [None], "choice": [None], "fx": {}}
             lead = []
             story.sections.append(cur)
             # par defaut, les '~' avant le 1er choix sont des effets d'entree
@@ -151,7 +177,7 @@ def parse(text: str) -> Story:
                 story.chapters.append(m.group(1) if m else "")
                 continue
             _parse_directive(body, n, story, cur, seen_section,
-                             set_attach=lambda a: None)
+                             set_attach=lambda a: None, chapter=chapter)
             key0 = body.split(None, 1)[0]
             _attach_directive_comment(story, key0[1:], body, directive_lead, trail)
             # @on_enter / @on_exit redirigent les '~' suivants
@@ -188,7 +214,7 @@ def parse(text: str) -> Story:
             if not m:
                 raise A2Error("syntaxe de choix invalide "
                               "(attendu: * {cond} [libellé] -> cible)", n)
-            cond = _parse_condition(m.group("cond"), n)
+            cond = parse_condition(m.group("cond"), n, chains["choice"])
             choice = Choice(label=m.group("label").strip(),
                             target=m.group("target"), cond=cond, line=n,
                             lead=lead, trail=trail or "")
@@ -203,7 +229,8 @@ def parse(text: str) -> Story:
             if cur is None or attach is None:
                 raise A2Error("effet '~' hors d'une section", n)
             code, trail = split_comment(stripped)
-            eff = _parse_effect(code[1:].strip(), n)
+            eff = _parse_effect(code[1:].strip(), n,
+                                chains["fx"].setdefault(id(attach), [None]))
             eff.trail = trail or ""
             lead = []   # pas de point d'attache pour un lead sur un effet
             attach.append(eff)
@@ -220,9 +247,11 @@ def parse(text: str) -> Story:
             end = content.find("}")
             if end < 0:
                 raise A2Error("condition de texte non fermée (manque '}')", n)
-            cond = _parse_condition(content[1:end], n)
+            cond = parse_condition(content[1:end], n, chains["text"])
             content = content[end + 1:].strip()
             is_cond = True
+        else:
+            chains["text"][0] = None      # un texte sans condition interrompt la suite
         # préfixe de style : suite de '='/'!' suivie d'un espace (ex. "= ", "=! ")
         style, content = _parse_style_prefix(content)
         # Lignes consecutives PLAINES -> meme paragraphe (re-justifie). Une ligne
@@ -241,16 +270,18 @@ def parse(text: str) -> Story:
 
 
 def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
-                     seen_section: bool, set_attach) -> None:
+                     seen_section: bool, set_attach, chapter: int = 0) -> None:
     parts = body.split()
     key = parts[0]
     args = parts[1:]
 
     # directives de préambule (avant toute section)
-    if key in ("@title", "@version", "@author", "@start", "@stat", "@item",
+    # (@flag local fait exception : il se declare dans son chapitre, cf. _parse_flag)
+    if key in ("@title", "@version", "@author", "@description", "@start",
+               "@stat", "@item",
                "@flag", "@intro", "@ui", "@lang", "@score", "@moves",
                "@combat_attack", "@combat_hp", "@combat_basedmg"):
-        if seen_section:
+        if seen_section and not (key == "@flag" and args and args[-1] == "local"):
             raise A2Error(f"{key} doit figurer dans le préambule "
                           "(avant la première section)", n)
 
@@ -260,6 +291,8 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
         story.version = body[len(key):].strip().strip('"')
     elif key == "@author":
         story.author = body[len(key):].strip().strip('"')
+    elif key == "@description":
+        story.description = body[len(key):].strip().strip('"')
     elif key == "@start":
         if len(args) != 1:
             raise A2Error("@start attend un nom de section", n)
@@ -269,7 +302,7 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
     elif key == "@item":
         _parse_item(body, args, n, story)
     elif key == "@flag":
-        _parse_flag(args, n, story)
+        _parse_flag(args, n, story, chapter)
     elif key == "@intro":
         if not args:
             raise A2Error("@intro attend une liste de scènes (noms de sections)", n)
@@ -357,6 +390,9 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
         if len(args) != 1:
             raise A2Error("@image attend un id d'image", n)
         cur.image = args[0]
+    elif key == "@splash":
+        _require_section(cur, n)
+        _parse_splash(args, n, cur)
     elif key == "@ending":
         _require_section(cur, n)
         if len(args) != 1 or args[0] not in _ENDINGS:
@@ -383,7 +419,7 @@ def _require_section(cur: Section | None, n: int) -> None:
 
 # Directives scalaires du preambule : pas de dataclass a elles (juste un champ
 # sur Story), donc leurs commentaires vont dans Story.directive_comments.
-_SCALAR_DIRECTIVES = {"title", "author", "version", "start", "lang", "score",
+_SCALAR_DIRECTIVES = {"title", "author", "description", "version", "start", "lang", "score",
                       "moves", "combat_attack", "combat_hp", "combat_basedmg",
                       "intro"}
 
@@ -441,7 +477,7 @@ def _parse_item(body: str, args: list[str], n: int, story: Story) -> None:
     m = re.search(r'"([^"]*)"', body)
     if m:
         label = m.group(1)
-    tail = body
+    tail = " ".join(args[1:])          # sans libelle : ce qui suit l'id
     if m:
         tail = body[m.end():]
     # tokens restants : on/off + modificateurs de combat atk=/dmg=/armor=
@@ -556,12 +592,43 @@ def parse_lang(text: str) -> tuple[str, dict[str, str], dict]:
     return lang, strings, comments
 
 
-def _parse_flag(args: list[str], n: int, story: Story) -> None:
-    # @flag NOM [on|off] [local]   ('local' : remis a 0 a chaque chapitre)
+SPLASH_MAX_SECS = 31
+
+
+def _parse_splash(args: list[str], n: int, sec: Section) -> None:
+    # @splash ID [secondes] [always]
+    if sec.splash is not None:
+        raise A2Error("@splash déclaré deux fois dans la section", n)
+    if not args or not re.fullmatch(_ID, args[0]):
+        raise A2Error("@splash attend un id d'image : "
+                      "@splash ID [secondes] [always]", n)
+    secs, always = 0, False
+    for tok in args[1:]:
+        if tok == "always":
+            always = True
+        elif tok.isdigit():
+            secs = int(tok)
+            if not 0 <= secs <= SPLASH_MAX_SECS:
+                raise A2Error(f"@splash : durée hors 0..{SPLASH_MAX_SECS} "
+                              "secondes (0 = attendre une touche)", n)
+        else:
+            raise A2Error(f"@splash : '{tok}' inattendu "
+                          "(attendus : un nombre de secondes, always)", n)
+    sec.splash, sec.splash_secs, sec.splash_always = args[0], secs, always
+
+
+def _parse_flag(args: list[str], n: int, story: Story, chapter: int = 0) -> None:
+    # @flag NOM [on|off]         : global, declare dans le preambule.
+    # @flag NOM local            : local, declare DANS un chapitre (apres son
+    #                              @chapter) ; sa portee est ce chapitre et il
+    #                              y repart a off a chaque entree.
     is_local = False
     if args and args[-1] == "local":
         is_local = True
         args = args[:-1]
+        if chapter == 0:
+            raise A2Error("@flag local : à déclarer dans un chapitre (après un "
+                          "@chapter) ; sa portée est ce chapitre", n)
     if len(args) not in (1, 2):
         raise A2Error("@flag attend: NOM [on|off] [local]", n)
     default = args[1] if len(args) == 2 else None
@@ -569,79 +636,11 @@ def _parse_flag(args: list[str], n: int, story: Story) -> None:
     if is_local and default_on:
         raise A2Error(f"@flag {args[0]}: un flag 'local' demarre toujours a off "
                       "(il est remis a 0 a chaque changement de chapitre)", n)
-    story.flags.append(FlagDecl(args[0], default_on, line=n, is_local=is_local))
+    story.flags.append(FlagDecl(args[0], default_on, line=n, is_local=is_local,
+                                chapter=chapter if is_local else 0, base=args[0]))
 
 
-def _parse_condition(src: str | None, n: int) -> Condition:
-    cond = Condition(line=n)
-    if not src or not src.strip():
-        return cond
-    toks = src.split()
-    i, connective, seen_and, seen_or = 0, 0, False, False
-    while i < len(toks):
-        atom, i = _parse_atom(toks, i, n)
-        cond.atoms.append(atom)
-        if i < len(toks):
-            conn = toks[i]
-            if conn == "and":
-                seen_and = True
-                connective = 0
-            elif conn == "or":
-                seen_or = True
-                connective = 1
-            else:
-                raise A2Error(f"connecteur attendu 'and'/'or', reçu '{conn}'", n)
-            i += 1
-            if i >= len(toks):
-                raise A2Error("condition incomplète après "
-                              f"'{conn}'", n)
-    if seen_and and seen_or:
-        raise A2Error("mélange 'and'/'or' interdit en v0 "
-                      "(pas de parenthèses)", n)
-    cond.connective = connective
-    return cond
-
-
-def _parse_atom(toks: list[str], i: int, n: int) -> tuple[Atom, int]:
-    t = toks[i]
-    if t == "not":
-        if i + 2 >= len(toks):
-            raise A2Error("condition 'not' incomplète", n)
-        kind = toks[i + 1]
-        name = toks[i + 2]
-        if kind == "flag":
-            return Atom("not_flag", name, line=n), i + 3
-        if kind == "has":
-            return Atom("not_has", name, line=n), i + 3
-        raise A2Error(f"'not' suivi de '{kind}' invalide (attendu flag/has)", n)
-    if t == "flag":
-        _need(toks, i + 1, n, "flag NOM")
-        return Atom("flag", toks[i + 1], line=n), i + 2
-    if t == "has":
-        _need(toks, i + 1, n, "has ITEM")
-        return Atom("has", toks[i + 1], line=n), i + 2
-    if t == "stat":
-        if i + 3 >= len(toks):
-            raise A2Error("condition 'stat' incomplète (stat NOM OP N)", n)
-        name, op, val = toks[i + 1], toks[i + 2], toks[i + 3]
-        if op not in CMP_FROM_TEXT:
-            raise A2Error(f"opérateur de comparaison invalide: '{op}'", n)
-        try:
-            value = int(val)
-        except ValueError:
-            raise A2Error(f"valeur numérique attendue, reçu '{val}'", n)
-        if not 0 <= value <= 65535:
-            raise A2Error(f"valeur hors [0,65535]: {value}", n)
-        return Atom("stat", name, cmp=CMP_FROM_TEXT[op], value=value, line=n), i + 4
-    raise A2Error(f"atome de condition invalide: '{t}'", n)
-
-
-def _need(toks: list[str], i: int, n: int, what: str) -> None:
-    if i >= len(toks):
-        raise A2Error(f"condition incomplète (attendu {what})", n)
-
-
-def _parse_effect(src: str, n: int) -> Effect:
+def _parse_effect(src: str, n: int, chain: list | None = None) -> Effect:
     # garde optionnelle : ~ {condition} effet
     cond = Condition(line=n)
     src = src.strip()
@@ -649,8 +648,10 @@ def _parse_effect(src: str, n: int) -> Effect:
         end = src.find("}")
         if end < 0:
             raise A2Error("condition d'effet non fermée (manque '}')", n)
-        cond = _parse_condition(src[1:end], n)
+        cond = parse_condition(src[1:end], n, chain)
         src = src[end + 1:].strip()
+    elif chain is not None:
+        chain[0] = None
     eff = _parse_effect_body(src, n)
     eff.cond = cond
     return eff

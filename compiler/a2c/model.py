@@ -181,6 +181,8 @@ class FlagDecl:
     default_on: bool = False
     line: int = 0
     is_local: bool = False    # remis a 0 a chaque changement de chapitre
+    chapter: int = 0          # local : chapitre qui le declare (sa portee) ; 0 sinon
+    base: str = ""            # nom ecrit dans la source (name peut etre qualifie par resolve)
     lead: list[str] = field(default_factory=list)
     trail: str = ""
 
@@ -198,13 +200,21 @@ class Atom:
 
 @dataclass
 class Condition:
-    atoms: list[Atom] = field(default_factory=list)
-    connective: int = 0   # 0=AND, 1=OR
+    """Forme normale disjonctive : `clauses` est un OU de ET d'atomes (cf.
+    cond.py). Aucune clause = pas de condition (toujours vrai). `src` garde
+    l'expression telle qu'ecrite, pour la reecrire a l'identique."""
+    clauses: list = field(default_factory=list)   # list[list[Atom]]
     line: int = 0
+    src: str = ""
+
+    @property
+    def atoms(self) -> list[Atom]:
+        """Tous les atomes, a plat (references de noms, analyse)."""
+        return [a for clause in self.clauses for a in clause]
 
     @property
     def always(self) -> bool:
-        return not self.atoms
+        return not self.clauses
 
 
 @dataclass
@@ -290,6 +300,12 @@ class Section:
     texts: list[TextSegment] = field(default_factory=list)
     choices: list[Choice] = field(default_factory=list)
     image_asset: int = 0xFFFF          # rempli à la résolution
+    # @splash id [secondes] [always] : image plein ecran AVANT le texte, facultative
+    # (absente de la plateforme -> le texte s'affiche directement).
+    splash: str | None = None
+    splash_secs: int = 0               # 0 = attend une touche, 1..31 = duree (touche pour passer)
+    splash_always: bool = False        # sinon : pas rejoue en revenant dans la section
+    splash_asset: int = 0xFFFF         # rempli à la résolution
     chapter: int = 0                   # index de chapitre (pilote le decoupage fichier)
     combat: "Combat | None" = None     # section de combat (@combat) sinon None
     input: "Input | None" = None       # section a saisie (@ask) sinon None
@@ -302,6 +318,7 @@ class Story:
     title: str = ""
     version: str = ""          # @version, optionnelle -- "" si absente
     author: str = ""
+    description: str = ""      # @description, optionnelle : presentation courte (catalogue web)
     start: str = ""
     stats: list[StatDecl] = field(default_factory=list)
     items: list[ItemDecl] = field(default_factory=list)
@@ -312,7 +329,7 @@ class Story:
     score_on: bool = True     # compteur de points (désactivable via @score off)
     moves_on: bool = True     # compteur de mouvements (désactivable via @moves off)
     # commentaires '#' des directives scalaires du preambule (celles qui n'ont
-    # pas de dataclass a elles : @title/@author/@version/@start/@lang/@score/
+    # pas de dataclass a elles : @title/@author/@description/@version/@start/@lang/@score/
     # @moves/@combat_attack/@combat_hp/@combat_basedmg/@intro, et chaque
     # ligne @ui sous la cle "ui:<cle>"). {"lead": [...], "trail": "..."}.
     directive_comments: dict = field(default_factory=dict)
@@ -325,7 +342,18 @@ class Story:
     combat_hp_index: int = 0xFF
     # tables d'index (remplies à la résolution)
     assets: list[str] = field(default_factory=list)     # ids d'images, ordre = index
+    optional_assets: set = field(default_factory=set)   # ids utilises UNIQUEMENT par @splash
     intro_index: list[int] = field(default_factory=list)  # scènes d'intro -> index section
     start_index: int = 0
     local_base: int = 0     # 1er index de flag LOCAL (= nb de flags globaux)
+    n_flag_slots: int = 0   # emplacements de flags : globaux + max de locaux d'un chapitre
+    flag_slots: dict = field(default_factory=dict)   # nom (unique) -> emplacement
+
+    def flag_defaults(self) -> list[bool]:
+        """Etat initial de chaque emplacement de flag (un local demarre a off)."""
+        out = [False] * self.n_flag_slots
+        for fl in self.flags:
+            if not fl.is_local:
+                out[self.flag_slots[fl.name]] = fl.default_on
+        return out
     lang: str = "fr"        # socle d'interface : lang/<code>.lng -> APP.LNG

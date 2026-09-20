@@ -4,8 +4,9 @@
 
 @title   L'Orbe de Sortis
 @author  a2adv
+@description "Rapportez l'Orbe de Sortis du donjon de l'archimage Malgarde : une aventure de fantasy à la manière des livres dont vous êtes le héros."
 @start   depart
-@intro   intro_legende
+@intro   intro_legende intro_regles
 
 # --- Caractéristiques -------------------------------------------------------
 @stat VIE    20  0 20
@@ -60,6 +61,21 @@
 Depuis mille ans, la malédiction de l'archimage Malgarde pèse sur la contrée
 de Mornegarde. On dit qu'au fond de son donjon repose l'Orbe de Sortis, seule
 capable de briser le sort. Nul n'en est jamais revenu... jusqu'à vous.
+
+:: intro_regles
+@mode full_text
+=! VOTRE QUÊTE
+
+En haut de l'écran :
+
+*VIE* : vos points de vie. À zéro, la quête s'achève.
+*FORCE* : bousculer, enfoncer, affronter. Certains passages l'exigent.
+*MAGIE* : sentir les pièges, tirer parti d'une amulette ou d'un grimoire.
+*OR* : votre bourse.
+
+Vous n'avez qu'une dague. Ramasser des objets, boire une potion, choisir la ruse ou la force : tout compte. Touchez I pour ouvrir votre sac.
+
+Rapportez l'Orbe de Sortis, ou restez au fond du donjon.
 
 # ===========================================================================
 # ACTE I — LE VILLAGE DE MORNEGARDE

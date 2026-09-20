@@ -9,6 +9,7 @@
 #include "state.h"
 #include "snd.h"
 #include "simage.h"
+#include "game.h"
 
 /* Petit afficheur d'entier 16 bits (sans zeros de tete). */
 static void mput_num(u16 v)
@@ -27,7 +28,7 @@ u8 run_combat(u16 eimg, u8 att, u8 hp, u8 dmg, u8 armor,
     char c;
 
     if (eimg != NO_IMAGE)
-        show_image(eimg, 1);              /* portrait de l'ennemi (~3 s ou touche) */
+        show_image(eimg, SPLASH_SECS);              /* portrait de l'ennemi (~3 s ou touche) */
 
     combat_begin(att, hp, dmg, armor);
     for (;;) {
