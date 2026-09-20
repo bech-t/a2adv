@@ -48,3 +48,7 @@ Thumbs.db
 # depuis adventures/, jamais a committer.
 /public/adventures/
 /public/catalog.json
+
+# Publication personnelle (depot cible, identifiants) : hors depot.
+/Makefile.local
+/local/

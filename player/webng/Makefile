@@ -10,9 +10,13 @@
 #   make run                      serveur de dev, toutes les aventures de adventures.txt
 #   make run ADV="combat_demo"    seulement celles-ci (plus rapide)
 #   make site                     site de production dans dist/webng/browser
-#   make site BASE_HREF=/a2adv-site/    site servi dans un sous-dossier
+#   make site BASE_HREF=/mon-site/    site servi dans un sous-dossier
 #   make test
 #   CHROME=/chemin/vers/chrome make e2e    scenario hors ligne dans un vrai navigateur (apres make site)
+#
+# Le contenu de dist/webng/browser se sert tel quel sur n'importe quel
+# hebergement statique. Une publication personnelle (depot, identifiants) peut
+# s'ajouter dans Makefile.local, ignore par git et inclus ci-dessous.
 
 ADV ?=
 BASE_HREF ?= /
@@ -37,3 +41,5 @@ e2e:
 # jamais commites (cf. .gitignore) -- sans risque a supprimer.
 clean:
 	rm -rf dist .angular public/adventures public/catalog.json
+
+-include Makefile.local

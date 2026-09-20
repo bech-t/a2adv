@@ -19,7 +19,7 @@ liste les aventures publiées ; chacune a sa fiche, puis se joue dans la page.
 Les routes en `#` marchent sur n'importe quel hébergement statique, sans règle
 de réécriture. Les chemins des fichiers du site sont relatifs à la page
 (`<base href>`) : il peut être servi à la racine d'un domaine ou dans un
-sous-dossier (`make site BASE_HREF=/a2adv-site/`). L'ancien lien `?adv=<id>`
+sous-dossier (`make site BASE_HREF=/mon-site/`). L'ancien lien `?adv=<id>`
 mène toujours au jeu.
 
 ## De `.adv` à l'écran
