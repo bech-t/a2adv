@@ -279,6 +279,7 @@ input[type="text"] {
   text-decoration: none;
 }
 a.a2-button,
+label.a2-button,
 .a2-menu-actions a {
   display: block;
   font: inherit;
