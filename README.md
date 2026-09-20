@@ -144,6 +144,23 @@ Fabrique une vraie image disquette `.ST` (FAT12 720 Ko), via **mtools**
 (`sudo apt install mtools`). `make run` reste plus rapide pour itérer : il
 monte directement le dossier de build dans Hatari sans produire de fichier.
 
+## Le portage PC DOS
+
+Un troisième player, même principe, cible un PC DOS (compatible FreeDOS)
+avec carte **VGA** (mode 13h, 320×200/256 couleurs) ; sur une machine EGA
+seule, le jeu reste jouable en texte seul (repli automatique). Compilé avec
+**Open Watcom v2** (cross-compilation Linux → DOS 16 bits réel), disquette
+`.img` bootable (FAT12 720 Ko, secteur de boot + noyau FreeDOS officiels).
+Texte et graphisme vérifiés à l'octet/au pixel près (relecture de la mémoire
+vidéo depuis l'hôte) ; son laissé de côté pour l'instant (Sound Blaster
+prévu). Détails dans [`player/dos/README.md`](player/dos/README.md).
+
+```bash
+cd player/dos
+make img ADV=homme_costume_blanc
+# -> adventures/homme_costume_blanc/build/homme_costume_blanc.img
+```
+
 ## Démarrage rapide
 
 Il vous faut **cc65** (compilateur 6502), **Python 3** et **Java** (pour
@@ -177,9 +194,12 @@ cd player/apple2 && make hosttest
 | `compiler/` | `a2c`, le compilateur Python — parseur, validation, encodeur, analyseur QA. Aucune dépendance externe. |
 | `player/apple2/` | Le moteur cc65 : pilote écran, streaming, combat, saisie, son, cache `/RAM`. |
 | `player/atarist/` | Portage Atari ST (68000) du même moteur, en cours — cf. [son README](player/atarist/README.md). |
+| `player/dos/` | Portage PC DOS (VGA/EGA) du même moteur, en cours — cf. [son README](player/dos/README.md). |
+| `player/webng/` | Player web (Angular) : catalogue d'aventures, jeu dans le navigateur, hors ligne — cf. [son README](player/webng/README.md). |
 | `adventures/` | Une aventure par dossier : source `.adv`, images, disquette produite. |
 | `editor/` | Éditeur visuel `.adv` (Angular, v0) : hiérarchie, graphe des choix, import/export. |
 | `docs/` | La documentation du format `.adv` : référence, bonnes pratiques, présentation. |
+| `EVOLUTIONS.md` | Idées d'évolution du format et des outils, classées par priorité. |
 
 ## Écrire une aventure
 
@@ -194,8 +214,10 @@ Blanc](adventures/homme_costume_blanc/)**, 60 sections, quatre chapitres.
 
 ## Licence
 
-Le code (compilateur `a2c` et les players `player/apple2/` et
-`player/atarist/`) est sous licence **[MIT](LICENSE)**.
+Le code (compilateur `a2c` et les players `player/apple2/`, `player/atarist/`,
+`player/dos/` et `player/webng/`) est sous licence **[MIT](LICENSE)**. La police bitmap
+`player/dos/src/font8x8.h` est dans le domaine public (cf. son entête pour
+la provenance).
 
 Les aventures livrées dans `adventures/` portent leurs propres licences de
 contenu, une par dossier :

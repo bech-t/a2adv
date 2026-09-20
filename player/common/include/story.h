@@ -44,10 +44,10 @@ extern char g_version[VERSION_LEN];
 extern char ui_str[UI_COUNT][UI_STR_LEN];  /* chaines d'UI (langue de l'aventure) */
 #endif
 
-extern u8  stat_init[MAX_STATS];
-extern u8  stat_min[MAX_STATS];
-extern u8  stat_max[MAX_STATS];     /* max COURANT (mutable via ~ setmax, sauvegardé) */
-extern u8  stat_maxdef[MAX_STATS];  /* max par défaut (préambule ; sert à state_init) */
+extern u16 stat_init[MAX_STATS];
+extern u16 stat_min[MAX_STATS];
+extern u16 stat_max[MAX_STATS];     /* max COURANT (mutable via ~ setmax, sauvegardé) */
+extern u16 stat_maxdef[MAX_STATS];  /* max par défaut (préambule ; sert à state_init) */
 /* Noms de stats : en RAM basse sur Apple II (soulage le BSS). */
 #ifdef __CC65__
 #define stat_name ((char (*)[STAT_NAME_LEN])0x13D0)   /* 8*12 = 96 o : $13D0-$142F */

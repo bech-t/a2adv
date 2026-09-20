@@ -1,7 +1,7 @@
 /* scene.h -- lecture factorisee de l'en-tete d'une section.
  *
  * Le corps d'une section commence par un en-tete a blocs optionnels
- * (mode, ending, image, [combat], [saisie]) avant les effets/textes. Cette
+ * (mode, ending, image, [splash], [combat], [saisie]) avant les effets/textes. Cette
  * fonction le lit UNE fois pour tous les consommateurs (play_section,
  * render_scene) afin d'eviter toute desynchronisation quand le format evolue. */
 #ifndef A2ADV_SCENE_H
@@ -12,6 +12,8 @@
 typedef struct {
     u8  mode, ending;
     u16 image;
+    u16 splash;                       /* asset du @splash (NO_IMAGE si absent) */
+    u8  splash_secs, splash_always;   /* duree (0 = touche) ; rejoue a chaque arrivee */
     /* combat (has_combat=0 si absent) */
     u8  has_combat, cb_att, cb_hp, cb_dmg, cb_armor;
     u16 cb_eimg, cb_win, cb_lose, cb_flee, cb_winfx, cb_losefx, cb_fleefx;

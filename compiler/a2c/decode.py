@@ -55,6 +55,9 @@ class DecSection:
     choices: list = field(default_factory=list)
     combat: dict = None
     input: dict = None
+    splash_asset: int | None = None     # None : pas de @splash
+    splash_secs: int = 0
+    splash_always: bool = False
 
 
 def decode(buf: bytes) -> dict:
@@ -71,7 +74,7 @@ def decode(buf: bytes) -> dict:
     header = DecHeader(version, n_sections, n_stats, n_items, n_flags,
                        start_section, index_offset, hdr_flags)
 
-    stat_table = [tuple(r.take(3)) for _ in range(n_stats)]
+    stat_table = [(r.u16(), r.u16(), r.u16()) for _ in range(n_stats)]
     stat_hidden = r.u8()          # v6 : bit i = stat i masquee au bandeau
     items_default = r.take((n_items + 7) // 8)
     flags_default = r.take((n_flags + 7) // 8)
@@ -137,9 +140,31 @@ def decode(buf: bytes) -> dict:
     }
 
 
+def _decode_atom(r: _Reader) -> tuple:
+    """Atome de condition, largeur VARIABLE selon op (cf. encoder.py:
+    _encode_atom) : 4 o (a2 en u8) pour flag/item, 5 o (a2 en u16, valeur de
+    stat jusqu'a 65535) pour 'stat'."""
+    op, a0, a1 = r.u8(), r.u8(), r.u8()
+    a2 = r.u16() if op == M.OP_STAT_CMP else r.u8()
+    return (op, a0, a1, a2)
+
+
 def _decode_cond(r: _Reader) -> list:
-    n = r.u8(); r.u8()  # connective
-    return [tuple(r.take(4)) for _ in range(n)]
+    """Condition : liste de clauses (OU), chacune une liste d'atomes (ET) ;
+    liste vide = pas de condition (toujours vrai)."""
+    return [[_decode_atom(r) for _ in range(r.u8())] for _ in range(r.u8())]
+
+
+def _decode_effect_atom(r: _Reader) -> tuple:
+    """Effet (4 o, op,a0,a1,a2 tous u8). Pour les 4 opcodes 'stat' qui portent
+    une valeur 16 bits (cf. encoder.py:_encode_effect), a1/a2 sont le
+    petit/grand octet d'UNE seule valeur : on les recombine ici pour que ce
+    module reste la reference semantique (meme forme que webjson.py, qui ne
+    voit qu'une valeur JS, jamais scindee)."""
+    op, a0, a1, a2 = r.u8(), r.u8(), r.u8(), r.u8()
+    if op in (M.OP_STAT_ADD, M.OP_STAT_SUB, M.OP_STAT_SET, M.OP_STAT_SETMAX):
+        a1, a2 = a1 | (a2 << 8), 0
+    return (op, a0, a1, a2)
 
 
 def _decode_effects(r: _Reader) -> list:
@@ -147,14 +172,19 @@ def _decode_effects(r: _Reader) -> list:
     out = []
     for _ in range(n):
         _decode_cond(r)                 # garde de l'effet (ignoree ici)
-        out.append(tuple(r.take(4)))
+        out.append(_decode_effect_atom(r))
     return out
 
 
 def _decode_section(r: _Reader) -> DecSection:
-    mode = r.u8()
+    mode_byte = r.u8()
+    mode = mode_byte & 0x03
+    splash_always = bool(mode_byte & 0x04)
     ending = r.u8()
     image_asset = r.u16()
+    splash_asset, splash_secs = None, 0
+    if mode_byte & 0x80:
+        splash_asset, splash_secs = r.u16(), r.u8()
     combat = None
     if r.u8():                         # bloc combat présent ?
         att, hp, dmg, armor = r.u8(), r.u8(), r.u8(), r.u8()
@@ -164,9 +194,11 @@ def _decode_section(r: _Reader) -> DecSection:
         win_fx = _decode_effects(r)
         lose_fx = _decode_effects(r)
         flee_fx = _decode_effects(r)
+        win_msg, lose_msg, flee_msg = r.lenstr(), r.lenstr(), r.lenstr()
         combat = dict(name=cname, att=att, hp=hp, dmg=dmg, armor=armor,
                       image=cimg, win=win, lose=lose, flee=flee,
-                      win_fx=win_fx, lose_fx=lose_fx, flee_fx=flee_fx)
+                      win_fx=win_fx, lose_fx=lose_fx, flee_fx=flee_fx,
+                      win_msg=win_msg, lose_msg=lose_msg, flee_msg=flee_msg)
     inp = None
     if r.u8():                          # bloc saisie présent ?
         prompt = r.lenstr()
@@ -193,7 +225,8 @@ def _decode_section(r: _Reader) -> DecSection:
         label = r.lenstr()
         choices.append((cond, effects, target, label))
     return DecSection(mode, ending, image_asset, on_enter, on_exit, texts,
-                      choices, combat, inp)
+                      choices, combat, inp, splash_asset, splash_secs,
+                      splash_always)
 
 
 def _dump(path: str) -> None:

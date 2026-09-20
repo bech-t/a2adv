@@ -9,9 +9,17 @@ void scene_read_header(SecHeader *h)
 {
     u8 i;
 
-    h->mode = b_u8();
+    u8 m = b_u8();
+
+    h->mode = (u8)(m & MODE_MASK);
+    h->splash_always = (u8)(m & MODE_SPLASH_ALWAYS);
     h->ending = b_u8();
     h->image = b_u16();
+    h->splash = NO_IMAGE;
+    if (m & MODE_HAS_SPLASH) {
+        h->splash = b_u16();
+        h->splash_secs = b_u8();
+    }
 
     /* bloc combat optionnel */
     h->has_combat = b_u8();

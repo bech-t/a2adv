@@ -1,6 +1,6 @@
 /* assetcache.c -- backend Apple II de assetcache.h : de simples redirections
- * vers ramdisk.c (cache disque RAM ProDOS /RAM et /RAM2), qui reste sinon
- * prive a ce dossier -- aucun fichier commun n'inclut ramdisk.h. Implemente
+ * vers ramdisk.c (cache disque RAM ProDOS /RAM), qui reste sinon prive a ce
+ * dossier -- aucun fichier commun n'inclut ramdisk.h. Implemente
  * aussi cache_load_compressed() via ZX02 (zx02_getbyte.c + zx02.s), tout
  * aussi prive : aucun fichier commun ne connait ".ZX2" ni zx02_getbyte.h. */
 

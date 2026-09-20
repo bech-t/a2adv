@@ -1,0 +1,444 @@
+/* styles.css -- styles globaux du player : mobile d'abord (les regles de
+ * base ciblent un ecran de telephone, les media queries min-width
+ * n'ajoutent que du confort en plus large). Zones sures (encoche/barre de
+ * gestes) via env(safe-area-inset-*) -- une appli installee (cf. public/manifest.json) peut tourner plein ecran
+ * sur iOS/Android. */
+
+:root {
+  color-scheme: dark;
+  --bg: #14161a;
+  --panel: #1d2025;
+  --text: #e8e6df;
+  --muted: #9aa0a8;
+  --accent: #d9a441;
+  --accent-ink: #14161a;
+  --danger: #c85a4a;
+  --border: #33383f;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    ui-monospace, "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+img {
+  max-width: 100%;
+}
+[hidden] {
+  display: none !important;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75em 1em;
+  cursor: pointer;
+  touch-action: manipulation; /* pas de double-tap-zoom parasite sur mobile */
+}
+button:active {
+  transform: translateY(1px);
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button.a2-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+input[type="text"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75em 1em;
+  flex: 1;
+}
+
+.a2-boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+.a2-boot-error {
+  color: var(--danger);
+}
+
+.a2-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100dvh;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.a2-image {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.a2-p {
+  margin: 0 0 0.9em;
+}
+.a2-p.a2-center {
+  text-align: center;
+}
+.a2-p.a2-inverse {
+  background: var(--text);
+  color: var(--bg);
+  display: inline-block;
+  padding: 0.1em 0.4em;
+}
+.a2-p mark {
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.a2-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  font-size: 0.9em;
+}
+.a2-status-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1em;
+}
+.a2-stat-name {
+  color: var(--muted);
+}
+.a2-status-counters {
+  display: flex;
+  gap: 1em;
+  color: var(--muted);
+}
+
+.a2-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.a2-choices button {
+  text-align: left;
+}
+
+.a2-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  /* Colle la barre (et sa bordure du haut, qui tient lieu de <hr>) en bas
+   * de l'ecran quand le contenu au-dessus ne remplit pas .a2-screen
+   * (flex colonne, min-height: 100dvh) : la marge auto absorbe l'espace
+   * restant. Si le texte deborde 100dvh, cette marge n'a plus rien a
+   * absorber et la barre suit juste le flux normal -- pas de position
+   * fixed, la page scrolle sans rien chevaucher. */
+  margin-top: auto;
+}
+.a2-toolbar button {
+  flex: 1;
+}
+
+.a2-menu,
+.a2-ending {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.a2-menu h1 {
+  margin-bottom: 0;
+}
+.a2-version {
+  color: var(--muted);
+  margin-top: 0;
+}
+.a2-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 320px;
+}
+.a2-ending-banner {
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.a2-intro {
+  justify-content: space-between;
+}
+.a2-intro .a2-toolbar {
+  border-top: none;
+  padding-top: 0;
+}
+
+.a2-combat-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.a2-combat-log p {
+  margin: 0.2em 0;
+}
+
+.a2-input-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.a2-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+.a2-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 420px;
+}
+.a2-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.a2-inventory-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.a2-inventory-list li {
+  padding: 0.4em 0;
+  border-bottom: 1px solid var(--border);
+}
+.a2-item-mods {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+/* Catalogue et fiche d'aventure. */
+.a2-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+.a2-page-head h1 {
+  margin-bottom: 0.25em;
+}
+.a2-muted {
+  color: var(--muted);
+}
+.a2-back {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+a.a2-button,
+label.a2-button,
+.a2-menu-actions a {
+  display: block;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75em 1em;
+  text-align: center;
+  text-decoration: none;
+}
+a.a2-button.a2-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.a2-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.a2-cards {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+.a2-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.a2-card:active {
+  transform: translateY(1px);
+}
+.a2-card-cover {
+  display: block;
+  aspect-ratio: 35 / 24;
+  background: #0b0c0e;
+}
+.a2-card-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.a2-card-nocover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent);
+  background: linear-gradient(135deg, #1b1e24, #0b0c0e);
+}
+.a2-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem 1rem;
+}
+.a2-card-desc {
+  font-size: 0.9em;
+}
+.a2-badge {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.1em 0.6em;
+  font-size: 0.8em;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.a2-page h2 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.1em;
+}
+.a2-page label.a2-button {
+  cursor: pointer;
+}
+.a2-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.a2-badge-alt {
+  color: var(--text);
+  background: var(--border);
+}
+.a2-slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.a2-slot {
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.a2-slot-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.a2-slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.a2-slot-actions > * {
+  flex: 1 1 8em;
+  padding: 0.5em 0.75em;
+}
+.a2-warn {
+  margin: 0.5rem 0 0;
+  color: var(--accent);
+  font-size: 0.9em;
+}
+button.a2-danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.a2-update {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--accent);
+}
+
+@media (min-width: 720px) {
+  .a2-screen {
+    padding: 2rem;
+  }
+  .a2-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

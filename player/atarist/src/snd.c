@@ -303,6 +303,7 @@ static void fx_knock(u8 period, u16 decay, u8 ticks)
 #define N_C5 24
 #define N_E5 28
 #define N_G5 31
+#define N_B5 35
 
 void snd_play(u8 id)
 {
@@ -330,6 +331,19 @@ void snd_play(u8 id)
 
     case SND_DOOR:   fx_knock(24, 900, 6); break;
     case SND_PAGE:   fx_noise(24, 6, 2); break;
+
+    /* Pressentiment : tremolo grave (deux tons voisins alternes) puis un
+     * grondement de bruit a decroissance lente -- un frisson qui s'installe,
+     * pas un choc (SND_HIT) ni un sortilege (SND_MAGIC). */
+    case SND_DREAD:  fx_note(N_C3, 10, 2); fx_note((u8)(N_C3 + 1), 10, 2);
+                     fx_note(N_C3, 10, 2); fx_note((u8)(N_C3 + 1), 10, 2);
+                     fx_knock(20, 700, 8);
+                     break;
+
+    /* Bonus : arpege ascendant a trois notes, plus court et plus clair que
+     * SND_PICKUP (deux notes) -- gain de stat/ressource abstrait, sans
+     * objet physique a ramasser. */
+    case SND_BONUS:  fx_note(N_E5, 12, 2); fx_note(N_G5, 12, 2); fx_note(N_B5, 13, 4); break;
 
     default: break;
     }

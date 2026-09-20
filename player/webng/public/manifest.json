@@ -1,0 +1,12 @@
+{
+  "name": "a2adv",
+  "short_name": "a2adv",
+  "description": "Livre-jeu a2adv, jouable hors ligne",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#14161a",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

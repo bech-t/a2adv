@@ -127,10 +127,18 @@ STYLE_INVERSE = 0x02
 # cet octet, que le player interprete comme "inverse ON/OFF".
 TXT_INV_TOGGLE = 0x01
 
+# Reference de stat inline (invisible) : les marqueurs %NOM% du texte
+# deviennent cet octet suivi de l'index de la stat (2 octets fixes, quelle
+# que soit la valeur reelle : cf. symbols.substitute_stat_refs) -- le player
+# affiche la valeur COURANTE de la stat a cet endroit, connue seulement a
+# l'execution (jamais a la compilation).
+TXT_STAT_REF = 0x02
+
 # Sons predefinis : ORDRE FIGE (doit correspondre a l'enum SND_* du player,
 # format.h). Reference par l'effet DSL `~ sound <nom>`.
 SOUND_NAMES = ["select", "error", "win", "lose",
-               "pickup", "hit", "magic", "door", "page"]
+               "pickup", "hit", "magic", "door", "page",
+               "dread", "bonus"]
 SOUND_INDEX = {n: i for i, n in enumerate(SOUND_NAMES)}
 
 # Limites du player (doivent correspondre a format.h). Le player REFUSE une
@@ -149,6 +157,8 @@ class StatDecl:
     hi: int = 255
     line: int = 0
     hidden: bool = False    # utilisable en condition, absente du bandeau d'etat
+    lead: list[str] = field(default_factory=list)   # commentaires '#' juste au-dessus
+    trail: str = ""                                  # commentaire '#' en fin de ligne
 
 
 @dataclass
@@ -161,6 +171,8 @@ class ItemDecl:
     atk: int = 0       # bonus a l'attaque (2d6 + ATT)
     dmg: int = 0       # bonus aux degats
     armor: int = 0     # reduction des degats subis
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -169,6 +181,10 @@ class FlagDecl:
     default_on: bool = False
     line: int = 0
     is_local: bool = False    # remis a 0 a chaque changement de chapitre
+    chapter: int = 0          # local : chapitre qui le declare (sa portee) ; 0 sinon
+    base: str = ""            # nom ecrit dans la source (name peut etre qualifie par resolve)
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 # --- Conditions & effets (noms symboliques ; résolus en indices à l'encodage) -
@@ -184,13 +200,21 @@ class Atom:
 
 @dataclass
 class Condition:
-    atoms: list[Atom] = field(default_factory=list)
-    connective: int = 0   # 0=AND, 1=OR
+    """Forme normale disjonctive : `clauses` est un OU de ET d'atomes (cf.
+    cond.py). Aucune clause = pas de condition (toujours vrai). `src` garde
+    l'expression telle qu'ecrite, pour la reecrire a l'identique."""
+    clauses: list = field(default_factory=list)   # list[list[Atom]]
     line: int = 0
+    src: str = ""
+
+    @property
+    def atoms(self) -> list[Atom]:
+        """Tous les atomes, a plat (references de noms, analyse)."""
+        return [a for clause in self.clauses for a in clause]
 
     @property
     def always(self) -> bool:
-        return not self.atoms
+        return not self.clauses
 
 
 @dataclass
@@ -200,6 +224,7 @@ class Effect:
     value: int = 0
     cond: "Condition" = field(default_factory=lambda: Condition())  # garde optionnelle
     line: int = 0
+    trail: str = ""    # commentaire '#' en fin de ligne (pas de lead : jamais observé en pratique)
 
 
 # --- Sections & choix -------------------------------------------------------
@@ -220,6 +245,8 @@ class Choice:
     effects: list[Effect] = field(default_factory=list)
     line: int = 0
     target_index: int = -1             # rempli à la résolution
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -273,9 +300,17 @@ class Section:
     texts: list[TextSegment] = field(default_factory=list)
     choices: list[Choice] = field(default_factory=list)
     image_asset: int = 0xFFFF          # rempli à la résolution
+    # @splash id [secondes] [always] : image plein ecran AVANT le texte, facultative
+    # (absente de la plateforme -> le texte s'affiche directement).
+    splash: str | None = None
+    splash_secs: int = 0               # 0 = attend une touche, 1..31 = duree (touche pour passer)
+    splash_always: bool = False        # sinon : pas rejoue en revenant dans la section
+    splash_asset: int = 0xFFFF         # rempli à la résolution
     chapter: int = 0                   # index de chapitre (pilote le decoupage fichier)
     combat: "Combat | None" = None     # section de combat (@combat) sinon None
     input: "Input | None" = None       # section a saisie (@ask) sinon None
+    lead: list[str] = field(default_factory=list)
+    trail: str = ""
 
 
 @dataclass
@@ -283,6 +318,7 @@ class Story:
     title: str = ""
     version: str = ""          # @version, optionnelle -- "" si absente
     author: str = ""
+    description: str = ""      # @description, optionnelle : presentation courte (catalogue web)
     start: str = ""
     stats: list[StatDecl] = field(default_factory=list)
     items: list[ItemDecl] = field(default_factory=list)
@@ -292,6 +328,11 @@ class Story:
     ui: dict = field(default_factory=dict)              # surcharges de chaînes d'UI
     score_on: bool = True     # compteur de points (désactivable via @score off)
     moves_on: bool = True     # compteur de mouvements (désactivable via @moves off)
+    # commentaires '#' des directives scalaires du preambule (celles qui n'ont
+    # pas de dataclass a elles : @title/@author/@description/@version/@start/@lang/@score/
+    # @moves/@combat_attack/@combat_hp/@combat_basedmg/@intro, et chaque
+    # ligne @ui sous la cle "ui:<cle>"). {"lead": [...], "trail": "..."}.
+    directive_comments: dict = field(default_factory=dict)
     chapters: list[str] = field(default_factory=lambda: [""])  # titres, index=chapitre
     # combat : quelles stats jouent l'attaque et les PV du héros (par nom -> index)
     combat_attack: str = ""   # @combat_attack STAT
@@ -301,7 +342,18 @@ class Story:
     combat_hp_index: int = 0xFF
     # tables d'index (remplies à la résolution)
     assets: list[str] = field(default_factory=list)     # ids d'images, ordre = index
+    optional_assets: set = field(default_factory=set)   # ids utilises UNIQUEMENT par @splash
     intro_index: list[int] = field(default_factory=list)  # scènes d'intro -> index section
     start_index: int = 0
     local_base: int = 0     # 1er index de flag LOCAL (= nb de flags globaux)
+    n_flag_slots: int = 0   # emplacements de flags : globaux + max de locaux d'un chapitre
+    flag_slots: dict = field(default_factory=dict)   # nom (unique) -> emplacement
+
+    def flag_defaults(self) -> list[bool]:
+        """Etat initial de chaque emplacement de flag (un local demarre a off)."""
+        out = [False] * self.n_flag_slots
+        for fl in self.flags:
+            if not fl.is_local:
+                out[self.flag_slots[fl.name]] = fl.default_on
+        return out
     lang: str = "fr"        # socle d'interface : lang/<code>.lng -> APP.LNG

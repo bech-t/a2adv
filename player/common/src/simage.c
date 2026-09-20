@@ -82,17 +82,33 @@ signed char img_load(const char *name)
 
 /* STORY reste ouvert : scr_load_hgr ouvre le HGR comme 2e fichier (FOPEN_MAX=8),
  * ce qui preserve le tampon/cache de STORY et evite un OPEN repete. */
-char show_image(u16 asset, u8 timed)
+char show_image(u16 asset, u8 secs)
 {
     char c = 0;
     if (asset >= 100)
         return 0;
     if (img_load(img_name(asset)) == 0) {
         scr_gfx_on();
-        c = timed ? wait_or_key(SPLASH_SECS) : scr_getkey();
+        c = secs ? wait_or_key(secs) : scr_getkey();
         scr_gfx_off();
     }
     return c;
+}
+
+/* Derniere section dont le splash a ete montre (0xFFFF = aucune). */
+static u16 splash_last = 0xFFFF;
+
+void splash_reset(void)
+{
+    splash_last = 0xFFFF;
+}
+
+void show_splash(u16 idx, const SecHeader *h)
+{
+    if (h->splash == NO_IMAGE || (!h->splash_always && idx == splash_last))
+        return;
+    splash_last = idx;
+    show_image(h->splash, h->splash_secs);   /* absente : rien, le texte suit */
 }
 
 char show_intro_image(u16 asset)

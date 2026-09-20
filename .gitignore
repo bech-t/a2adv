@@ -13,6 +13,13 @@ player/atarist/smoketest/
 player/atarist/**/*.prg
 player/atarist/**/*.PRG
 
+# Player DOS (Open Watcom) : .EXE/.o compiles et disquettes .img fabriquees
+# (freedos/KERNEL.SYS, COMMAND.COM et BOOTSECT.BIN, eux, sont versionnes --
+# cf. player/dos/freedos/README.md, meme logique que prodos.dsk cote Apple II).
+player/dos/build/
+player/dos/**/*.img
+player/dos/**/*.EXE
+
 *.jar
 
 # Sorties / images disque
@@ -21,13 +28,14 @@ player/atarist/**/*.PRG
 *.po
 *.2mg
 
-# Exception : /build/ a la racine est le SEUL endroit ou un .dsk/.st est
+# Exception : /build/ a la racine est le SEUL endroit ou un .dsk/.st/.img est
 # committe -- des disquettes/images pretes a l'emploi (regenerees par `make
-# dist` cote player/apple2 et player/atarist), pour tester sans installer la
-# chaine de build (cc65/m68k-atari-mint-gcc, AppleCommander, mtools, Java,
-# Python...).
+# dist` cote player/apple2, player/atarist et player/dos), pour tester sans
+# installer la chaine de build (cc65/m68k-atari-mint-gcc/Open Watcom,
+# AppleCommander, mtools, Java, Python...).
 !/build/*.dsk
 !/build/*.st
+!/build/*.img
 
 # Compilations d'aventures : regenerables via `make dsk ADV=...`, ne pas versionner
 # (sinon elles se perimment silencieusement des que la source .adv change).

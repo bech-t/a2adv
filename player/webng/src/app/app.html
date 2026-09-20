@@ -1,0 +1,7 @@
+@if (offline.updateReady()) {
+  <div class="a2-update" role="status">
+    <span>Une nouvelle version est disponible.</span>
+    <button class="a2-primary" (click)="offline.applyUpdate()">Recharger</button>
+  </div>
+}
+<router-outlet />

@@ -42,3 +42,15 @@ Le compilateur cherche `lang/<code>.lng` à la racine du dépôt (cf.
 Pour ne changer qu'une ou deux chaînes sans écrire un socle complet, une
 aventure peut aussi surcharger ponctuellement n'importe quelle clé avec `@ui`
 directement dans son `.adv`.
+
+## Surcharge pour le player web
+
+Le player web lit d'abord `lang/<code>.lng`, puis y applique
+`lang/web/<code>.lng` s'il existe (cf. `compiler/a2c/webjson.py`). Ce second
+fichier ne contient que les clés qui diffèrent : le navigateur a la casse
+mixte, des boutons tactiles et pas de limite de 40 colonnes, donc « Nouvelle
+partie », « Annuler » ou « Attaquer » y remplacent `COMMENCER`, `ESC) ANNULER`
+ou `ATTAQUER`. Une aventure peut toujours imposer sa propre chaîne avec
+`@ui`, qui l'emporte sur les deux fichiers. Les accents ne sont pas
+transposés en ASCII côté web. Une langue sans fichier `web/` utilise
+simplement son socle.

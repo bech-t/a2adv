@@ -1,0 +1,3504 @@
+# Le Tour du Monde en 80 Jours -- d'apres le roman de Jules Verne (1873).
+# Vous incarnez Passepartout. Chapitre 1 : Londres -> Douvres -> Suez.
+# Les images ne sont pas encore creees : tout est en full_text.
+
+@title  Le Tour du Monde en 80 Jours
+@version 0.1
+@author Thomas B.
+@description "D'après Jules Verne : vous êtes Passepartout, et le temps presse. Premier chapitre, de Londres à Suez."
+@start  londres_carte
+@intro  intro_1 intro_2 intro_regles
+@lang   fr
+
+# JOURS : jours restants sur les 80 (masque : on le lit dans le journal).
+# TEMPS : creneaux d'errands avant le train de 20h45 (masque, chapitre 1).
+@stat JOURS  80 0 80 hidden
+@stat TEMPS   4 0 4  hidden
+@stat ARGENT 50 0 200
+@stat MORAL  10 0 10
+@stat SANTE  10 0 10
+@stat INTEL   8 0 12
+@stat ADRESSE 6 0 10
+
+@combat_attack  ADRESSE
+@combat_hp      SANTE
+@combat_basedmg 2
+
+@score on
+@moves on
+
+@item passeport   "Passeport"            on
+@item carte_monde "Carte du monde"       on
+@item montre      "Montre de Fogg"       on
+@item valise      "Valise"               on
+@item parapluie   "Parapluie"            dmg=1
+@item whisky      "Bouteille de whisky"
+@item billets_suez "Billets Suez-Bombay"
+@item dague       "Dague indienne"       dmg=3
+@item trousse     "Trousse médicale"
+@item eventail    "Éventail de soie"
+@item carte_visite "Carte du consul"
+@item telegramme_fix "Télégramme de Fix"
+@item pistolet    "Pistolet"             atk=1 dmg=4
+@item billets_yoko "Passage Yokohama"
+@item billets_sf  "Passage San Francisco"
+@item billets_ny  "Billets New York"
+
+@flag pari_calcule      # l'enigme du pari est resolue
+@flag enigme_passeport  # la tache d'encre a ete reperee
+@flag conseil_whisky    # on sait que Speedy aime le whisky
+@flag raccourci_speedy  # Speedy a donne la route rapide
+@flag contact_inde      # un message est parti pour l'Inde
+@flag fix_rencontre     # on a croise un curieux, a Suez
+@flag aouda_avec_nous
+@flag indice_aouda
+@flag guide_engage      # le guide parsi de Bombay
+@flag itineraire_rapide # train + eléphant
+@flag benediction       # respect des coutumes, à Bombay
+@flag temple_incident   # chaussures au temple : Fix a de quoi accuser
+@flag caution_payee
+@flag aouda_sauvee
+@flag passeport_aouda
+@flag sir_francis
+@flag kali_evite
+@flag tankadere_ok      # Bunsby a promis le passage
+@flag tempete_ok
+@flag pirates_vaincus
+@flag rations_ok
+@flag fix_retarde
+@flag indice_fix
+@flag fix_evite
+@flag bandits_repousses
+@flag pont_gue
+@flag loco_ok
+@flag henrietta_ok
+@flag fix_discredite
+@flag contact_ny
+@flag fuseau_compris
+@flag chaudiere_ok
+@flag vent_ok
+
+# Carrefours du chapitre en cours (remis a zero a chaque @chapter).
+
+# ===========================================================================
+# CHAPITRE 1a : LONDRES ET DOUVRES
+# ===========================================================================
+@chapter "Londres"
+@flag q_portier local
+@flag q_membres local
+@flag q_marchand local
+@flag q_employe local
+@flag q_recept local
+@flag q_conducteur local
+@flag q_voyageur local
+@flag q_matelot local
+@flag q_change local
+
+:: intro_1
+@mode full_text
+=! LE TOUR DU MONDE EN 80 JOURS
+
+*Londres, 2 octobre 1872.*
+
+Phileas Fogg, gentleman flegmatique et ponctuel jusqu'à la seconde, vient de
+parier vingt mille livres avec ses collègues du Reform Club : il fera le tour
+du monde en quatre-vingts jours.
+
+Il n'a engagé son valet que ce matin même. C'est vous.
+
+:: intro_2
+@mode full_text
+= PASSEPARTOUT
+
+Jean Passepartout, Français de trente ans, ancien gymnaste et ancien pompier :
+« Passepartout me va bien », dites-vous, « car j'ai un talent naturel pour me
+tirer d'affaire. »
+
+Il est dix-neuf heures trente. Fogg vous a donné ses ordres : la valise, le
+passeport, et rendez-vous au train de *20h45*, gare de Paddington.
+
+Vous avez un peu de temps. Et peu d'argent.
+
+:: intro_regles
+@mode full_text
+=! CE QUI SE JOUE
+
+Le bandeau du haut suit Passepartout :
+
+*ARGENT* : vos livres. Chaque course, chaque pourboire compte.
+*MORAL* : l'humeur. Les déconvenues l'entament, les bons tours le remontent.
+*SANTE* : vos forces, y compris au combat.
+*INTEL* : la tête froide : marchandages, énigmes, bonnes idées.
+*ADRESSE* : l'agilité, et votre coup de poing.
+
+Le temps, lui, n'a pas de cadran : le journal de Fogg dit où vous en êtes.
+
+Quatre-vingts jours, pas un de plus. Et un maître qui ne doit jamais savoir à quel point vous avez tremblé.
+
+:: londres_carte
+@mode full_text
+=! LONDRES - 2 OCTOBRE 1872
+
+{stat TEMPS >= 4} Il est 19h30. Le train de Douvres part à 20h45.
+{stat TEMPS == 3} Il est 19h55. Le train part dans 50 minutes.
+{stat TEMPS == 2} Il est 20h15. Le train part dans une demi-heure.
+{stat TEMPS == 1} Il est 20h30 : il est temps de filer à la gare.
+{stat TEMPS == 0} Il est 20h40 ! Le train va partir !
+
+Argent : £%ARGENT%. Chaque course prend du temps.
+
+* {stat TEMPS >= 1} [Reform Club] -> reform_club
+  ~ sub TEMPS 1
+* {stat TEMPS >= 1} [Marché de Londres] -> marche_londres
+  ~ sub TEMPS 1
+* {stat TEMPS >= 1} [Bureau de poste] -> poste_londres
+  ~ sub TEMPS 1
+* {stat TEMPS >= 1} [Hôtel] -> hotel_londres
+  ~ sub TEMPS 1
+* [Gare de Paddington] -> trajet_gare
+* [Relire le journal de Fogg] -> journal_londres
+
+:: journal_londres
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Londres, 2 octobre 1872, 20h00*
+
+« Le pari est lancé. Vingt mille livres, quatre-vingts jours. Les membres du
+club ont ri : ils ont tort. J'ai tout calculé, les horaires, les
+correspondances. Chaque minute compte.
+
+Mon nouveau valet, Jean Passepartout, m'accompagne. Il a l'air débrouillard.
+Nous partons ce soir, 20h45, pour Douvres. »
+
+* [Retour] -> londres_carte
+
+# --- REFORM CLUB ---------------------------------------------------------
+
+:: reform_club
+@mode full_text
+=! REFORM CLUB
+
+Pall Mall. Boiseries sombres, fauteuils de cuir, silence de cathédrale. Vous
+apportez à Fogg son passeport oublié ; des gentlemen vous toisent de haut.
+
+Fogg, lui, lit son *Morning Chronicle* comme si rien ne s'était passé.
+
+* {not flag pari_calcule} [Écouter les paris des membres] -> pari_calcul
+* {not flag enigme_passeport} [Vérifier le passeport de Fogg] -> passeport_examen
+* {not flag q_portier} [Parler au portier] -> portier
+* {not flag q_membres} [Écouter les gentlemen] -> membres
+* [Retourner en ville] -> londres_carte
+
+:: pari_calcul
+@mode full_text
+=! LE PARI
+
+Andrew Stuart, banquier, ricane : « Vingt mille livres que vous n'y arriverez
+pas, Fogg ! » Fogg, imperturbable, pose son chèque : « Et j'y engage ma fortune
+contre la vôtre. »
+
+Un membre se tourne vers vous, moqueur : « Et vous, l'ami : si votre maître
+perd, combien perd-il ? »
+
+@ask "Combien de livres ?" maxlen=12
+@answer 20000
+@answer 20 000
+@answer 20.000
+@answer VINGT MILLE
+@correct pari_ok
+  ~ score 10
+  ~ add INTEL 1
+@wrong pari_ko
+
+:: pari_ok
+@mode full_text
+« Vingt mille ! » lancez-vous. Le membre siffle, Fogg hausse imperceptiblement
+un sourcil : chez lui, c'est un compliment.
+
+~ set pari_calcule
+* [Continuer] -> reform_club
+
+:: pari_ko
+@mode full_text
+Vous bafouillez un chiffre. Les gentlemen rient. Fogg vous glisse : « Vingt
+mille livres, Passepartout. Retenez-le. »
+
+~ set pari_calcule
+~ sub MORAL 1
+* [Continuer] -> reform_club
+
+:: portier
+@mode full_text
+Le portier, colosse en livrée noire, vous jauge.
+
+« Le *Mongolia* ? Son capitaine, Speedy, est un ours. Mais offrez-lui un bon
+whisky, et il vous mange dans la main. »
+
+~ set q_portier
+~ set conseil_whisky
+* [Merci du conseil] -> reform_club
+
+:: membres
+@mode full_text
+Les gentlemen parient sur tout : sur la Bourse, sur le brouillard, sur le tour
+du monde. L'un d'eux murmure : « Un vol de cinquante-cinq mille livres à la
+Banque d'Angleterre, hier. Le voleur serait un gentleman bien mis... »
+
+Vous n'y prêtez pas attention. Pas encore.
+
+~ set q_membres
+* [Continuer] -> reform_club
+
+:: passeport_examen
+@mode full_text
+=! LE PASSEPORT SUSPECT
+
+Vous dépliez le passeport de Fogg. Un détail vous arrête : la date de départ
+porte une petite *tache d'encre*, comme si le chiffre avait été retouché.
+
+* [Le signaler à Fogg] -> passeport_signale
+* [Faire comme si de rien n'était] -> passeport_ignore
+
+:: passeport_signale
+@mode full_text
+Fogg examine la tache et hoche la tête : « Bien vu, Passepartout. Je ferai
+corriger cela avant notre départ. »
+
+~ set enigme_passeport
+~ score 10
+~ add INTEL 1
+* [Continuer] -> reform_club
+
+:: passeport_ignore
+@mode full_text
+Vous replacez le passeport dans sa pochette. Après tout, ce n'est pas votre
+métier de vérifier les dates.
+
+~ set enigme_passeport
+* [Continuer] -> reform_club
+
+# --- MARCHE, POSTE, HOTEL ------------------------------------------------
+
+:: marche_londres
+@mode full_text
+=! MARCHÉ DE COVENT GARDEN
+
+Étals de fruits, de drap, de chaussures, de bimbeloterie. Un marchand vous
+hèle : « Un parapluie, monsieur ? Il pleut toujours, en voyage ! »
+
+Argent : £%ARGENT%.
+
+* {not has parapluie and stat ARGENT >= 10} [Marchander un parapluie] -> parapluie_marche
+* {not has parapluie and stat ARGENT < 10} [Un parapluie (trop cher pour vous)] -> marche_londres
+* {stat ARGENT >= 5} [Acheter des biscuits (£5)] -> biscuits
+* {not flag q_marchand} [Bavarder avec le marchand] -> marchand_londres
+* [Retourner en ville] -> londres_carte
+
+:: parapluie_marche
+@mode full_text
+=! LE PARAPLUIE
+
+« Quinze livres. » Vous en offrez cinq. Le marchand s'étrangle, vous riez.
+Vous finissez à dix, et l'affaire est faite.
+
+~ sub ARGENT 10
+~ give parapluie
+~ sound pickup
+~ score 5
+* [Continuer] -> marche_londres
+
+:: biscuits
+@mode full_text
+Des biscuits secs, du fromage, quelques fruits : de quoi tenir en mer.
+
+~ sub ARGENT 5
+~ add SANTE 1
+* [Continuer] -> marche_londres
+
+:: marchand_londres
+@mode full_text
+Le marchand se penche : « Un bon parapluie, monsieur, ça sert aussi à
+repousser un importun. Vous m'en direz des nouvelles ! »
+
+~ set q_marchand
+* [Continuer] -> marche_londres
+
+:: poste_londres
+@mode full_text
+=! BUREAU DE POSTE
+
+Des commis trient des lettres sous des lampes à gaz. Un guichet est libre.
+
+* {not flag contact_inde and stat ARGENT >= 5} [Télégraphier à Bombay (£5)] -> poste_message
+* {not flag q_employe} [Parler à l'employé] -> poste_employe
+* [Retourner en ville] -> londres_carte
+
+:: poste_message
+@mode full_text
+Vous confiez un télégramme pour un vieil ami de Bombay, à Malabar Hill :
+« Arrive le 20. Prévenez. Passepartout. »
+
+L'employé compte les mots, encaisse, tamponne.
+
+~ sub ARGENT 5
+~ set contact_inde
+~ score 5
+* [Continuer] -> poste_londres
+
+:: poste_employe
+@mode full_text
+« Un télégramme pour l'Inde ? Il y a le câble sous-marin, monsieur : c'est
+rapide, mais cher. Pensez-y si vous avez un ami là-bas. »
+
+~ set q_employe
+* [Continuer] -> poste_londres
+
+:: hotel_londres
+@mode full_text
+=! HÔTEL DE LA RUE
+
+Un petit hôtel proche du club. Un bain chaud, une chemise propre... et l'heure
+tourne.
+
+* {stat ARGENT >= 10} [Prendre un bain et se changer (£10)] -> hotel_bain
+* {not flag q_recept} [Parler à la réceptionniste] -> hotel_recept
+* [Retourner en ville] -> londres_carte
+
+:: hotel_bain
+@mode full_text
+Un bain express, une chemise repassée : vous voilà un autre homme.
+
+~ sub ARGENT 10
+~ add SANTE 2
+~ add MORAL 1
+* [Continuer] -> hotel_londres
+
+:: hotel_recept
+@mode full_text
+La réceptionniste vous sourit : « Vous partez en voyage, monsieur ? Alors
+prenez un fiacre pour la gare : avec la circulation, à pied, c'est risqué. »
+
+~ set q_recept
+* [Continuer] -> hotel_londres
+
+# --- PADDINGTON ET LE TRAIN ---------------------------------------------
+
+:: trajet_gare
+@mode full_text
+=! VERS PADDINGTON
+
+Il faut traverser Londres. Un fiacre coûte cher, mais file. À pied, on flâne,
+on se perd, on se fait bousculer : chaque rue coûte du temps.
+
+* {stat ARGENT >= 5} [Héler un fiacre (£5)] -> fiacre
+* [Y aller à pied] -> a_pied
+
+:: fiacre
+@mode full_text
+« À Paddington, et au galop ! » Le cocher fouette ses chevaux.
+
+~ sub ARGENT 5
+* [Continuer] -> gare_paddington
+
+:: a_pied
+@mode full_text
+Vous coupez par les ruelles, vous évitez les flaques et les omnibus.
+
+~ sub TEMPS 1
+* [Continuer] -> gare_paddington
+
+:: gare_paddington
+@mode full_text
+=! GARE DE PADDINGTON
+
+Vapeur, sifflets, valises, porteurs. Une horloge géante domine le hall.
+
+{stat TEMPS >= 1} Il est 20h30 : Fogg est déjà sur le quai, montre en main.
+{stat TEMPS == 0} Il est 20h44 ! Le train siffle déjà !
+
+* {stat TEMPS >= 1} [Parler au contrôleur] -> controleur_gare
+* {stat TEMPS >= 1} [Monter dans le train] -> train_douvres
+* {stat TEMPS == 0} [Courir vers le quai !] -> gare_course
+
+:: gare_course
+@mode full_text
+Vous jetez la valise dans un wagon et sautez sur le marchepied, le souffle
+court, sous l'œil sévère de Fogg. Le train s'ébranle.
+
+~ sub SANTE 1
+~ sub MORAL 1
+* [Continuer] -> train_douvres
+
+:: controleur_gare
+@mode full_text
+Le contrôleur, casquette à la main, chuchote : « À Douvres, monsieur, si vous
+allez à bord du *Mongolia*, sachez que son capitaine est très pointilleux sur
+les horaires. »
+
+~ set q_conducteur
+* [Merci] -> gare_paddington
+
+:: train_douvres
+@mode full_text
+=! LE TRAIN DE DOUVRES
+
+*2 octobre 1872, 20h45*
+
+Sièges de velours rouge, lampes à huile. Fogg s'est plongé dans son *Bradshaw*,
+l'indicateur des chemins de fer. Le train s'ébranle vers la côte.
+
+* {not flag q_voyageur} [Parler à un voyageur] -> voyageur_train
+* [Regarder par la fenêtre] -> fenetre_train
+* [Attendre l'arrivée] -> arrivee_douvres
+
+:: voyageur_train
+@mode full_text
+Un gros voyageur au chapeau de feutre s'épanche : « Douvres ? Je prends le
+*Mongolia* aussi. Le capitaine Speedy est difficile... mais il adore le
+whisky. »
+
+~ set q_voyageur
+~ set conseil_whisky
+* [Continuer] -> train_douvres
+
+:: fenetre_train
+@mode full_text
+La campagne anglaise défile sous la lune. Les lumières de Londres
+s'effacent une à une. Vous pensez à la France, à Fogg, aux quatre-vingts jours.
+
+* [Continuer] -> train_douvres
+
+:: arrivee_douvres
+@mode full_text
+Le train s'arrête dans une gare de Douvres humide et venteuse. Il est 22h00.
+Une odeur de sel et de charbon flotte dans l'air.
+
+* [Descendre au port] -> port_douvres
+
+# --- PORT DE DOUVRES -----------------------------------------------------
+
+:: port_douvres
+@mode full_text
+=! PORT DE DOUVRES
+
+*2 octobre 1872, 22h00*
+
+Le *Mongolia*, paquebot à vapeur de la Peninsular and Oriental, est amarré au
+quai. Des matelots chargent des caisses sous la lueur des lanternes.
+
+Argent : £%ARGENT%.
+
+* [Parler au capitaine Speedy] -> speedy
+* {not flag q_matelot} [Parler à un matelot] -> matelot_douvres
+* {stat ARGENT >= 10} [Acheter du whisky (£10)] -> acheter_whisky
+* {not flag q_change} [Changer vos derniers francs] -> change_douvres
+* [Monter à bord du Mongolia] -> mongolia_bord
+
+:: matelot_douvres
+@mode full_text
+Un matelot crache sur le quai : « On lève l'ancre à minuit pile. Le capitaine
+n'attend personne, pas même un lord. »
+
+~ set q_matelot
+* [Continuer] -> port_douvres
+
+:: acheter_whisky
+@mode full_text
+Un marchand du port vous glisse une bouteille de single malt, sous le manteau.
+
+~ sub ARGENT 10
+~ give whisky
+~ sound pickup
+* [Continuer] -> port_douvres
+
+:: change_douvres
+@mode full_text
+=! CHANGER DES FRANCS
+
+Un changeur en gilet marron vous propose un taux d'usurier. Vous avez quelques
+francs et un talent certain pour la parlotte.
+
+* {stat INTEL >= 9} [Négocier avec aplomb] -> change_bon
+* [Accepter son taux] -> change_moyen
+
+:: change_bon
+@mode full_text
+Vous le prenez à son propre jeu : deux phrases bien tournées, un clin d'œil,
+et le taux devient honnête. Vous empochez cinq livres de plus.
+
+~ add ARGENT 5
+~ set q_change
+~ score 5
+* [Continuer] -> port_douvres
+
+:: change_moyen
+@mode full_text
+Le changeur vous rend quelques pièces. Ce n'est pas glorieux, mais c'est de
+l'argent.
+
+~ add ARGENT 2
+~ set q_change
+* [Continuer] -> port_douvres
+
+:: speedy
+@mode full_text
+=! CAPITAINE SPEEDY
+
+Un homme trapu, barbe de fer et casquette écrasée, vous toise du haut de la
+passerelle.
+
+« Qui êtes-vous ? Un passager ? Un domestique ? »
+
+* [Vous présenter : « Valet de Phileas Fogg. »] -> speedy_present
+* {has whisky} [Lui offrir la bouteille de whisky] -> speedy_whisky
+* [Retourner sur le quai] -> port_douvres
+
+:: speedy_present
+@mode full_text
+« Fogg ? Ah oui. Cabine 12, à tribord. Mais je vous attendais demain. »
+Il grogne : « Pas de retard, hein. Le *Mongolia* ne fait pas de faveurs. »
+
+* [Continuer] -> speedy
+
+:: speedy_whisky
+@mode full_text
+Ses yeux s'allument. Il décapsule la bouteille, hume, sourit pour la première
+fois de la soirée.
+
+« Voilà qui est parler ! Puisque vous savez vivre, je vais vous confier un
+secret : je connais un couloir de mer plus court, si le vent tient. Le canal
+de Suez, on y sera avant l'heure. »
+
+~ take whisky
+~ set raccourci_speedy
+~ score 15
+~ sound bonus
+* [Continuer] -> speedy
+
+:: mongolia_bord
+@mode full_text
+=! À BORD DU MONGOLIA
+
+*2 octobre 1872, 23h30*
+
+Un maître d'équipage vous conduit à la cabine 12 : une couchette étroite,
+un hublot, une lampe qui grince. Par le hublot, les lumières de Douvres.
+
+À minuit, la machine gronde. Le *Mongolia* s'arrache du quai. L'Angleterre
+disparaît dans la nuit.
+
+Votre vrai voyage commence.
+
+* [Continuer] -> traversee_pont
+
+# ===========================================================================
+# CHAPITRE 1b : LA TRAVERSEE
+# ===========================================================================
+@chapter "Mongolia"
+@flag q_speedy local
+@flag q_matelot local
+
+:: traversee_pont
+@mode full_text
+=! LA TRAVERSÉE
+
+*Méditerranée, du 3 au 9 octobre 1872*
+
+Les jours filent, rythmés par la machine. Fogg joue au whist, note l'heure à
+la minute, et ne regarde jamais la mer.
+
+Argent : £%ARGENT% - Moral : %MORAL%/10 - Santé : %SANTE%/10
+
+* {not flag q_speedy} [Monter sur le pont] -> pont_mongolia
+* [Visiter la salle des machines] -> machines_mongolia
+* {not flag q_matelot} [Bavarder avec les matelots] -> matelots_mongolia
+* {stat SANTE < 10} [Se reposer dans la cabine] -> repos_cabine
+* [Attendre l'arrivée à Suez] -> arrivee_suez
+
+:: pont_mongolia
+@mode full_text
+Sur le pont, le vent sent le sel et l'huile chaude. Le capitaine Speedy
+scrute l'horizon, cigare éteint aux lèvres.
+
+{flag raccourci_speedy} Il vous adresse un signe de tête : « Ce vent-là nous fait gagner une journée. »
+{not flag raccourci_speedy} Il ne vous regarde même pas.
+
+~ set q_speedy
+~ add MORAL 1
+* [Continuer] -> traversee_pont
+
+:: machines_mongolia
+@mode full_text
+Un chauffeur en sueur enfourne du charbon. Les pistons battent comme un cœur.
+
+« Mille chevaux, monsieur. Quatorze nœuds si Dieu veut. »
+
+Fogg est passé par là plus tôt, montre en main, pour compter les tours.
+
+* [Continuer] -> traversee_pont
+
+:: matelots_mongolia
+@mode full_text
+Un matelot vous confie : « Suez, c'est chaud, poussiéreux, plein de curieux.
+Méfiez-vous des gens trop aimables. »
+
+~ set q_matelot
+* [Continuer] -> traversee_pont
+
+:: repos_cabine
+@mode full_text
+Une longue sieste, bercé par la houle. Vous vous réveillez reposé.
+
+~ add SANTE 2
+* [Continuer] -> traversee_pont
+
+:: arrivee_suez
+@mode full_text
+=! SUEZ EN VUE
+
+{flag raccourci_speedy} Grâce à la route de Speedy, le *Mongolia* arrive avec une journée d'avance.
+{not flag raccourci_speedy} Après sept jours de mer, la côte d'Égypte apparaît enfin.
+
+Il est neuf heures du matin, le 9 octobre. Le sable ocre, les minarets, le
+canal : tout est neuf pour vous.
+
+* {flag raccourci_speedy} [Débarquer] -> arrivee_gagne
+* {not flag raccourci_speedy} [Débarquer] -> arrivee_normale
+
+:: arrivee_gagne
+@mode full_text
+~ sub JOURS 6
+* [Continuer] -> suez_carte
+
+:: arrivee_normale
+@mode full_text
+~ sub JOURS 7
+* [Continuer] -> suez_carte
+
+# ===========================================================================
+# CHAPITRE 1c : SUEZ
+# ===========================================================================
+@chapter "Suez"
+@flag q_douane local
+@flag q_marchand_suez local
+
+:: suez_carte
+@mode full_text
+=! SUEZ - 9 OCTOBRE 1872
+
+Le port de Suez bruisse de langues : arabe, anglais, turc, grec. Fogg fait
+viser son passeport au consulat, et vous laisse une matinée à vous.
+
+Il reste %JOURS% jours sur quatre-vingts.
+Argent : £%ARGENT% - Moral : %MORAL%/10 - Santé : %SANTE%/10
+
+* {not flag q_douane} [Bureau des passeports] -> passeports_suez
+* [Quai du port] -> quai_suez
+* {not flag q_marchand_suez} [Marché de Suez] -> marche_suez
+* {stat ARGENT >= 10} [Hôtel] -> hotel_suez
+* {has billets_suez} [Embarquer pour Bombay] -> fin_chapitre_1
+* {not has billets_suez} [Chercher un passage pour Bombay] -> quai_suez
+* [Relire le journal de Fogg] -> journal_suez
+
+:: passeports_suez
+@mode full_text
+=! BUREAU DES PASSEPORTS
+
+Un fonctionnaire égyptien examine votre passeport, sourcils froncés.
+
+{flag enigme_passeport} « Ah, le passeport est en règle. Bon voyage, monsieur. »
+{not flag enigme_passeport} « Cette date est bizarre... mais bon. »
+
+~ set q_douane
+* {not flag enigme_passeport and stat ARGENT >= 5} [Glisser £5 pour accélérer les choses] -> passeport_bakchich
+* [Retour] -> suez_carte
+
+:: passeport_bakchich
+@mode full_text
+Deux pièces dans la paume, le tampon claque. Le fonctionnaire sourit.
+
+~ sub ARGENT 5
+~ set enigme_passeport
+* [Retour] -> suez_carte
+
+:: quai_suez
+@mode full_text
+=! QUAI DU PORT
+
+Des dockers déchargent le *Mongolia*. Un capitaine à moustaches discute avec
+des marchands, près d'une pancarte : *BOMBAY, demain midi*.
+
+{not has billets_suez} Le passage coûte £20 par personne.
+
+* {not has billets_suez and stat ARGENT >= 20} [Acheter les billets (£20)] -> billets_achat
+* {not has billets_suez and stat ARGENT < 20} [Demander une avance à Fogg] -> avance_fogg
+* {not flag fix_rencontre} [Un homme vous accoste] -> fix_suez
+* [Regarder la mer Rouge] -> mer_rouge
+* [Retour] -> suez_carte
+
+:: billets_achat
+@mode full_text
+Les billets pour Bombay sont à vous, bien pliés dans la poche intérieure.
+
+~ sub ARGENT 20
+~ give billets_suez
+~ sound pickup
+~ score 10
+* [Continuer] -> quai_suez
+
+:: avance_fogg
+@mode full_text
+Vous n'avez plus assez pour le passage. Fogg soupire, sort son portefeuille,
+compte vingt livres, puis les note dans son carnet : « Au prix du billet,
+Passepartout. Pas un penny de plus. »
+
+~ set ARGENT 20
+~ sub MORAL 2
+* [Continuer] -> quai_suez
+
+:: mer_rouge
+@mode full_text
+La mer Rouge s'étend, bleue et lourde sous le soleil. À l'horizon, des voiles
+latines glissent comme des oiseaux fatigués.
+
+* [Continuer] -> quai_suez
+
+:: fix_suez
+@mode full_text
+=! UN CURIEUX
+
+Un petit homme maigre, l'œil vif, vous aborde : « Vous êtes bien le domestique
+de ce monsieur qui vient d'arriver ? Fogg, c'est ça ? À quelle heure est-il
+arrivé ? Il a l'air de se presser... »
+
+Sa question sent l'enquête. Il vous scrute comme un gibier.
+
+* [Répondre poliment] -> fix_poli
+* [Le renvoyer sèchement] -> fix_sec
+
+:: fix_poli
+@mode full_text
+Vous répondez sans réfléchir. Il note tout, sourit, tapote son carnet.
+Vous sentez déjà que vous auriez dû vous taire.
+
+~ set fix_rencontre
+~ sub MORAL 1
+* [Continuer] -> quai_suez
+
+:: fix_sec
+@mode full_text
+« Vous vous trompez d'homme. » Il se fige, puis s'éloigne en hochant la tête,
+l'air de ne rien avoir perdu.
+
+~ set fix_rencontre
+~ add INTEL 1
+* [Continuer] -> quai_suez
+
+:: marche_suez
+@mode full_text
+=! MARCHÉ DE SUEZ
+
+Étals d'épices, de tissus, de tapis, de dattes. Les marchands vantent leurs
+merveilles dans cinq langues.
+
+* {stat ARGENT >= 10} [Acheter des épices (£10)] -> epices
+* [Écouter un marchand] -> marchand_suez
+* [Retour] -> suez_carte
+
+:: epices
+@mode full_text
+Cannelle, safran, cardamome : le parfum monte à la tête.
+
+~ sub ARGENT 10
+~ add SANTE 1
+~ set q_marchand_suez
+* [Continuer] -> marche_suez
+
+:: marchand_suez
+@mode full_text
+« Pour Bombay, monsieur, des vêtements légers. Et méfiez-vous des
+pickpockets... »
+
+~ set q_marchand_suez
+* [Continuer] -> marche_suez
+
+:: hotel_suez
+@mode full_text
+=! HÔTEL DE SUEZ
+
+Un hôtel modeste, un lit propre. Mais une nuit ici, c'est un jour de moins sur
+les quatre-vingts.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> chambre_suez
+* [Retour] -> suez_carte
+
+:: chambre_suez
+@mode full_text
+Nuit sans rêve. Au matin, Fogg fait remarquer d'un ton neutre qu'il manque
+vingt-quatre heures au calendrier.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 2
+* [Continuer] -> suez_carte
+
+:: journal_suez
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*9 octobre 1872, Suez*
+
+« Arrivés à Suez. Passeport visé, billets pris. Le *Mongolia* était ponctuel.
+Passepartout semble fasciné par l'Égypte. Demain, Bombay. »
+
+* [Retour] -> suez_carte
+
+:: fin_chapitre_1
+@mode full_text
+=! LE MONGOLIA REPART
+
+Vos billets à la main, vous montez à bord du *Mongolia*, qui reprend sa route
+vers l'Inde. Fogg jette un regard approbateur sur votre ponctualité.
+
+La mer Rouge, puis l'océan Indien : dix jours de traversée, entre la chaleur,
+les flots plats et les parties de whist. À la fin, l'odeur des épices vous
+annonce Bombay.
+
+~ sub JOURS 10
+* [Continuer] -> bombay_arrivee
+
+# ===========================================================================
+# CHAPITRE 2 : L'INDE
+# ===========================================================================
+@chapter "Bombay"
+@flag q_epices local
+@flag q_temple local
+@flag q_port local
+@flag q_fix local
+@flag q_passager local
+@flag q_bunsby local
+@flag q_arg1 local
+@flag q_arg2 local
+@flag q_arg3 local
+
+:: bombay_arrivee
+@mode full_text
+=! BOMBAY
+
+*Vers le 20 octobre 1872*
+
+Bombay, pour un Français de Paris, est un coup de gong : la chaleur vous
+saute au visage, les éléphants passent, les charrettes à bœufs se croisent,
+et cent langues se répondent dans les ruelles.
+
+Fogg consulte sa montre : « Le train pour Calcutta part à huit heures et
+demie. Nous avons la journée. Passepartout, voici de quoi tenir jusque-là. »
+
+Il vous remet quarante livres.
+
+~ add ARGENT 40
+~ sound bonus
+* [Sortir de la gare maritime] -> bombay_carte
+
+:: bombay_carte
+@mode full_text
+=! BOMBAY
+
+Il reste %JOURS% jours. Argent : £%ARGENT%. Santé : %SANTE%/10.
+
+Le train de Calcutta part ce soir. D'ici là, la ville est à vous.
+
+* [Gare Victoria] -> bombay_gare
+* {not flag q_epices} [Marché aux épices] -> bombay_marche
+* [Temple de Malabar Hill] -> bombay_temple
+* {not flag q_port} [Port] -> bombay_port
+* {stat ARGENT >= 10} [Hôtel] -> bombay_hotel
+* [Prendre le train pour Allahabad] -> bombay_depart
+* [Relire le journal de Fogg] -> journal_bombay
+
+:: journal_bombay
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Bombay, octobre 1872*
+
+« Arrivés à Bombay avec deux jours d'avance sur l'horaire officiel. Les
+couleurs et les odeurs impressionnent Passepartout. Je n'ai qu'une pensée :
+tenir notre horaire. Un curieux, à Suez, semble s'intéresser à mes
+déplacements. À surveiller. »
+
+* [Retour] -> bombay_carte
+
+# --- GARE VICTORIA ---
+
+:: bombay_gare
+@mode full_text
+=! GARE VICTORIA
+
+Un édifice néogothique bondé de voyageurs. Un guide parsi, tout de blanc vêtu,
+vous propose ses services ; des porteurs se disputent vos bagages.
+
+* {not flag guide_engage} [Négocier avec le guide] -> guide_question
+* {not flag itineraire_rapide} [Étudier les itinéraires] -> itineraires
+* [Retour] -> bombay_carte
+
+:: guide_question
+@mode full_text
+=! LE GUIDE PARSI
+
+« Huit jours, quarante livres », annonce le guide. Vous voulez marchander, mais
+avec un mot de sa langue, ce sera plus efficace. Comment demander « combien de
+jours ? » en hindi ?
+
+@ask "Combien de jours ? (hindi)" maxlen=20
+@answer KITNA DIN
+@answer KITNE DIN
+@correct guide_ok
+  ~ score 10
+@wrong guide_ko
+
+:: guide_ok
+@mode full_text
+« Kitna din ? » Le guide éclate de rire, ravi. « Vous parlez ma langue !
+Cinq jours, trente livres, monsieur. »
+
+~ sub ARGENT 30
+~ set guide_engage
+* [Merci] -> bombay_gare
+
+:: guide_ko
+@mode full_text
+Le guide fronce le nez : « Quarante livres, monsieur, pas un shilling de
+moins. »
+
+* {stat ARGENT >= 40} [Payer quarante livres] -> guide_plein
+* [Renoncer] -> bombay_gare
+
+:: guide_plein
+@mode full_text
+Vous payez. Le guide vous salue, très digne.
+
+~ sub ARGENT 40
+~ set guide_engage
+* [Continuer] -> bombay_gare
+
+:: itineraires
+@mode full_text
+=! LE BON ITINÉRAIRE
+
+Le chemin de fer ne va pas jusqu'au bout : à Kholby, la voie n'est pas
+terminée. Il faut traverser à pied ou à dos d'éléphant jusqu'à Allahabad.
+
+Sur le tableau des départs, le guide vous montre :
+- le train direct, puis un détour par la route : six jours ;
+- le train jusqu'à Kholby, puis un éléphant : cinq jours.
+
+* [Train, puis éléphant] -> itineraire_rapide
+* [Train direct et détour] -> itineraire_lent
+
+:: itineraire_rapide
+@mode full_text
+Vous notez : train jusqu'à Kholby, puis éléphant. Fogg approuve d'un mot :
+« Bien calculé, Passepartout. »
+
+~ set itineraire_rapide
+~ score 10
+* [Continuer] -> bombay_gare
+
+:: itineraire_lent
+@mode full_text
+Vous prenez le train direct. Fogg soupire : « C'est sûr, mais lent. »
+
+~ sub MORAL 1
+* [Continuer] -> bombay_gare
+
+# --- MARCHE AUX EPICES ---
+
+:: bombay_marche
+@mode full_text
+=! MARCHÉ AUX ÉPICES
+
+Sacs de piment, de curcuma, de cardamome : un arc-en-ciel poudreux. Un marchand
+vante une dague indienne à manche d'ivoire.
+
+* {not has dague and stat ARGENT >= 12} [Marchander la dague] -> dague_marche
+* [Écouter les rumeurs] -> rumeurs_bombay
+* [Retour] -> bombay_carte
+
+:: dague_marche
+@mode full_text
+=! LA DAGUE
+
+« Vingt livres. » Vous secouez la tête. « Quinze ? »
+
+{stat INTEL >= 9} Vous lui parlez du prix du curcuma à Paris, de sa réputation, de sa mère ; il cède à douze livres, ravi de l'échange.
+{stat INTEL < 9} Il campe sur ses quinze livres, sans rire.
+
+* {stat INTEL >= 9} [Payer douze livres] -> dague_bon
+* {stat INTEL < 9 and stat ARGENT >= 15} [Payer quinze livres] -> dague_moyen
+* [Laisser tomber] -> bombay_marche
+
+:: dague_bon
+@mode full_text
+~ sub ARGENT 12
+~ give dague
+~ sound pickup
+~ score 5
+* [Continuer] -> bombay_marche
+
+:: dague_moyen
+@mode full_text
+~ sub ARGENT 15
+~ give dague
+~ sound pickup
+* [Continuer] -> bombay_marche
+
+:: rumeurs_bombay
+@mode full_text
+Entre deux étals, vous saisissez des bribes : « ...la jeune veuve... le
+rajah de Bundelkhand... le bûcher, à Pillaji... demain... ». On parle
+à voix basse d'un sacrifice.
+
+~ set indice_aouda
+~ set q_epices
+* [Continuer] -> bombay_carte
+
+# --- TEMPLE ---
+
+:: bombay_temple
+@mode full_text
+=! TEMPLE DE MALABAR HILL
+
+Une pagode blanche sur la colline. À l'entrée, des fidèles se déchaussent et
+laissent leurs sandales alignées. Des prêtres, l'air sévère, surveillent.
+
+* {not flag q_temple} [Observer les fidèles] -> temple_observer
+* {not flag benediction and not flag temple_incident} [Entrer, pieds nus] -> temple_pieds_nus
+* {not flag benediction and not flag temple_incident} [Entrer chaussé, comme dans une église] -> temple_incident
+* {not flag benediction and not flag temple_incident and stat ARGENT >= 5} [Faire un don (£5)] -> temple_don
+* [Retour] -> bombay_carte
+
+:: temple_observer
+@mode full_text
+Vous regardez : on se déchausse, on incline la tête, on effleure la pierre.
+Un vieux fidèle vous sourit : « Ici, ce sont les pieds qui parlent. »
+
+~ set q_temple
+* [Continuer] -> bombay_temple
+
+:: temple_pieds_nus
+@mode full_text
+Pieds nus sur la pierre fraîche, vous vous laissez porter par les chants. Un
+prêtre vous touche le front de cendre : une bénédiction.
+
+~ set benediction
+~ add MORAL 1
+~ score 10
+* [Continuer] -> bombay_temple
+
+:: temple_don
+@mode full_text
+Vous déposez quelques pièces dans la coupe. Le prêtre incline la tête.
+
+~ sub ARGENT 5
+~ set benediction
+~ add MORAL 1
+~ score 5
+* [Continuer] -> bombay_temple
+
+:: temple_incident
+@mode full_text
+=! SACRILÈGE
+
+À peine avez-vous fait trois pas, chaussé, que les prêtres se ruent sur vous en
+hurlant. Vous fuyez, les sandales de la ville aux trousses. Sur le parvis, un
+petit homme maigre, calepin en main, prend des notes avec un sourire de
+chat : c'est le curieux de Suez.
+
+~ set temple_incident
+~ sub MORAL 2
+~ sub SANTE 1
+* [Fuir] -> bombay_carte
+
+# --- PORT ET HOTEL ---
+
+:: bombay_port
+@mode full_text
+=! PORT DE BOMBAY
+
+Vapeurs, boutres, jonques. Sur le quai, un marin brun aux gros favoris fume la
+pipe, appuyé à un cabestan : c'est John Bunsby, pilote de Hong Kong.
+
+« Vous allez vers l'Est, petit ? Quand vous aurez besoin d'un bateau qui file
+sur les flots, demandez le *Tankadère*. »
+
+~ set q_port
+~ set q_bunsby
+* [Retour] -> bombay_carte
+
+:: bombay_hotel
+@mode full_text
+=! HÔTEL
+
+Une chambre fraîche, un ventilateur qui bat. Mais un jour de sommeil est un jour
+qu'on ne rattrape pas.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> hotel_bombay_nuit
+* [Retour] -> bombay_carte
+
+:: hotel_bombay_nuit
+@mode full_text
+Vous dormez comme une souche. Fogg, à votre réveil, vous informe froidement
+que le train du soir est parti, et que vous prendrez le suivant.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+~ add MORAL 1
+* [Continuer] -> bombay_carte
+
+:: bombay_depart
+@mode full_text
+=! LE TRAIN POUR CALCUTTA
+
+Sur le quai, un voyageur s'installe en face de vous : un général anglais, sec
+et raide, sir Francis Cromarty. Fogg le salue d'un signe de tête.
+
+Le train quitte Bombay dans un nuage de vapeur. Derrière la vitre, la ville
+recule, les éléphants aussi.
+
+~ set sir_francis
+* [Continuer] -> train_inde
+
+# --- LE TRAIN DE L'INDE ---
+
+:: train_inde
+@mode full_text
+=! LE TRAIN DE L'INDE
+
+Trois jours de chemin de fer à travers les Ghâts, les plaines de coton, les
+fleuves gris et les singes sur les toits. La chaleur pèse, la poussière
+colle.
+
+* {not flag q_passager} [Parler au général Cromarty] -> cromarty
+* {flag fix_rencontre and not flag q_fix} [Un visage vous semble familier] -> fix_train
+* [Regarder l'Inde défiler] -> paysage_inde
+* [Arriver à Kholby] -> kholby
+
+:: cromarty
+@mode full_text
+Sir Francis parle d'une voix posée : « L'Inde est un pays de contrastes. Le
+rail s'arrête à Kholby : il reste cinquante milles à franchir avant de
+retrouver la voie, à Allahabad. Et puis, il y a certaines coutumes... »
+
+Il hésite, puis chuchote : « Le sacrifice des veuves, le sati, est interdit
+par la loi anglaise. Mais dans certaines principautés... »
+
+~ set q_passager
+~ set indice_aouda
+* [Continuer] -> train_inde
+
+:: fix_train
+@mode full_text
+Dans le compartiment voisin, le petit homme maigre de Suez lit un journal, le
+même depuis une heure. Il ne tourne jamais la page.
+
+Vous n'êtes pas sûr qu'il vous ait vu. Mais lui, sans doute.
+
+~ set q_fix
+~ sub MORAL 1
+* [Continuer] -> train_inde
+
+:: paysage_inde
+@mode full_text
+Des pagodes, des rizières, des buffles dans l'eau jusqu'au cou. Passepartout
+sourit : c'est beau, et loin de tout.
+
+~ add MORAL 1
+* [Continuer] -> train_inde
+
+# --- KHOLBY ET L'ELEPHANT ---
+
+:: kholby
+@mode full_text
+=! KHOLBY
+
+Le train s'arrête dans une gare qui n'en est pas une : un poteau, des rails
+qui finissent dans l'herbe, et des indigènes qui vous regardent, l'air
+amusé.
+
+« Terminus, messieurs », annonce le conducteur. « Pour Allahabad, à travers
+la jungle. »
+
+{flag itineraire_rapide} Vous avez prévu l'éléphant. Fogg, sans discuter, achète la bête à un Indien : un éléphant nommé Kiouni, docile comme un chien.
+{not flag itineraire_rapide} Vous n'avez rien prévu. Il faut marcher, ou trouver une charrette.
+
+* {flag itineraire_rapide} [Monter sur Kiouni] -> route_elephant
+* {not flag itineraire_rapide} [Trouver une charrette à bœufs] -> route_charrette
+
+:: route_elephant
+@mode full_text
+La jungle défile, immense. Kiouni avance, imperturbable, d'un pas que rien
+n'arrête. Vous roulez, un peu comme sur un bateau. Sir Francis Cromarty
+s'est joint à vous. Un guide parsi conduit la bête.
+
+* [Continuer] -> foret_arrivee
+
+:: route_charrette
+@mode full_text
+Une charrette, un buffle, un conducteur bavard : vous perdez une journée
+entière, mais vous voilà en route.
+
+~ sub JOURS 1
+~ sub SANTE 1
+* [Continuer] -> foret_arrivee
+
+# --- ALLAHABAD : LE BUCHER ---
+
+:: foret_arrivee
+@mode full_text
+=! LA FORÊT DE PILLAJI
+
+Au crépuscule, des tambours. Le guide s'arrête, blême. À travers les arbres,
+une procession : des brahmanes, un rajah mort sur un bûcher de bois
+parfumé... et, à côté, une jeune femme, à peine sortie de l'enfance,
+couverte de bijoux, les yeux fixes, droguée.
+
+Sir Francis chuchote : « Elle va être brûlée vive avec son époux. C'est le
+sati. »
+
+{flag indice_aouda} Vous vous souvenez des murmures du marché : c'était donc cela.
+
+* [En parler à Fogg] -> foret_debat
+
+:: foret_debat
+@mode full_text
+=! CONVAINCRE FOGG
+
+Fogg observe la scène, sa montre en main. « Nous avons du temps, Passepartout,
+mais il n'est pas à nous. Ce n'est pas notre affaire. »
+
+Vous devez trouver les mots. Deux arguments, pas plus, pèsent chez un
+gentleman.
+
+* {not flag q_arg1} [« On a le temps : douze heures d'avance. »] -> arg_temps
+* {not flag q_arg2} [« Elle pourrait nous aider : elle parle anglais. »] -> arg_aide
+* {not flag q_arg3} [« C'est notre devoir, monsieur. »] -> arg_devoir
+* {flag q_arg1 and flag q_arg2} [Regarder Fogg dans les yeux] -> foret_accord
+
+:: arg_temps
+@mode full_text
+Fogg sort sa montre, compte, fronce un sourcil. « Douze heures. En effet,
+l'avance existe. » Il ne dit pas encore oui.
+
+~ set q_arg1
+* [Continuer] -> foret_debat
+
+:: arg_aide
+@mode full_text
+« Elle est anglaise par sa mère, monsieur : Parsie éduquée. Elle nous servira
+de guide, d'interprète, d'appui. » Fogg hoche la tête. « Un argument. »
+
+~ set q_arg2
+* [Continuer] -> foret_debat
+
+:: arg_devoir
+@mode full_text
+« Le devoir ? Je fais le mien : le tour du monde. » Fogg, glacial, ne
+bouge pas. Vous avez perdu du terrain.
+
+~ set q_arg3
+~ sub MORAL 1
+* [Continuer] -> foret_debat
+
+:: foret_accord
+@mode full_text
+Fogg replie sa montre. « Passepartout. Nous allons la sauver. »
+
+Sir Francis et lui échangent un regard. Le plan est simple : au petit matin,
+les brahmanes s'endormiront, épuisés de chants. Il faut agir avant l'aube.
+
+* [Continuer] -> foret_plan
+
+:: foret_plan
+@mode full_text
+=! LE PLAN
+
+La nuit tombe sur la forêt. Les tambours s'espacent. Une idée vous traverse :
+le mort est un rajah, couvert d'une vêture ample, au visage voilé...
+
+* [Se glisser sur le bûcher, à la place du mort] -> foret_bucher
+* [Attaquer les gardes, en pleine nuit] -> foret_combat_prep
+* {has parapluie} [Créer une diversion avec le parapluie] -> foret_diversion
+
+:: foret_bucher
+@mode full_text
+=! LE RAJAH RESSUSCITÉ
+
+Vous rampez jusqu'au bûcher, vous couchez sur le drap du mort, et attendez.
+Quand les brahmanes s'approchent pour allumer la torche, vous vous redressez,
+d'un bloc, dans un silence de cathédrale.
+
+« Le rajah vit ! » hurlent-ils, à genoux. Vous saisissez la jeune femme dans vos
+bras, et disparaissez dans l'ombre.
+
+~ score 30
+~ sound win
+* [Fuir] -> foret_fuite
+
+:: foret_diversion
+@mode full_text
+Vous vous glissez derrière un arbre, ouvrez le parapluie d'un coup sec, et le
+faites tournoyer devant les torches : un bruit sec, une silhouette noire dans
+la nuit. Les brahmanes crient à l'esprit des morts, et courent.
+
+Pendant ce temps, Fogg et le général s'emparent de la jeune femme.
+
+~ score 20
+* [Fuir] -> foret_fuite
+
+:: foret_combat_prep
+@mode full_text
+Vous prenez ce qui vous tombe sous la main et bondissez. Un garde surgit, un
+bâton à la main, avant que vous n'ayez atteint le bûcher.
+
+* [Se battre] -> foret_garde
+
+:: foret_garde
+@combat "Garde brahmane" att=4 hp=6 dmg=2 armor=0
+@win foret_fuite "Le garde s'affaisse. Le chemin est libre."
+  ~ score 20
+@lose foret_assomme
+@flee foret_plan
+Un brahmane athlétique se dresse, torche en main, prêt à défendre le bûcher.
+
+* [Affronter] -> foret_garde
+
+:: foret_assomme
+@mode full_text
+Vous vous réveillez à l'aube, la tête en compote, entre deux arbres, sous
+l'œil grave de Kiouni. Fogg, blême, a fait le nécessaire sans vous : la jeune
+femme est sauvée, mais votre orgueil a souffert.
+
+~ set SANTE 3
+~ sub MORAL 2
+~ sub JOURS 1
+~ set aouda_sauvee
+~ set aouda_avec_nous
+* [Continuer] -> allahabad_gare
+
+:: foret_fuite
+@mode full_text
+=! LA FUITE
+
+Fogg vous attend, Sir Francis aussi, et la jeune femme dans vos bras, qui vient
+de rouvrir les yeux. « Aouda », murmure-t-elle. « Je m'appelle Aouda. »
+
+Derrière vous, la forêt bruit de colère : les brahmanes se sont ressaisis.
+
+{flag itineraire_rapide} Kiouni est là, docile. Vous montez à quatre et filez à travers la jungle avant que les torches ne vous rattrapent.
+{not flag itineraire_rapide} Sans éléphant, la fuite est pénible : vous filez à pied, à travers les taillis, les yeux rivés sur l'étoile polaire.
+
+~ set aouda_sauvee
+~ set aouda_avec_nous
+~ score 20
+* {flag itineraire_rapide} [Continuer] -> allahabad_gare
+* {not flag itineraire_rapide} [Courir] -> fuite_pied
+
+:: fuite_pied
+@mode full_text
+La marche, la peur, les moustiques : vous arrivez à l'aube, exténués, mais
+vivants.
+
+~ sub SANTE 2
+~ sub JOURS 1
+* [Continuer] -> allahabad_gare
+
+:: allahabad_gare
+@mode full_text
+=! ALLAHABAD
+
+*Le train de Calcutta*
+
+La gare d'Allahabad vous rend à la civilisation. Aouda, encore pâle, parle
+un anglais parfait. Elle raconte : orpheline d'un riche marchand parsi,
+mariée de force à un vieux rajah, promise au bûcher.
+
+Fogg l'écoute, impassible : « Madame, vous êtes sous notre protection. Nous
+vous conduisons à Hong Kong, où vous avez un parent. »
+
+Sir Francis Cromarty prend congé : « Je vous laisse à vos affaires, messieurs. Et
+bonne chance. »
+
+~ sub JOURS 5
+~ add MORAL 2
+* [Prendre le train pour Calcutta] -> calcutta_arrivee
+
+# ===========================================================================
+# CHAPITRE 2b : CALCUTTA
+# ===========================================================================
+@chapter "Calcutta"
+@flag q_consul local
+@flag q_bunsby local
+
+:: calcutta_arrivee
+@mode full_text
+=! CALCUTTA
+
+*Vers le 25 octobre 1872*
+
+{flag temple_incident} À peine descendus du train, deux policiers vous barrent la route : « Messieurs Fogg et Passepartout ? Vous êtes arrêtés pour profanation du temple de Malabar Hill. » Derrière eux, un petit homme maigre sourit dans sa moustache : Fix, inspecteur de Scotland Yard, qui vous traque depuis Suez.
+{not flag temple_incident} La foule, le vacarme, les cris de marchands : Calcutta déborde de tous les côtés. Fogg observe la ville d'un air neutre.
+
+* {flag temple_incident and not flag caution_payee} [Suivre les policiers] -> calcutta_arrestation
+* {not flag temple_incident or flag caution_payee} [Sortir de la gare] -> calcutta_carte
+
+:: calcutta_arrestation
+@mode full_text
+=! ARRÊTÉ
+
+Le juge, sec et anglais, prononce l'amende : cent livres de caution chacun,
+sinon prison. Fogg règle la somme sans un mot, sa montre à l'oreille.
+
+« Nous perdons un jour », dit-il seulement. « C'est cher pour une paire de
+chaussures. »
+
+~ set caution_payee
+~ sub JOURS 1
+~ sub MORAL 2
+~ sub ARGENT 20
+* [Sortir du tribunal] -> calcutta_carte
+
+:: calcutta_carte
+@mode full_text
+=! CALCUTTA
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+Le paquebot pour Hong Kong part demain. Pour Aouda, il faut un passeport
+anglais avant l'embarquement.
+
+* {not flag passeport_aouda} [Bureau des douanes] -> douanes_calcutta
+* {not flag q_consul} [Quartier britannique] -> quartier_britannique
+* [Temple de Kali] -> kali
+* [Gare] -> gare_calcutta
+* [Port] -> port_calcutta
+* [Relire le journal de Fogg] -> journal_calcutta
+
+:: journal_calcutta
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Calcutta, octobre 1872*
+
+« Nous avons sauvé une jeune Parsie du bûcher. Mlle Aouda est désormais sous
+ma protection : elle nous accompagne à Hong Kong. Un individu, Fix, m'a suivi
+jusqu'à Calcutta. Il croit que je suis le voleur de la Banque d'Angleterre.
+C'est ridicule, et pourtant embêtant. »
+
+* [Retour] -> calcutta_carte
+
+# --- DOUANES ---
+
+:: douanes_calcutta
+@mode full_text
+=! BUREAU DES DOUANES
+
+Un fonctionnaire au regard sévère vous toise. « Une jeune femme, sans papiers ?
+Impossible d'embarquer à Hong Kong sans passeport britannique. »
+
+* [Dire qu'elle est votre épouse] -> douanes_epouse
+* {stat ARGENT >= 20} [Glisser vingt livres au fonctionnaire] -> douanes_bakchich
+* [Dire qu'elle est votre cousine] -> douanes_cousine
+* [Retour] -> calcutta_carte
+
+:: douanes_epouse
+@mode full_text
+« Mon épouse. » Aouda, rougissante, joue le jeu avec un grand sérieux.
+Le fonctionnaire soupire, tamponne : « Les couples qui voyagent... Bon
+voyage, madame Passepartout. »
+
+Fogg, à ce moment précis, ne dit rien. Mais ses lèvres frémissent.
+
+~ set passeport_aouda
+~ score 20
+~ add MORAL 1
+* [Sortir] -> calcutta_carte
+
+:: douanes_bakchich
+@mode full_text
+Vingt livres changent de main sans un mot. Le fonctionnaire, satisfait, remplit
+le passeport.
+
+~ sub ARGENT 20
+~ set passeport_aouda
+* [Sortir] -> calcutta_carte
+
+:: douanes_cousine
+@mode full_text
+« Votre cousine ? Elle n'a pas un mot de français et vous pas un mot d'hindi.
+Bien essayé. » Vous ressortez, penaud.
+
+~ sub MORAL 1
+* [Réessayer] -> douanes_calcutta
+
+# --- QUARTIER BRITANNIQUE ---
+
+:: quartier_britannique
+@mode full_text
+=! QUARTIER BRITANNIQUE
+
+Des villas blanches, des jardins, des boys en livrée. Au club de la ville,
+sir Francis Cromarty vous a précédé : il lève son verre.
+
+« Mes amis ! Un mot de conseil : à Hong Kong, méfiez-vous des agents de
+Scotland Yard qui vous suivent. Et pour le passeport de mademoiselle Aouda,
+passez par le consul. »
+
+~ set q_consul
+~ set sir_francis
+~ add INTEL 1
+~ give carte_visite
+* [Retour] -> calcutta_carte
+
+# --- TEMPLE DE KALI ---
+
+:: kali
+@mode full_text
+=! TEMPLE DE KALI
+
+Une pièce sombre, un autel taché, des lampes à huile vacillantes. Le sol de
+dalles est étrange, les motifs trop réguliers.
+
+* {has parapluie} [Sonder le sol avec le parapluie] -> kali_sonde
+* [Avancer dans la nef] -> kali_piege
+* [Contourner par le jardin] -> kali_jardin
+* [Retour] -> calcutta_carte
+
+:: kali_sonde
+@mode full_text
+Le parapluie s'enfonce d'un coup : un trou. Une trappe, tapissée de pointes.
+En la contournant, vous trouvez, derrière l'autel, une niche remplie d'herbes
+et de bandages.
+
+~ give trousse
+~ set kali_evite
+~ score 15
+* [Retour] -> calcutta_carte
+
+:: kali_piege
+@mode full_text
+Un cliquetis, un vide sous vos pieds : vous tombez dans une fosse. Vous vous en
+sortez, écorché, plein de bleus.
+
+~ sub SANTE 3
+~ sub MORAL 1
+* [Retour] -> calcutta_carte
+
+:: kali_jardin
+@mode full_text
+Le jardin est calme, parfumé. Vous n'y trouvez rien... sinon un chat qui vous
+suit jusqu'à la sortie.
+
+~ add MORAL 1
+* [Retour] -> calcutta_carte
+
+# --- GARE ET PORT ---
+
+:: gare_calcutta
+@mode full_text
+=! GARE DE CALCUTTA
+
+Un panneau annonce les départs : un train vers l'ouest, un autre vers Madras.
+Rien, hélas, vers Hong Kong : la mer reste le seul chemin.
+
+* [Retour] -> calcutta_carte
+
+:: port_calcutta
+@mode full_text
+=! PORT DE CALCUTTA
+
+Le *Rangoon*, paquebot de la P&O, doit partir pour Hong Kong. Il est
+complet. Sur le quai, John Bunsby bourre sa pipe : « Le *Tankadère* est
+petit, mais c'est le meilleur bateau de la côte. Je pars ce soir. Combien
+donnez-vous pour passer ? »
+
+{flag q_bunsby} Il vous reconnaît : « Le petit de Bombay ! Pour vous, un prix d'ami. »
+
+* {flag q_bunsby and stat ARGENT >= 30} [Payer trente livres (prix d'ami)] -> tankadere_ami
+* {stat ARGENT >= 50} [Payer cinquante livres (plein tarif)] -> tankadere_plein
+* {stat INTEL >= 9 and stat ARGENT >= 35} [Marchander] -> tankadere_marchande
+* {stat ARGENT < 50} [Demander une avance à Fogg] -> avance_fogg_2
+* [Retour] -> calcutta_carte
+
+:: tankadere_ami
+@mode full_text
+« Trente livres, marché conclu. » Bunsby vous tend la main.
+
+~ sub ARGENT 30
+~ set tankadere_ok
+~ score 15
+* [Monter à bord] -> tankadere_depart
+
+:: tankadere_plein
+@mode full_text
+Cinquante livres : un prix d'or, mais un bateau rapide.
+
+~ sub ARGENT 50
+~ set tankadere_ok
+* [Monter à bord] -> tankadere_depart
+
+:: tankadere_marchande
+@mode full_text
+Vous discutez le prix à coups de proverbes et de compliments sur le bateau.
+Bunsby cède à trente-cinq livres, hilare.
+
+~ sub ARGENT 35
+~ set tankadere_ok
+~ score 15
+* [Monter à bord] -> tankadere_depart
+
+:: avance_fogg_2
+@mode full_text
+Fogg soupire, sort sa bourse : « Pas un penny de plus que le prix. Et retenez-le,
+Passepartout. »
+
+~ set ARGENT 50
+~ sub MORAL 2
+* [Retour] -> port_calcutta
+
+# ===========================================================================
+# CHAPITRE 3 : L'ASIE
+# ===========================================================================
+@chapter "Mer de Chine"
+@flag q_change local
+@flag q_the local
+@flag q_fix local
+@flag q_mecano local
+@flag q_passager local
+
+:: tankadere_depart
+@mode full_text
+=! LE TANKADÈRE
+
+Le *Tankadère* est un petit cutter de quarante tonneaux, léger comme un
+oiseau, capable de fendre la mer quand le vent s'y prête. Bunsby, l'œil rivé
+sur son compas, jure d'arriver à Hong Kong en temps voulu.
+
+Onze jours de traversée : la mousson, les îles, les dauphins... et Fogg
+qui, à chaque coucher de soleil, note l'heure dans son carnet.
+
+~ sub JOURS 11
+* [Continuer] -> hk_arrivee
+
+:: hk_arrivee
+@mode full_text
+=! HONG KONG
+
+*Début novembre 1872*
+
+Hong Kong, île anglaise sur la côte chinoise : des jonques, des pousse-pousse,
+des lanternes rouges. Fogg s'informe : le paquebot pour Yokohama part demain.
+
+Aouda apprend, au consulat, que son cousin, sur lequel elle comptait, a quitté
+la ville pour l'Europe. Fogg réfléchit une seconde : « Vous nous accompagnerez,
+madame. » Elle accepte, en silence.
+
+Il vous remet quarante livres pour les frais.
+
+~ add ARGENT 40
+~ set aouda_avec_nous
+~ sound bonus
+* [Sortir] -> hk_carte
+
+:: hk_carte
+@mode full_text
+=! HONG KONG
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+* [Port] -> hk_port
+* [Consulat britannique] -> hk_consulat
+* [Quartier chinois] -> hk_quartier
+* [Marché] -> hk_marche
+* {stat ARGENT >= 10} [Hôtel] -> hk_hotel
+* {has billets_yoko} [Embarquer sur le Tankadère] -> tankadere_hk
+* [Relire le journal de Fogg] -> journal_hk
+
+:: journal_hk
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Hong Kong, novembre 1872*
+
+« Hong Kong. Mlle Aouda nous accompagnera : c'est sa volonté, et la mienne.
+Fix est ici aussi. Il a tenté d'obtenir un mandat d'arrêt contre moi,
+sans résultat pour l'instant. Passepartout est plus attentif que je ne le pensais. »
+
+* [Retour] -> hk_carte
+
+# --- PORT : CHANGER DE L'ARGENT ---
+
+:: hk_port
+@mode full_text
+=! PORT DE HONG KONG
+
+Sur les quais, une foule bigarrée : marins malais, coolies, marchands
+anglais. Un bureau de change à l'enseigne dorée affiche : *1 livre = 4,5
+dollars*.
+
+* {not flag q_change} [Changer cent livres en dollars] -> change_hk
+* [Retour] -> hk_carte
+
+:: change_hk
+@mode full_text
+=! LE CHANGE
+
+Le changeur pose sa plume : « Cent livres, monsieur ? Combien de dollars ? »
+Il attend que vous fassiez le calcul vous-même : ici, on ne se laisse
+pas voler.
+
+@ask "Combien de dollars ?" maxlen=8
+@answer 450
+@correct change_ok
+  ~ score 10
+  ~ add INTEL 1
+@wrong change_ko
+
+:: change_ok
+@mode full_text
+« Quatre cent cinquante, en effet. » Le changeur, respectueux, vous remet la
+somme, et une petite prime pour votre exactitude.
+
+~ set q_change
+~ add ARGENT 5
+* [Continuer] -> hk_port
+
+:: change_ko
+@mode full_text
+Le changeur sourit : « Un peu moins, monsieur, un peu moins... » Il garde la
+différence.
+
+~ set q_change
+~ sub ARGENT 3
+* [Continuer] -> hk_port
+
+# --- CONSULAT ---
+
+:: hk_consulat
+@mode full_text
+=! CONSULAT BRITANNIQUE
+
+Un consul en col dur vous reçoit. « Un passeport pour Mlle Aouda ? Vous avez
+des papiers ? »
+
+* {has carte_visite} [Présenter la carte du consul de Calcutta] -> consulat_ok
+* {not has carte_visite} [Expliquer la situation] -> consulat_ko
+* [Retour] -> hk_carte
+
+:: consulat_ok
+@mode full_text
+Le consul lit la carte, redresse le dos : « Mon collègue de Calcutta !
+Bien sûr. » Le passeport est visé en trois minutes.
+
+~ set passeport_aouda
+~ score 15
+* [Retour] -> hk_carte
+
+:: consulat_ko
+@mode full_text
+« Sans garant, sans carte, sans preuve... » Le consul soupire. Vous devrez
+patienter une journée de plus, le temps que Fogg envoie un télégramme.
+
+~ set passeport_aouda
+~ sub JOURS 1
+* [Retour] -> hk_carte
+
+# --- QUARTIER CHINOIS ---
+
+:: hk_quartier
+@mode full_text
+=! QUARTIER CHINOIS
+
+Ruelles étroites, lanternes de papier, odeurs de thé, de soja et d'encens.
+Une maison de thé vous ouvre sa porte ; une échoppe vend des éventails.
+Plus loin, une porte grande ouverte laisse échapper un fumet doux et lourd.
+
+* {not flag q_the} [Entrer à la maison de thé] -> the_hk
+* {not flag q_fix} [Un homme vous fait signe, à l'écart] -> fix_opium
+* [Retour] -> hk_carte
+
+:: the_hk
+@mode full_text
+=! LA CÉRÉMONIE
+
+L'hôte verse le thé selon un rituel précis. Trois tasses, trois gestes. Vous le
+regardez, hésitant : imiter, ou faire à votre façon ?
+
+* [Imiter l'hôte, geste pour geste] -> the_imite
+* [Boire d'un trait, comme un Parisien] -> the_brut
+
+:: the_imite
+@mode full_text
+L'hôte s'incline, ravi. En partant, il vous offre un éventail de soie peinte :
+« Pour la dame qui vous accompagne. »
+
+~ give eventail
+~ set q_the
+~ score 15
+~ add MORAL 1
+* [Continuer] -> hk_quartier
+
+:: the_brut
+@mode full_text
+Vous vous brûlez la langue et renversez la théière. Le silence est glacial.
+
+~ set q_the
+~ sub MORAL 1
+* [Continuer] -> hk_quartier
+
+:: fix_opium
+@mode full_text
+=! LA PIPE
+
+Fix, le petit inspecteur, vous rejoint avec son plus beau sourire : « Ah,
+Monsieur Passepartout ! Un verre ? Il fait chaud, la ville est pénible... Je
+connais un endroit. »
+
+C'est la porte grande ouverte : un fumoir d'opium.
+
+* [Accepter, par politesse] -> fix_opium_oui
+* [Refuser net] -> fix_opium_non
+
+:: fix_opium_oui
+@mode full_text
+Deux pipes, trois volutes de fumée douce... Vous vous réveillez le lendemain,
+la tête en plomb. Le paquebot est parti sans vous.
+
+Fogg, glacial, a affrété un cutter à la hâte : le *Tankadère*, de Bunsby.
+
+~ set q_fix
+~ sub SANTE 3
+~ sub MORAL 2
+~ sub JOURS 1
+* [Continuer] -> hk_carte
+
+:: fix_opium_non
+@mode full_text
+« Merci, je ne bois pas en plein jour. » Fix serre les dents, sourit de travers,
+et s'éloigne. Vous avez la désagréable impression d'avoir évité quelque chose.
+
+~ set q_fix
+~ add INTEL 1
+~ score 10
+* [Continuer] -> hk_quartier
+
+# --- MARCHE ET HOTEL ---
+
+:: hk_marche
+@mode full_text
+=! MARCHÉ DE HONG KONG
+
+Des poissons vivants, des perroquets, des sacs de riz. Un vendeur au sourire
+étroit tient un guichet de passages maritimes.
+
+* {not has billets_yoko and stat ARGENT >= 25} [Acheter un passage pour Yokohama (£25)] -> billets_yoko_achat
+* {not has billets_yoko and stat ARGENT < 25} [Demander une avance à Fogg] -> avance_fogg_hk
+* [Retour] -> hk_carte
+
+:: billets_yoko_achat
+@mode full_text
+Le vendeur tamponne : un passage sur le *Tankadère*, de Hong Kong à Yokohama.
+
+~ sub ARGENT 25
+~ give billets_yoko
+~ sound pickup
+~ score 10
+* [Continuer] -> hk_marche
+
+:: avance_fogg_hk
+@mode full_text
+Fogg vous avance la somme, à contrecœur : « Ceci sera déduit de vos gages,
+Passepartout. »
+
+~ set ARGENT 25
+~ sub MORAL 2
+* [Continuer] -> hk_marche
+
+:: hk_hotel
+@mode full_text
+=! HÔTEL
+
+Un hôtel colonial, moustiquaire aux fenêtres. Une nuit vous ferait du bien, mais
+coûterait un jour.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> hk_nuit
+* [Retour] -> hk_carte
+
+:: hk_nuit
+@mode full_text
+Vous dormez douze heures. Au matin, le Yang-Tsé pourrait passer par la fenêtre.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+* [Continuer] -> hk_carte
+
+:: tankadere_hk
+@mode full_text
+=! DÉPART DE HONG KONG
+
+Bunsby largue les amarres. Le cutter s'éloigne de Hong Kong, cap sur le Japon.
+Le vent frais tend la voile et gonfle vos cœurs.
+
+* [Continuer] -> tempete_debut
+
+# --- TRAVERSEE : TEMPETE, PIRATES, PROVISIONS ---
+
+:: tempete_debut
+@mode full_text
+=! LA TEMPÊTE
+
+Le ciel devient noir en dix minutes. Les vagues montent, le vent hurle, le
+*Tankadère* saute comme un bouchon. Bunsby, cramponné à la barre, hurle des
+ordres que vous devinez plus que vous ne les entendez.
+
+Sur le pont, les caisses glissent. Il faut agir.
+
+* {not flag q_mecano} [Arrimer les caisses avec des cordes] -> tempete_cordes
+* {not flag q_passager} [Aider Bunsby à réduire la voilure] -> tempete_voile
+* [Descendre s'abriter avec Aouda] -> tempete_abri
+
+:: tempete_cordes
+@mode full_text
+Vous nouez, serrez, doublez : vos années de gymnaste servent enfin. Les
+caisses, les bagages, la valise de Fogg, tout est arrimé.
+
+~ set q_mecano
+~ set tempete_ok
+~ score 15
+* [Continuer] -> tempete_fin
+
+:: tempete_voile
+@mode full_text
+Vous vous suspendez à la bôme, sous les embruns, et affalez la voile juste à
+temps. Bunsby, hurlant de joie, vous tape sur l'épaule.
+
+~ set q_passager
+~ set tempete_ok
+~ score 15
+~ sub SANTE 1
+* [Continuer] -> tempete_fin
+
+:: tempete_abri
+@mode full_text
+Vous vous réfugiez dans la cabine avec Aouda. La tempête passe, mais vos
+affaires, mal arrimées, ont pris l'eau.
+
+~ sub MORAL 1
+~ sub ARGENT 5
+* [Continuer] -> tempete_fin
+
+:: tempete_fin
+@mode full_text
+Trois heures plus tard, le vent tombe, les nuages s'ouvrent. Bunsby, épuisé,
+tend la pipe à Fogg : « Une petite tempête, monsieur. Rien de plus. »
+
+Fogg regarde sa montre : « Une heure de retard, capitaine. » Bunsby éclate
+de rire.
+
+* [Continuer] -> pirates_alerte
+
+:: pirates_alerte
+@mode full_text
+=! VOILES À L'HORIZON
+
+Deux jours après la tempête, le mousse crie : une jonque, voile noire, cap sur
+vous. « Des pirates chinois ! » gronde Bunsby. « Aux armes, tout le monde ! »
+
+Fogg est calme. Aouda, blême. Vous cherchez de quoi vous défendre.
+
+{has dague} Votre dague indienne est à la ceinture.
+{has pistolet} Votre pistolet est chargé.
+{has parapluie} Vous avez votre parapluie, ce qui fait rire personne mais qui vaut ce qu'il vaut.
+
+* [Affronter les pirates] -> pirates_1
+* [Tenter de fuir à toutes voiles] -> pirates_fuite
+
+:: pirates_fuite
+@mode full_text
+Bunsby tire tout ce que le vent lui donne. La jonque approche, approche... puis
+renonce. Vous respirez.
+
+~ sub JOURS 1
+~ sub MORAL 1
+* [Continuer] -> provisions
+
+:: pirates_1
+@combat "Pirate chinois" att=4 hp=5 dmg=2 armor=0
+@win pirates_2 "Le premier pirate bascule par-dessus bord."
+  ~ score 20
+  ~ add SANTE 2
+@lose pirates_capture
+@flee pirates_fuite
+Un pirate saute sur le pont, sabre au clair, grimaçant.
+
+* [Affronter] -> pirates_1
+
+:: pirates_2
+@combat "Chef des pirates" att=5 hp=7 dmg=2 armor=0
+@win pirates_fin "Le chef s'effondre. Les autres fuient."
+  ~ score 30
+  ~ set pirates_vaincus
+@lose pirates_capture
+@flee pirates_fuite
+Le chef de la bande, un colosse balafré, vous barre la route.
+
+* [Affronter] -> pirates_2
+
+:: pirates_capture
+@mode full_text
+Vous vous réveillez ligoté, dans le fond de la cale, sous l'œil goguenard du
+mousse. Bunsby a repoussé les pirates seul, avec Fogg et une hache.
+
+Ce n'est pas glorieux, mais vous êtes vivant.
+
+~ set SANTE 3
+~ sub MORAL 2
+~ sub JOURS 1
+* [Continuer] -> provisions
+
+:: pirates_fin
+@mode full_text
+=! VICTOIRE
+
+La jonque s'éloigne, en flammes. Fogg, sans un mot, rajuste sa cravate. Aouda
+vous prend la main : « Vous nous avez sauvés, Monsieur Passepartout. »
+
+Vous fouillez le pont : les pirates ont laissé un coffret de pièces d'argent.
+
+~ add ARGENT 20
+~ add MORAL 2
+~ sound win
+* [Continuer] -> provisions
+
+:: provisions
+@mode full_text
+=! LES RATIONS
+
+Le cambusier vous alerte : la tempête a gâté une partie des vivres. Il reste
+trente rations, pour cinq passagers, deux repas par jour et par tête.
+
+Combien de jours pouvez-vous tenir avant de mourir de faim ?
+
+@ask "Combien de jours ?" maxlen=8
+@answer 3
+@answer TROIS
+@correct provisions_ok
+  ~ score 10
+  ~ add INTEL 1
+@wrong provisions_ko
+
+:: provisions_ok
+@mode full_text
+« Trois jours, capitaine. Pas un de plus. » Bunsby vous approuve : on rationne,
+on pêche, on tient. Les vivres durent jusqu'à Yokohama.
+
+~ set rations_ok
+* [Continuer] -> yokohama_arrivee
+
+:: provisions_ko
+@mode full_text
+Vous vous trompez : les vivres fondent plus vite que prévu. Les trois
+derniers jours de traversée sont maigres.
+
+~ sub SANTE 2
+~ sub MORAL 1
+* [Continuer] -> yokohama_arrivee
+
+# ===========================================================================
+# CHAPITRE 3b : YOKOHAMA
+# ===========================================================================
+@chapter "Yokohama"
+@flag q_the local
+@flag q_fix local
+
+:: yokohama_arrivee
+@mode full_text
+=! YOKOHAMA
+
+*Mi-novembre 1872*
+
+Le Japon. Yokohama, port ouvert aux étrangers depuis peu : maisons de bois
+et de papier, jardins minuscules, barques comme des feuilles, et sur les
+quais, des marchands rieurs et des dockers en pagne.
+
+Fogg règle la note de Bunsby, le salue. Aouda, elle, sourit pour la
+première fois depuis l'Inde.
+
+« San Francisco », dit Fogg. « Il faut un bateau. Passepartout, vous vous en
+occupez. Et gardez la tête froide. »
+
+~ sub JOURS 8
+~ add ARGENT 30
+~ sound bonus
+* [Sortir du bateau] -> yokohama_carte
+
+:: yokohama_carte
+@mode full_text
+=! YOKOHAMA
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+* [Port] -> yoko_port
+* {not flag q_the} [Maison de thé] -> yoko_the
+* {not flag q_fix} [Marché] -> yoko_marche
+* {stat ARGENT >= 10} [Hôtel] -> yoko_hotel
+* {has billets_sf} [Embarquer pour San Francisco] -> yoko_depart
+* [Relire le journal de Fogg] -> journal_yoko
+
+:: journal_yoko
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Yokohama, novembre 1872*
+
+« Yokohama. Mlle Aouda et Passepartout se sont habitués au climat. Fix
+nous a suivis, bien sûr ; il joue les voyageurs égarés. Je fais semblant de
+ne pas le voir. Reste un bateau pour San Francisco : le *General Grant*. »
+
+* [Retour] -> yokohama_carte
+
+# --- PORT ---
+
+:: yoko_port
+@mode full_text
+=! LE PORT
+
+Un immense navire américain, le *General Grant*, chauffe ses machines. Un
+capitaine bourru, ganté de cuir, compte des barils.
+
+« San Francisco ? Cent cinquante dollars par tête. Ou cent, si vous savez y
+faire. »
+
+* {has eventail and not has billets_sf} [Offrir l'éventail de soie au capitaine] -> capitaine_eventail
+* {stat INTEL >= 9 and not has billets_sf and stat ARGENT >= 30} [Marchander] -> capitaine_marchande
+* {stat ARGENT >= 60 and not has billets_sf} [Payer plein tarif (£60)] -> capitaine_plein
+* {stat ARGENT < 60 and not has billets_sf} [Demander une avance à Fogg] -> avance_fogg_yoko
+* [Retour] -> yokohama_carte
+
+:: capitaine_eventail
+@mode full_text
+Le capitaine prend l'éventail avec une délicatesse inattendue : « Ma femme
+collectionne ça. Trente livres, et vous embarquez ce soir. »
+
+~ take eventail
+~ sub ARGENT 30
+~ give billets_sf
+~ score 20
+* [Continuer] -> yoko_port
+
+:: capitaine_marchande
+@mode full_text
+Deux phrases habiles, un clin d'œil, un compliment sur le navire : le
+capitaine cède à quarante livres.
+
+~ sub ARGENT 40
+~ give billets_sf
+~ score 15
+* [Continuer] -> yoko_port
+
+:: capitaine_plein
+@mode full_text
+Soixante livres, sans discuter. Le capitaine vous serre la main, un peu
+surpris.
+
+~ sub ARGENT 60
+~ give billets_sf
+* [Continuer] -> yoko_port
+
+:: avance_fogg_yoko
+@mode full_text
+Fogg soupire, verse la somme : « Vous me devez soixante livres,
+Passepartout. Vous les rembourserez à Londres. »
+
+~ set ARGENT 60
+~ sub MORAL 2
+* [Continuer] -> yoko_port
+
+# --- MAISON DE THE ---
+
+:: yoko_the
+@mode full_text
+=! MAISON DE THÉ
+
+Des paravents de papier, une musique de cithare, des tasses minuscules. Un
+marchand d'objets rares, kimono sombre, vous invite à vous asseoir.
+
+* [Lui demander poliment des nouvelles de San Francisco] -> the_marchand
+* [Lui poser des questions sur Fix] -> the_fix
+* [Retour] -> yokohama_carte
+
+:: the_marchand
+@mode full_text
+Il sourit : « San Francisco, monsieur ? Des rues en pente, du brouillard,
+des Chinois, des chercheurs d'or... Et beaucoup de voleurs. Gardez votre
+argent près de vous. »
+
+~ set q_the
+~ add INTEL 1
+* [Continuer] -> yokohama_carte
+
+:: the_fix
+@mode full_text
+« Un petit homme maigre, à la moustache soignée ? » Il hoche la tête. « Il est
+passé ce matin, il a envoyé un télégramme à Londres. Il attend un mandat. »
+
+~ set q_the
+~ set indice_fix
+* [Continuer] -> yokohama_carte
+
+# --- MARCHE : INTERCEPTER LE TELEGRAMME ---
+
+:: yoko_marche
+@mode full_text
+=! MARCHÉ DE YOKOHAMA
+
+Poissons séchés, laques, soie brute. Près d'un étal, un petit homme maigre en
+paletot sombre, calepin en main, discute avec un commis du télégraphe.
+
+* [Écouter leur conversation] -> yoko_ecoute
+* [Passer votre chemin] -> yokohama_carte
+
+:: yoko_ecoute
+@mode full_text
+=! CE QUE DIT FIX
+
+Vous vous glissez derrière un étal de laques. Fix murmure : « Le mandat doit
+arriver de Londres, par le prochain courrier. Fogg ne doit pas quitter
+Yokohama avant. Arrêtez-le, si possible. »
+
+Le commis note. Il vous tend un papier en douce : la copie du télégramme,
+contre un dollar.
+
+* {stat ARGENT >= 1} [Acheter la copie du télégramme] -> telegramme_achat
+* [Ne rien faire] -> yoko_rien
+
+:: telegramme_achat
+@mode full_text
+Vous empochez le papier. Fix a ordonné à Londres de faire attendre le mandat
+d'arrêt : mais il n'arrivera pas avant plusieurs semaines. Vous voilà armé.
+
+~ sub ARGENT 1
+~ give telegramme_fix
+~ set fix_retarde
+~ set q_fix
+~ score 20
+* [Continuer] -> yokohama_carte
+
+:: yoko_rien
+@mode full_text
+Vous vous éloignez : ce n'est pas vos affaires. Peut-être aurez-vous des
+regrets.
+
+~ set q_fix
+* [Continuer] -> yokohama_carte
+
+# --- HOTEL ET DEPART ---
+
+:: yoko_hotel
+@mode full_text
+=! HÔTEL
+
+Un ryokan tranquille, tatamis, futon, thé vert. Un jour de repos, un jour de
+perdu.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> yoko_nuit
+* [Retour] -> yokohama_carte
+
+:: yoko_nuit
+@mode full_text
+Vous dormez sur un futon comme sur un nuage.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+~ add MORAL 1
+* [Continuer] -> yokohama_carte
+
+:: yoko_depart
+@mode full_text
+=! LE GENERAL GRANT
+
+Les cheminées fument, les passagers se pressent. Fogg, Aouda et vous montez la
+passerelle. À l'horizon, le Japon s'efface dans la brume.
+
+Dix-huit jours de mer, sur le Pacifique.
+
+~ sub JOURS 18
+* [Continuer] -> sf_arrivee
+
+# ===========================================================================
+# CHAPITRE 4 : L'AMERIQUE
+# ===========================================================================
+@chapter "San Francisco"
+@flag q_port local
+@flag q_the local
+@flag q_barman local
+@flag q_mecano local
+@flag q_passager local
+
+:: sf_arrivee
+@mode full_text
+=! SAN FRANCISCO
+
+*Début décembre 1872*
+
+Le *General Grant* franchit la Porte d'Or dans une brume légère. San
+Francisco : des rues en pente, des tramways à câble, des maisons de bois peintes,
+et une ville d'or, de fer et de vent.
+
+Fogg règle la traversée sans un mot. Aouda, émerveillée, n'en perd pas une
+miette. Fogg, lui, a déjà repéré la gare.
+
+« Le train pour New York part ce soir. Passepartout, voici de quoi tenir. »
+
+~ add ARGENT 40
+~ sound bonus
+* [Descendre à quai] -> sf_carte
+
+:: sf_carte
+@mode full_text
+=! SAN FRANCISCO
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+* [Gare centrale] -> sf_gare
+* {not flag q_the} [Quartier chinois] -> sf_quartier
+* {not flag q_port} [Bureau de poste] -> sf_poste
+* {not flag q_barman} [Bar du port] -> sf_bar
+* {stat ARGENT >= 10} [Hôtel] -> sf_hotel
+* {has billets_ny} [Monter dans le train transcontinental] -> train_us_depart
+* [Relire le journal de Fogg] -> journal_sf
+
+:: journal_sf
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*San Francisco, décembre 1872*
+
+« San Francisco. Ici, la vie est rude, les hommes armés, la loi discutable.
+Passepartout est loyal, Mlle Aouda courageuse. Fix est toujours à mes
+trousses, mais il n'a pas de mandat : je ne suis qu'un homme qui voyage. »
+
+* [Retour] -> sf_carte
+
+# --- GARE ---
+
+:: sf_gare
+@mode full_text
+=! GARE DE SAN FRANCISCO
+
+Un employé aux manches de lustrine vous annonce : « Le transcontinental part
+ce soir. Mais pas de première classe : tout est réservé. Quelqu'un a tout
+acheté, hier soir. »
+
+{flag fix_retarde} Vous soupçonnez l'œuvre de Fix, mais son mandat n'est pas encore arrivé.
+
+* {not has billets_ny and stat ARGENT >= 40} [Prendre trois places en seconde classe (£40)] -> billets_seconde
+* {not has billets_ny and stat ARGENT < 40} [Demander une avance à Fogg] -> avance_fogg_sf
+* [Retour] -> sf_carte
+
+:: billets_seconde
+@mode full_text
+La seconde classe : des banquettes de bois, des voyageurs mêlés, des poêles
+qui fument. Mais le train part à l'heure.
+
+~ sub ARGENT 40
+~ give billets_ny
+~ sound pickup
+~ score 15
+* [Continuer] -> sf_gare
+
+:: avance_fogg_sf
+@mode full_text
+Fogg soupire : « En seconde classe, Passepartout. Nous n'avons pas le choix. »
+
+~ set ARGENT 40
+~ sub MORAL 2
+* [Continuer] -> sf_gare
+
+# --- QUARTIER CHINOIS ---
+
+:: sf_quartier
+@mode full_text
+=! QUARTIER CHINOIS
+
+Chinatown : lanternes, herboristes, marchands de soie. Une échoppe étroite vend
+des armes de voyage : lames, pistolets, arbalètes.
+
+* {not has pistolet and stat ARGENT >= 15} [Marchander un pistolet] -> pistolet_marche
+* [Retour] -> sf_carte
+
+:: pistolet_marche
+@mode full_text
+« Un pistolet, monsieur ? Bon pour le train, les Indiens, les bandits. »
+
+{stat INTEL >= 9} Vous savez marchander : le vendeur cède à douze livres.
+{stat INTEL < 9} Le vendeur reste à quinze livres, imperturbable.
+
+* {stat INTEL >= 9} [Payer douze livres] -> pistolet_bon
+* {stat INTEL < 9} [Payer quinze livres] -> pistolet_moyen
+* [Laisser tomber] -> sf_quartier
+
+:: pistolet_bon
+@mode full_text
+~ sub ARGENT 12
+~ give pistolet
+~ sound pickup
+~ score 5
+* [Continuer] -> sf_quartier
+
+:: pistolet_moyen
+@mode full_text
+~ sub ARGENT 15
+~ give pistolet
+~ sound pickup
+* [Continuer] -> sf_quartier
+
+# --- POSTE ---
+
+:: sf_poste
+@mode full_text
+=! BUREAU DE POSTE
+
+Un employé pressé distribue des lettres. Une affiche invite à écrire aux
+proches.
+
+* {stat ARGENT >= 5} [Envoyer un télégramme au Reform Club (£5)] -> sf_message
+* [Retour] -> sf_carte
+
+:: sf_message
+@mode full_text
+Vous rédigez : « Passons bien à San Francisco. Encore vingt jours. Tenez
+bon. Passepartout. » L'employé compte les mots.
+
+~ sub ARGENT 5
+~ set q_port
+~ set contact_ny
+~ score 5
+* [Continuer] -> sf_poste
+
+# --- BAR ---
+
+:: sf_bar
+@mode full_text
+=! BAR DU PORT
+
+Des marins, des mineurs, des joueurs de cartes. Derrière le comptoir, un
+barman aux bras énormes essuie un verre.
+
+* {stat ARGENT >= 2} [Offrir un verre au barman (£2)] -> barman_verre
+* [Retour] -> sf_carte
+
+:: barman_verre
+@mode full_text
+Le barman sourit, se penche : « Un petit homme maigre est passé ce matin,
+posant des questions sur le train pour New York. Il a acheté les places de
+première classe, exprès. Il semblait très content de lui. »
+
+~ sub ARGENT 2
+~ set indice_fix
+~ set q_barman
+~ score 10
+* [Continuer] -> sf_carte
+
+# --- HOTEL ---
+
+:: sf_hotel
+@mode full_text
+=! HÔTEL
+
+Un grand hôtel, des lits de laiton, une salle de bal. Une nuit vous coûterait un
+jour, mais vous remettrait d'aplomb.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> sf_nuit
+* [Retour] -> sf_carte
+
+:: sf_nuit
+@mode full_text
+Vous dormez sur un lit à baldaquin. Rien ne vaut la terre ferme.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+~ add MORAL 1
+* [Continuer] -> sf_carte
+
+:: train_us_depart
+@mode full_text
+=! LE TRANSCONTINENTAL
+
+Le sifflet retentit, la locomotive crache, les roues s'ébranlent. Le train
+quitte San Francisco, gravit la Sierra Nevada, plonge vers les plaines du
+Far West. Sept jours jusqu'à New York, si tout va bien.
+
+* [Continuer] -> train_us
+
+# --- LE TRAIN TRANSCONTINENTAL ---
+
+:: train_us
+@mode full_text
+=! DANS LE TRAIN
+
+Wagon de seconde classe : banquettes de bois, poêle à charbon, voyageurs
+emmitouflés. La plaine s'étend à perte de vue, jaune et grise.
+
+* {not flag q_passager} [Parler à un voyageur] -> voyageur_us
+* {not flag q_mecano} [Bavarder avec Aouda] -> aouda_train
+* [Regarder défiler les plaines] -> plaines_us
+* [Attendre la suite] -> train_bandits
+
+:: voyageur_us
+@mode full_text
+Un colon barbu, chapeau de feutre, vous raconte : « On a des bisons plein
+la plaine, des bandits derrière chaque colline, et des ponts qui tiennent
+plus par habitude que par solidité. »
+
+~ set q_passager
+~ add INTEL 1
+* [Continuer] -> train_us
+
+:: aouda_train
+@mode full_text
+Aouda vous parle de son enfance à Bombay, de ses rêves de Londres. Elle rit un
+peu de vos plaisanteries, puis se tait, les yeux sur le paysage.
+
+« Merci, Monsieur Passepartout. Sans vous, je ne serais plus là. »
+
+~ set q_mecano
+~ add MORAL 2
+* [Continuer] -> train_us
+
+:: plaines_us
+@mode full_text
+La prairie sans fin, un troupeau de bisons qui traverse la voie : le train doit
+s'arrêter vingt minutes, le temps qu'ils passent.
+
+~ add MORAL 1
+* [Continuer] -> train_us
+
+# --- BANDITS ---
+
+:: train_bandits
+@mode full_text
+=! L'ATTAQUE
+
+Des coups de feu, des cris ! Une bande de cavaliers galope le long du train,
+armes au poing, hurlant. Des voyageurs se jettent à terre, d'autres tirent au
+hasard.
+
+« Aux armes ! » lance Fogg, calme comme un banquier. « Passepartout, protégez
+Aouda. »
+
+{has pistolet} Votre pistolet est à la main.
+{has dague} Votre dague indienne brille à la ceinture.
+
+* [Repousser les bandits] -> bandits_1
+* [Se cacher avec Aouda sous la banquette] -> bandits_cache
+
+:: bandits_cache
+@mode full_text
+Vous vous glissez sous la banquette avec Aouda. Les balles sifflent, le train
+s'arrête, les bandits repartent, chargés du butin.
+
+~ sub ARGENT 15
+~ sub MORAL 2
+* [Continuer] -> train_pont
+
+:: bandits_1
+@combat "Bandit" att=4 hp=5 dmg=2 armor=0
+@win bandits_2 "Le bandit tombe de cheval."
+  ~ score 20
+  ~ add SANTE 2
+@lose bandits_capture
+@flee bandits_cache
+Un cavalier borgne saute sur le marchepied, revolver en main.
+
+* [Affronter] -> bandits_1
+
+:: bandits_2
+@combat "Chef de bande" att=5 hp=7 dmg=3 armor=0
+@win bandits_fin "Le chef s'effondre, ses hommes s'égaillent."
+  ~ score 30
+  ~ set bandits_repousses
+@lose bandits_capture
+@flee bandits_cache
+Le chef des bandits, un géant aux dents d'or, monte à l'assaut à son tour.
+
+* [Affronter] -> bandits_2
+
+:: bandits_capture
+@mode full_text
+Vous vous réveillez dans le train, la tête bandée. Fogg et un conducteur
+ont repoussé les bandits sans vous. Aouda vous soigne, sourire aux lèvres.
+
+~ set SANTE 3
+~ sub MORAL 2
+~ sub ARGENT 10
+* [Continuer] -> train_pont
+
+:: bandits_fin
+@mode full_text
+Les bandits s'enfuient dans la prairie. Les voyageurs vous acclament.
+
+« Bravo, Passepartout », dit Fogg. « Vous méritez une récompense. »
+
+~ add ARGENT 15
+~ add MORAL 2
+~ sound win
+* [Continuer] -> train_pont
+
+# --- PONT ---
+
+:: train_pont
+@mode full_text
+=! LE PONT
+
+Le train ralentit : le pont sur la rivière Medicine Bow est branlant, ses
+poutres tordues, une planche manque. Le mécanicien coupe la vapeur.
+
+« On ne passera pas », dit-il. « Ce pont ne tiendra pas ! »
+
+Fogg consulte sa montre : « Passepartout, une idée ? »
+
+* [Foncer à pleine vitesse, pour passer avant qu'il ne s'écroule] -> pont_fonce
+* [Chercher un gué en amont] -> pont_gue
+* [Attendre les réparations] -> pont_attente
+
+:: pont_fonce
+@mode full_text
+Le train prend de la vitesse, hurle sur les planches... et passe. Derrière
+vous, le pont s'effondre dans la rivière.
+
+Les passagers hurlent, puis applaudissent. Vous, vous sentez vos jambes
+trembler.
+
+~ sub SANTE 2
+~ score 15
+* [Continuer] -> train_loco
+
+:: pont_gue
+@mode full_text
+Un colon, à cheval, vous montre un gué à deux milles en amont. Le train fait un
+détour, traverse dans le bruit de l'eau, et repart sans encombre.
+
+~ set pont_gue
+~ score 25
+~ add INTEL 1
+* [Continuer] -> train_loco
+
+:: pont_attente
+@mode full_text
+Deux jours d'attente sous la neige. Les réparations sont lentes, les passagers
+râlent.
+
+~ sub JOURS 2
+~ sub MORAL 2
+* [Continuer] -> train_loco
+
+# --- LOCOMOTIVE ---
+
+:: train_loco
+@mode full_text
+=! LA LOCOMOTIVE EN PANNE
+
+La chaudière chauffe, les pistons vont et viennent, les bielles tournent :
+mais la vapeur n'a plus de sortie et la pression grimpe. Le mécanicien, livide,
+vous montre les pièces, sur un chiffon huilé : « Il manque quelque chose, un
+organe qui laisse s'échapper la vapeur en cas de trop-plein. Si on ne la
+trouve pas... »
+
+@ask "Quelle pièce manque ?" maxlen=15
+@answer SOUPAPE
+@answer LA SOUPAPE
+@correct loco_ok
+  ~ score 20
+  ~ add INTEL 1
+@wrong loco_ko
+
+:: loco_ok
+@mode full_text
+« La soupape ! » Vous la retrouvez, déboîtée, sous le tender. Le mécanicien la
+revisse d'un coup de clé. Le train repart dans un long sifflement.
+
+~ set loco_ok
+* [Continuer] -> ny_arrivee
+
+:: loco_ko
+@mode full_text
+Vous vous trompez, le mécanicien perd un jour à chercher la vraie cause : la
+soupape. Le train repart enfin, en retard.
+
+~ sub JOURS 1
+~ sub MORAL 1
+* [Continuer] -> ny_arrivee
+
+# ===========================================================================
+# CHAPITRE 4b : NEW YORK
+# ===========================================================================
+@chapter "New York"
+@flag q_port local
+
+:: ny_arrivee
+@mode full_text
+=! NEW YORK
+
+*Vers le 11 décembre 1872*
+
+~ {flag pont_gue} sub JOURS 6
+~ {not flag pont_gue} sub JOURS 7
+
+Le train s'arrête à Jersey City. De l'autre côté de l'Hudson : New York, ses
+docks, ses cheminées, ses gratte-ciel timides. La ville monte, bruyante,
+jamais endormie.
+
+Fogg consulte sa montre : « Nous avons manqué le paquebot pour Liverpool,
+Passepartout. De quarante-cinq minutes. »
+
+Il vous confie quarante livres.
+
+~ add ARGENT 40
+~ sound bonus
+* [Sortir de la gare] -> ny_carte
+
+:: ny_carte
+@mode full_text
+=! NEW YORK
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+Il faut un bateau pour Liverpool, et vite.
+
+* [Port] -> ny_port
+* [Bureau de douane] -> ny_douane
+* {not flag fix_evite} [Rue de Broadway] -> ny_rue
+* {not flag q_port} [Bureau de poste] -> ny_poste
+* {stat ARGENT >= 10} [Hôtel] -> ny_hotel
+* {flag henrietta_ok} [Embarquer sur le Henrietta] -> ny_depart
+* [Relire le journal de Fogg] -> journal_ny
+
+:: journal_ny
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*New York, décembre 1872*
+
+« New York. Il reste peu de jours pour rentrer, et neuf de mer. Fix ne
+me lâche pas : à chaque coin de rue, sa silhouette. Mlle Aouda est
+courageuse. Nous n'avons plus une minute à perdre. »
+
+* [Retour] -> ny_carte
+
+# --- PORT : LE HENRIETTA ---
+
+:: ny_port
+@mode full_text
+=! LE PORT DE NEW YORK
+
+Des paquebots, des goélettes, des remorqueurs. Au quai n° 3, un petit
+vapeur à hélice, coque de fer, le *Henrietta*. Son capitaine, Speedy (un
+cousin, dit-il, de celui du *Mongolia*), fume sa pipe sur la passerelle.
+
+« Liverpool ? Impossible, monsieur. Je vais à Bordeaux. »
+
+* {not flag henrietta_ok and stat MORAL >= 6} [Lui rappeler le pari de Fogg : l'honneur de l'Angleterre] -> henrietta_pari
+* {not flag henrietta_ok and stat ARGENT >= 60} [Proposer soixante livres] -> henrietta_argent
+* {not flag henrietta_ok} [Le menacer de Fogg] -> henrietta_menace
+* [Retour] -> ny_carte
+
+:: henrietta_pari
+@mode full_text
+Vous racontez le pari, le tour du monde, le Reform Club. Speedy pose sa pipe :
+« Vingt mille livres ? Un Anglais qui parie ? Alors, j'en suis. »
+
+Fogg, discrètement, lui confie ce qu'il faut pour le carburant.
+
+~ set henrietta_ok
+~ score 30
+~ add MORAL 1
+* [Continuer] -> ny_port
+
+:: henrietta_argent
+@mode full_text
+Soixante livres changent de main. Speedy grommelle, mais empoche.
+
+~ sub ARGENT 60
+~ set henrietta_ok
+* [Continuer] -> ny_port
+
+:: henrietta_menace
+@mode full_text
+Speedy éclate de rire. « Menacer un capitaine sur son pont ? » Vous sentez
+un poing sur votre cravate et vous vous retrouvez sur le quai, les fesses
+mouillées.
+
+Il faudra prendre un autre bateau : un vieux vapeur, plus lent.
+
+~ set henrietta_ok
+~ sub SANTE 1
+~ sub MORAL 2
+~ sub JOURS 1
+* [Continuer] -> ny_port
+
+# --- DOUANE : LE PIEGE DE FIX ---
+
+:: ny_douane
+@mode full_text
+=! BUREAU DE DOUANE
+
+Un guichet, deux agents en uniforme. Derrière eux, un petit homme maigre
+brandit un papier, très fier : Fix, avec deux marshals à ses côtés.
+
+« Phileas Fogg, je vous arrête ! Vol à la Banque d'Angleterre ! »
+
+Fogg, impassible, vous regarde : « Passepartout. »
+
+* {has telegramme_fix} [Produire le télégramme de Fix] -> douane_telegramme
+* {flag enigme_passeport} [Faire remarquer que le passeport a été corrigé par Fogg avant son départ] -> douane_passeport
+* [Protester, en vain] -> douane_protester
+
+:: douane_telegramme
+@mode full_text
+=! LE TÉLÉGRAMME
+
+Vous sortez le papier de la poche : le texte de Fix lui-même. « Le mandat
+n'est pas arrivé, messieurs. Fix bluffe. »
+
+Les marshals se tournent vers l'inspecteur, qui pâlit. La foule murmure.
+
+~ set fix_discredite
+~ score 40
+~ sound win
+* [Continuer] -> ny_carte
+
+:: douane_passeport
+@mode full_text
+Vous exhibez le passeport : la tache d'encre, la date corrigée, la mention
+du Reform Club. Le marshal fronce les sourcils : Fogg était à Londres le jour du
+vol, et le prouve.
+
+~ set fix_discredite
+~ score 30
+* [Continuer] -> ny_carte
+
+:: douane_protester
+@mode full_text
+Vous criez, gesticulez, brandissez le parapluie. Les marshals vous
+écartent, mais Fogg paie une caution, bras croisés. Il est libéré à midi.
+
+~ sub ARGENT 20
+~ sub JOURS 1
+~ sub MORAL 2
+* [Continuer] -> ny_carte
+
+# --- RUE ---
+
+:: ny_rue
+@mode full_text
+=! BROADWAY
+
+Une rue immense, bondée de fiacres, de tramways, de marchands ambulants.
+Vous croyez apercevoir, au loin, un chapeau sombre : Fix.
+
+* {stat ADRESSE >= 6} [Se fondre dans la foule] -> rue_foule
+* [Courir à toutes jambes] -> rue_courir
+* [Se cacher dans une boutique] -> rue_boutique
+
+:: rue_foule
+@mode full_text
+Vous vous glissez entre une famille de colons et un marchand de journaux.
+Fix, sur la pointe des pieds, ne voit plus rien.
+
+~ set fix_evite
+~ score 15
+* [Continuer] -> ny_carte
+
+:: rue_courir
+@mode full_text
+Vous courez, tournez à gauche, à droite, vous renversez un marchand de
+pommes. Fix vous perd... mais vous, vous êtes essoufflé.
+
+~ set fix_evite
+~ sub SANTE 1
+* [Continuer] -> ny_carte
+
+:: rue_boutique
+@mode full_text
+Vous vous glissez dans un magasin de chapeaux. Fix passe devant, sans vous
+voir, puis revient, flairant.
+
+~ sub MORAL 1
+* [Continuer] -> ny_carte
+
+# --- POSTE ---
+
+:: ny_poste
+@mode full_text
+=! BUREAU DE POSTE
+
+Un immense hall, des guichets en enfilade. Vous pouvez envoyer un
+télégramme au Reform Club, pour prévenir Fogg du retour.
+
+@ask "Sur quelle rue est le Reform Club ?" maxlen=15
+@answer PALL MALL
+@answer PALLMALL
+@correct poste_ok
+  ~ score 10
+@wrong poste_ko
+
+:: poste_ok
+@mode full_text
+Le télégraphiste tape « Pall Mall, Londres » et vous rend la monnaie. Là-bas,
+quelqu'un saura qu'un Fogg revient.
+
+~ set contact_ny
+~ set q_port
+* [Continuer] -> ny_carte
+
+:: poste_ko
+@mode full_text
+Vous hésitez, le télégraphiste s'impatiente. Vous laissez tomber.
+
+~ set q_port
+* [Continuer] -> ny_carte
+
+# --- HOTEL ET DEPART ---
+
+:: ny_hotel
+@mode full_text
+=! HÔTEL
+
+Un hôtel de bois sombre, tapis épais, cuivre luisant. Un jour de moins, mais
+un sommeil de plomb.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> ny_nuit
+* [Retour] -> ny_carte
+
+:: ny_nuit
+@mode full_text
+Vous dormez comme un loir.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+~ add MORAL 1
+* [Continuer] -> ny_carte
+
+:: ny_depart
+@mode full_text
+=! LE HENRIETTA
+
+La sirène retentit, le cargo s'éloigne du quai. Manhattan rétrécit derrière
+vous. Fix, sur le port, agite son chapeau, l'air perplexe.
+
+Neuf jours de mer. Il vous reste peu de marge.
+
+~ sub JOURS 9
+* [Continuer] -> henrietta_debut
+
+# ===========================================================================
+# CHAPITRE 5 : LE RETOUR
+# ===========================================================================
+@chapter "Henrietta"
+@flag q_arg1 local
+@flag q_arg2 local
+@flag q_arg3 local
+
+:: henrietta_debut
+@mode full_text
+=! LE HENRIETTA
+
+Un cargo de 800 tonneaux, plus de carcasse que de confort. Le capitaine Speedy
+tient la barre, l'œil dur. Fogg surveille les chiffres et vérifie les cadrans.
+Aouda, enveloppée dans un manteau, regarde l'Atlantique.
+
+Le premier jour, la mer est belle. Le deuxième, le vent tourne.
+
+* [Continuer] -> vent_contraire
+
+:: vent_contraire
+@mode full_text
+=! VENT CONTRAIRE
+
+Le vent d'est se lève, gris et froid : le *Henrietta*, qui fait douze
+nœuds, tombe à quatre. Speedy jure. À ce train, Liverpool est à trois
+semaines.
+
+Fogg, sans élever la voix : « Capitaine, il faut passer. »
+
+* [Proposer de ramer à la relève] -> vent_rames
+* [Proposer de hisser toute la voile] -> vent_voiles
+* [Attendre que le vent tombe] -> vent_attendre
+
+:: vent_rames
+@mode full_text
+Vous prenez les avirons avec l'équipage, deux heures de rame contre le vent.
+Vos mains saignent, mais le *Henrietta* file un nœud de plus.
+
+~ set vent_ok
+~ sub SANTE 1
+~ score 15
+* [Continuer] -> reserves_eau
+
+:: vent_voiles
+@mode full_text
+Toute la toile dehors : le cargo se cabre, gémit, mais le vent prend. La
+vitesse remonte.
+
+~ set vent_ok
+~ score 10
+* [Continuer] -> reserves_eau
+
+:: vent_attendre
+@mode full_text
+Vous attendez. Les heures s'étirent. Le lendemain, le vent ne tombe pas.
+
+~ sub JOURS 1
+~ sub MORAL 2
+* [Continuer] -> reserves_eau
+
+:: reserves_eau
+@mode full_text
+=! LES RÉSERVES D'EAU
+
+Le cambusier vous alerte : un fût a fui. Il reste cinquante litres pour six
+personnes, à deux litres par jour et par tête.
+
+Combien de jours l'eau peut-elle durer ?
+
+@ask "Combien de jours ?" maxlen=8
+@answer 4
+@answer QUATRE
+@correct eau_ok
+  ~ score 15
+  ~ add INTEL 1
+@wrong eau_ko
+
+:: eau_ok
+@mode full_text
+« Quatre jours, capitaine. On rationne, on filtre l'eau de pluie. » Speedy
+approuve : on tiendra jusqu'à Liverpool.
+
+* [Continuer] -> chaudiere
+
+:: eau_ko
+@mode full_text
+Vous vous trompez d'un jour : les deux derniers jours, tout le monde a soif.
+
+~ sub SANTE 2
+~ sub MORAL 1
+* [Continuer] -> chaudiere
+
+:: chaudiere
+@mode full_text
+=! LA CHAUDIÈRE
+
+Un sifflement aigu : la chaudière monte en pression. Le chauffeur,
+livide, hurle : « Elle va exploser ! Il faut fermer les vannes dans le bon
+ordre : la rouge d'abord, puis la bleue, puis la verte ! »
+
+Il vous pousse vers la salle des machines. Trois vannes, trois roues.
+
+* {not flag q_arg1} [Fermer la vanne rouge] -> vanne_rouge
+* {flag q_arg1 and not flag q_arg2} [Fermer la vanne bleue] -> vanne_bleue
+* {flag q_arg2 and not flag q_arg3} [Fermer la vanne verte] -> vanne_verte
+* {not flag q_arg1} [Fermer la vanne verte] -> vanne_faux
+* {flag q_arg1 and not flag q_arg2} [Fermer la vanne verte] -> vanne_faux
+* {flag q_arg2 and not flag q_arg3} [Fermer la vanne rouge] -> vanne_faux
+
+:: vanne_rouge
+@mode full_text
+Vous tournez la roue rouge, à fond. Le sifflement baisse d'un demi-ton.
+
+~ set q_arg1
+* [Continuer] -> chaudiere
+
+:: vanne_bleue
+@mode full_text
+La bleue, ensuite. La pression retombe encore.
+
+~ set q_arg2
+* [Continuer] -> chaudiere
+
+:: vanne_verte
+@mode full_text
+La verte, enfin. La chaudière expire dans un long souffle. Le chauffeur vous
+serre dans ses bras, noir de suie.
+
+~ set q_arg3
+~ set chaudiere_ok
+~ score 25
+* [Continuer] -> liverpool_arrivee
+
+:: vanne_faux
+@mode full_text
+Mauvaise vanne ! Un jet de vapeur brûlante vous jette à terre. Le chauffeur
+rattrape la situation in extremis.
+
+~ sub SANTE 3
+~ sub MORAL 2
+~ set chaudiere_ok
+* [Continuer] -> liverpool_arrivee
+
+# ===========================================================================
+# CHAPITRE 5b : LIVERPOOL
+# ===========================================================================
+@chapter "Liverpool"
+
+:: liverpool_arrivee
+@mode full_text
+=! LIVERPOOL
+
+*Vers le 20 décembre 1872*
+
+L'Angleterre ! Le *Henrietta* accoste dans un ciel de suie, sous la pluie
+fine, au milieu des cheminées de Liverpool. Fogg descend à quai, la montre en
+main.
+
+« Vingt-quatre heures, Passepartout. Vingt-quatre heures pour gagner
+vingt mille livres. »
+
+Il vous confie encore quarante livres. Aouda serre votre bras.
+
+~ add ARGENT 40
+~ sound bonus
+* [Sortir du quai] -> liverpool_carte
+
+:: liverpool_carte
+@mode full_text
+=! LIVERPOOL
+
+Il reste %JOURS% jours. Argent : £%ARGENT%.
+
+Le train pour Londres part dans trente minutes. Vous êtes à quinze minutes de
+la gare.
+
+* [Port] -> liv_port
+* [Gare de Lime Street] -> liv_gare
+* {stat ARGENT >= 10} [Hôtel] -> liv_hotel
+* [Relire le journal de Fogg] -> journal_liv
+
+:: journal_liv
+@mode full_text
+=! JOURNAL DE PHILEAS FOGG
+
+*Liverpool, décembre 1872*
+
+« Liverpool. Nous y sommes presque. Le *Henrietta* nous a menés ici en un
+temps que je qualifierais d'honorable. Fix nous suivra sans doute jusqu'à
+Londres. Il nous reste quelques heures. »
+
+* [Retour] -> liverpool_carte
+
+:: liv_port
+@mode full_text
+=! LE PORT
+
+Des docks, des entrepôts, des voiliers, des grues à vapeur. Un docker vous
+hèle : « Un bateau pour Londres, monsieur ? Il faut deux jours par la mer. »
+
+* [Refuser : le train sera plus rapide] -> liverpool_carte
+
+:: liv_gare
+@mode full_text
+=! GARE DE LIME STREET
+
+Une horloge géante, des trains à vapeur, une foule. Le train pour Londres part
+dans vingt minutes : le dernier avant longtemps.
+
+* {stat ARGENT >= 5} [Prendre un fiacre pour arriver plus vite (£5)] -> liv_fiacre
+* [Attendre sur le quai] -> liv_quai
+
+:: liv_fiacre
+@mode full_text
+Un fiacre, un cocher qui fouette : vous arrivez à la gare trois minutes plus
+tôt, le souffle intact.
+
+~ sub ARGENT 5
+* [Continuer] -> liv_billet
+
+:: liv_quai
+@mode full_text
+Vous attendez, montre en main, comme Fogg. Le train arrive, l'horloge
+sonne : vous montez juste à temps.
+
+* [Continuer] -> liv_billet
+
+:: liv_billet
+@mode full_text
+Un contrôleur, casquette à la main, réclame vos billets. Vous les avez :
+Fogg n'oublie jamais un détail.
+
+* {flag fix_discredite} [Monter dans le train] -> liv_fix_excuse
+* {not flag fix_discredite} [Monter dans le train] -> liv_fix_arret
+
+:: liv_fix_excuse
+@mode full_text
+=! FIX SE RETIRE
+
+Sur le quai, Fix vous regarde monter, l'air abattu. Il touche son chapeau :
+« Messieurs. J'ai été trompé. Le vrai voleur a été arrêté à Édimbourg il y a
+trois jours. Je retire mes accusations. »
+
+Fogg, sans un mot, lui tend la main. Fix, hésitant, la serre.
+
+~ score 20
+~ add MORAL 2
+* [Continuer] -> liv_depart
+
+:: liv_fix_arret
+@mode full_text
+=! ARRESTATION
+
+Un policier vous barre la route : Fix, à ses côtés, sourire de chat. « Phileas
+Fogg, vous êtes en état d'arrestation pour le vol de la Banque d'Angleterre. »
+
+Fogg est arrêté, conduit au poste. Vous passez deux heures à attendre, le
+cœur battant, tandis que Fix appelle Londres. Le vrai voleur, entre-temps,
+a été arrêté à Édimbourg : Fix vous relâche, la mine sombre.
+
+Deux heures perdues, un train raté. Vous prenez le suivant.
+
+~ sub JOURS 1
+~ sub MORAL 3
+* [Continuer] -> liv_depart
+
+:: liv_hotel
+@mode full_text
+=! HÔTEL
+
+Un hôtel près de la gare, chaud, lumineux. Mais chaque heure compte.
+
+* {stat ARGENT >= 10} [Louer une chambre (£10)] -> liv_nuit
+* [Retour] -> liverpool_carte
+
+:: liv_nuit
+@mode full_text
+Une courte nuit. Fogg vous attend, montre en main, au petit matin.
+
+~ sub ARGENT 10
+~ sub JOURS 1
+~ add SANTE 3
+* [Continuer] -> liverpool_carte
+
+:: liv_depart
+@mode full_text
+=! LE DERNIER TRAIN
+
+Le train quitte Liverpool à toute vapeur, dans la nuit. Les gares défilent :
+Chester, Crewe, Rugby. Aouda dort contre l'épaule de Fogg, qui, pour la
+première fois, ne regarde pas sa montre.
+
+Puis Londres apparaît, immense, éclairée de mille becs de gaz.
+
+~ sub JOURS 1
+* [Continuer] -> londres_final
+
+# ===========================================================================
+# CHAPITRE 5c : LONDRES, LA COURSE FINALE
+# ===========================================================================
+@chapter "Londres"
+
+:: londres_final
+@mode full_text
+=! LONDRES, GARE D'EUSTON
+
+*21 décembre 1872, 20h20*
+
+L'horloge de la gare affiche 20h20. Vingt-cinq minutes pour rejoindre le
+Reform Club, à Pall Mall. Fogg, Aouda et vous êtes arrivés, ou presque.
+
+Mais Fogg, pour la première fois, semble hésiter : « Passepartout... nous
+avons perdu, n'est-ce pas ? Nous sommes le vingt-deux. »
+
+Vous fixez la date sur le journal du quai : *21 décembre*.
+
+~ set TEMPS 2
+* [Consulter le journal] -> fuseau_question
+
+:: fuseau_question
+@mode full_text
+=! LE DÉCALAGE HORAIRE
+
+Le journal dit 21 décembre. Fogg, lui, compte quatre-vingt-un jours depuis son
+départ, à cause de sa propre montre.
+
+En voyageant vers l'est, chaque jour, le soleil se levait un peu plus tôt
+pour vous : quatre minutes par degré de longitude, en un tour du monde.
+
+Combien de jours entiers avez-vous gagnés sur le calendrier de Londres ?
+
+@ask "Combien de jours ?" maxlen=8
+@answer 1
+@answer UN
+@correct fuseau_ok
+  ~ score 30
+  ~ add INTEL 1
+@wrong fuseau_ko
+
+:: fuseau_ok
+@mode full_text
+« Un jour », dites-vous. « Un jour gagné, monsieur. Nous sommes le vingt et
+un, pas le vingt-deux ! »
+
+Fogg vous regarde une seconde, puis bondit. « Passepartout... vous avez
+raison. Il nous reste vingt-cinq minutes ! »
+
+~ set fuseau_compris
+~ sound bonus
+* [Courir] -> course_choix
+
+:: fuseau_ko
+@mode full_text
+Vous vous embrouillez. Fogg regarde le journal, puis sa montre, puis les
+étoiles. Après un long silence : « Il reste vingt-cinq minutes, en tout
+cas. Courons. »
+
+* [Courir] -> course_choix
+
+:: course_choix
+@mode full_text
+=! LA COURSE
+
+Pall Mall est à vingt minutes de fiacre, quinze de métro, une heure à pied.
+
+{flag contact_ny} Devant la gare, un coursier du Reform Club vous attend : le télégramme de New York est bien arrivé.
+{flag contact_inde} Un vieil ami de Bombay, arrivé depuis peu, vous tend un fiacre déjà attelé.
+
+* {stat ARGENT >= 5} [Sauter dans un fiacre (£5)] -> course_fiacre
+* [Descendre à la station de métro, à côté] -> course_metro
+* [Courir à pied, à perdre haleine] -> course_pied
+
+:: course_fiacre
+@mode full_text
+Le fiacre file dans Regent Street, les chevaux fument, le cocher jure. On
+arrive sans une minute de perdue.
+
+~ sub ARGENT 5
+~ {flag contact_ny} add TEMPS 1
+* [Continuer] -> course_fin
+
+:: course_metro
+@mode full_text
+Le Metropolitan, dernier cri de la modernité : un tunnel, un sifflet, des
+lampes à gaz, et Pall Mall à quatre stations.
+
+~ sub TEMPS 1
+~ {flag contact_ny} add TEMPS 1
+* [Continuer] -> course_fin
+
+:: course_pied
+@mode full_text
+Vous courez, tirant Aouda par la main, Fogg sur vos talons. Les passants
+s'écartent. Vous arrivez rouge, hors d'haleine, mais vous arrivez.
+
+~ sub TEMPS 2
+~ sub SANTE 2
+~ {flag contact_ny} add TEMPS 1
+* [Continuer] -> course_fin
+
+:: course_fin
+@mode full_text
+=! LE REFORM CLUB
+
+Pall Mall, l'entrée monumentale du Reform Club. L'horloge de la salle indique
+20h40. Les gentlemen, alignés, l'air grave, attendent : Stuart, Flanagan,
+Fallentin, Sullivan, Ralph.
+
+Fogg ouvre la porte. Le silence tombe.
+
+* {stat TEMPS == 0} [Entrer, à bout de souffle] -> verdict_tard
+* {stat TEMPS >= 1} [Entrer, la tête haute] -> verdict
+
+:: verdict_tard
+@mode full_text
+La pendule marque 20h46 : six minutes de retard sur l'heure fatidique. Les
+gentlemen se regardent, gênés. Fogg, calme, lève la main.
+
+« Messieurs, un mot avant de conclure. »
+
+~ sub JOURS 1
+* [Continuer] -> verdict
+
+:: verdict
+@mode full_text
+=! LE VERDICT
+
+Andrew Stuart tire sa montre, la compare à la grande pendule : le compte est
+serré. Il regarde Fogg, puis la salle.
+
+« Le pari, messieurs. »
+
+* {stat JOURS >= 2} [Attendre le verdict] -> victoire_marge
+* {stat JOURS == 1} [Attendre le verdict] -> victoire_justesse
+* {stat JOURS == 0} [Attendre le verdict] -> defaite_retard
+
+:: victoire_marge
+@mode full_text
+@ending win
+=! VICTOIRE
+
+« Avec %JOURS% jours d'avance », annonce Stuart, la voix brisée.
+« Phileas Fogg a gagné. »
+
+Les gentlemen, un à un, se lèvent, applaudissent. Fogg, imperturbable, incline
+la tête. Aouda, à son bras, sourit.
+
+Vous, Passepartout, êtes debout sur une chaise, criant : « Vive Fogg ! Vive
+l'Angleterre ! » Un valet, en livrée, vous fait descendre avec précaution.
+
+Quelques jours plus tard, Fogg épouse Aouda. Vous êtes témoin, en habit,
+ému aux larmes. Le voyage, en fin de compte, n'a pas coûté vingt mille
+livres : il en a rapporté vingt mille, et le bonheur.
+
+
+:: victoire_justesse
+@mode full_text
+@ending win
+=! VICTOIRE DE JUSTESSE
+
+Stuart fixe sa montre, les lèvres serrées. « Vingt heures quarante et une.
+C'est fait. À la seconde. »
+
+Fogg incline la tête : « Il me restait un jour de marge, monsieur, sans que je
+le sache. Ce jour, mon domestique l'a compté avant moi. »
+
+Les gentlemen applaudissent. Vous, Passepartout, sentez vos jambes trembler
+de fatigue et de bonheur.
+
+Le tour du monde en quatre-vingts jours, exactement. Une aventure qui tenait à
+un jour, à une heure, à un pari, et au soleil qui se lève toujours plus tôt à
+l'est.
+
+Fogg épouse Aouda peu après. Vous êtes son témoin.
+
+
+:: defaite_retard
+@mode full_text
+@ending lose
+=! TROP TARD
+
+Stuart secoue la tête, désolé : « Cinq minutes, monsieur Fogg. Le compte y
+est... mais le délai est dépassé. Le pari est perdu. »
+
+Fogg, blême, tend son chèque, sans un mot. Aouda lui prend la main. Vous, le
+cœur serré, gardez le silence.
+
+« Passepartout, il faudra penser à un autre voyage », dit Fogg, d'un ton
+étrangement paisible. « Mais celui-là, je n'en aurai fait aucun regret. »
+
+Peut-être, à l'avenir, vous y prendrez-vous autrement : moins d'hôtels, moins
+de détours, un peu plus de whisky...
+

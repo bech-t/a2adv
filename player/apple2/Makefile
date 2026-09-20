@@ -171,6 +171,13 @@ hosttest:
 	    -o $(HOSTBIN)
 	@echo "== parcours victoire =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 2 1 1 1 1 | tail -2
 	@echo "== parcours defaite  =="; $(HOSTBIN) $(DEMO_DATA)/STORY00.DAT 1 1 1     | tail -2
+	gcc -std=c99 -Wall -I$(SRCDIR) -I$(COMMONDIR)/include test/splashtest.c \
+	    $(COMMONDIR)/src/simage.c -o $(BUILDDIR)/splashtest
+	@echo "== splash =="; $(BUILDDIR)/splashtest
+	@# conditions composees (OU de ET, not, else) evaluees par le vrai state.c
+	( cd ../../compiler && python3 -m a2c ../player/apple2/test/conditions.adv -o ../player/apple2/$(BUILDDIR)/cond-data >/dev/null )
+	$(HOSTBIN) $(BUILDDIR)/cond-data/STORY00.DAT 1 1 1 > $(BUILDDIR)/cond.out
+	@echo "== conditions =="; python3 test/check_conditions.py $(BUILDDIR)/cond.out
 
 # Fabrique une disquette ProDOS bootable a partir du modele fourni :
 #   - loader          -> $(PROGRAM).SYSTEM (lance au boot ; charge $(PROGRAM))
@@ -205,10 +212,17 @@ $(DSK): $(BIN) $(DATAOUT) $(ADVIMGS) $(LOADER) $(PRODOS_TPL) $(ZX02_TOOL) | $(BU
 	@# jamais a la main. IMAGES.MAP (produit par a2c) donne l'index reel de
 	@# chaque id `@image` ; le nom nomme ne bouge pas si l'ordre des @image
 	@# change dans le source, contrairement a l'ancien index fige a la main.
-	@while read -r idx name; do \
+	@# Une image « optional » (utilisee seulement par @splash) peut manquer :
+	@# le player n'affiche alors que le texte de la section.
+	@rm -f $(ADVIMG)/IMG[0-9][0-9].HGR
+	@while read -r idx name opt; do \
 	  up=$$(printf '%s' "$$name" | tr '[:lower:]' '[:upper:]'); \
 	  src=$(ADVIMG_NAMED)/$$up.HGR; \
 	  if [ ! -e "$$src" ]; then \
+	    if [ "$$opt" = "optional" ]; then \
+	      echo "  (@splash $$name : pas d'image Apple II, le texte s'affichera seul)"; \
+	      continue; \
+	    fi; \
 	    echo "ERREUR: @image $$name attend $$src (introuvable)"; \
 	    exit 1; \
 	  fi; \

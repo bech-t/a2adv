@@ -102,6 +102,18 @@ void snd_play(u8 id)
     /* Page : froissement bref (3 clics descendants, ~50 ms au total). */
     case SND_PAGE:   snd_tone(40, 14); snd_tone(64, 12); snd_tone(100, 10); break;
 
+    /* Pressentiment : tremolo grave (deux tons graves proches, alternes
+     * vite) qui s'installe en une tenue plus grave encore -- un frisson,
+     * pas un choc (SND_HIT) ni un sortilege (SND_MAGIC). */
+    case SND_DREAD:  for (p = 0; p < 4; ++p) { snd_tone(150, 8); snd_tone(170, 8); }
+                     snd_tone(190, 60);
+                     break;
+
+    /* Bonus : petit arpege ascendant a trois notes, plus court et plus
+     * scintillant que SND_PICKUP (deux notes) -- gain de stat/ressource
+     * abstrait, sans objet physique a ramasser. */
+    case SND_BONUS:  snd_tone(60, 16); snd_tone(45, 16); snd_tone(30, 28); break;
+
     default: break;
     }
 }

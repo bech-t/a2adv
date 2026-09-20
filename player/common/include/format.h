@@ -11,6 +11,12 @@
 #define MODE_FULL_TEXT   0
 #define MODE_IMAGE_TEXT  1
 #define MODE_FULL_IMAGE  2
+/* Octet de mode d'une section : bits 0-1 = mode ; bit 2 = @splash « always » ;
+ * bit 7 = @splash present, auquel cas un u16 (asset) et un u8 (duree en
+ * secondes, 0 = attendre une touche) suivent l'image de section. */
+#define MODE_MASK          0x03
+#define MODE_SPLASH_ALWAYS 0x04
+#define MODE_HAS_SPLASH    0x80
 
 /* Fins */
 #define END_NONE      0
@@ -31,6 +37,13 @@
 /* Octet-bascule inline (invisible) : inverse ON/OFF au fil du texte.
  * Produit par le compilateur a partir des marqueurs *...* du .adv. */
 #define TXT_INV_TOGGLE 0x01
+
+/* Reference de stat inline (invisible), suivie d'un octet d'index dans
+ * stat_val[] : 2 octets fixes quelle que soit la valeur reelle (jamais
+ * connue a la compilation). Produit par le compilateur a partir des
+ * marqueurs %NOM% du .adv (cf. symbols.substitute_stat_refs) ; ui_wrap/
+ * ui_paragraph (ui.c) l'expandent a l'affichage. */
+#define TXT_STAT_REF 0x02
 
 /* Comparateurs (STAT_CMP) */
 #define CMP_EQ 0
@@ -64,6 +77,7 @@
 enum {
     SND_SELECT = 0, SND_ERROR, SND_WIN, SND_LOSE,
     SND_PICKUP, SND_HIT, SND_MAGIC, SND_DOOR, SND_PAGE,
+    SND_DREAD, SND_BONUS,
     SND_COUNT
 };
 
@@ -81,7 +95,7 @@ enum {
  * LANG_VERSION). Le player REFUSE un fichier d'une autre version : la
  * disposition du preambule change d'une version a l'autre, et une lecture
  * decalee ne produit pas d'erreur, juste du charabia. */
-#define STORY_FORMAT_VERSION 7
+#define STORY_FORMAT_VERSION 10
 #define LANG_FORMAT_VERSION  1
 
 /* Chaines d'interface : ORDRE FIGÉ (doit correspondre a UI_KEYS du compilateur,

@@ -128,6 +128,9 @@ static u16 play_section(u16 idx)
             return g;
         if (g_moves_on)
             ++g_moves;      /* section effectivement affichee = un mouvement */
+        /* @splash : image facultative avant le texte (jamais a la reprise
+         * d'une sauvegarde). N'altere pas le curseur de la section. */
+        show_splash(idx, &h);
     }
 
     /* effets de SORTIE : memorises puis sautes pour atteindre le corps. */
@@ -180,7 +183,7 @@ static u16 play_section(u16 idx)
     if (mixed)
         load_scene_image(h.image);
     else if (h.image != NO_IMAGE)
-        show_image(h.image, 1);
+        show_image(h.image, SPLASH_SECS);
 
     body_start = b_tell();   /* corps re-rendu sans re-appliquer on_enter */
 
@@ -292,6 +295,7 @@ static u16 render_scene(u16 idx)
     scene_read_header(&h);
     state_skip_effects();    /* on_enter : ignore pour une scene d'intro */
     state_skip_effects();    /* on_exit  : ignore aussi */
+    show_splash(idx, &h);
 
     if (h.image != NO_IMAGE)
         return h.image;      /* scene image : affichee par run_intro */
@@ -388,6 +392,7 @@ int main(void)
             break;
         if (act == ACT_NEW) {
             state_init();
+            splash_reset();               /* les @splash « une fois » se rejouent */
             rng_seed(scr_entropy | 1u);   /* graine : temps de reaction au menu */
             run_intro();                  /* intro de l'aventure (skippable) */
             cur = g_start;

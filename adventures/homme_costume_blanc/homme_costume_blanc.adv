@@ -6,7 +6,7 @@
 @title  L'Homme en Costume Blanc
 @author a2adv (d'après Cosmicsoap)
 @start  perso
-@intro  intro_preface intro_legende intro_heros intro_situation
+@intro  intro_preface intro_legende intro_heros intro_situation intro_regles
 
 @stat ADRESSE    8 0 12     # combat et prouesses physiques  (@combat_attack)
 @stat ENDURANCE 20 0 24     # points de vie                  (@combat_hp)
@@ -51,22 +51,6 @@
 
 # Flags LOCAUX : remis à 0 à chaque chapitre. Servent aux carrefours (gala,
 # enquête) pour retirer une option déjà épuisée, sans polluer l'état global.
-@flag q_gala       local
-@flag q_vitrine    local
-@flag q_serveurs   local
-@flag q_invites    local
-@flag q_jean       local
-@flag q_meurtres   local
-@flag q_assistant  local
-@flag q_conservateur local
-@flag q_recherche  local
-@flag q_moretti    local
-@flag q_fresques   local
-@flag q_niche      local
-@flag q_photographe local     # gala : futile
-@flag q_rival      local      # gala : futile
-@flag q_presse     local      # enquete : futile
-@flag q_ole        local      # gala : easter egg, pur non-sens
 
 # ===========================================================================
 # INTRO
@@ -142,8 +126,25 @@ quelques jours vous repartirez les mains pleines, et votre nom, enfin, comptera.
 
 Vous ne savez pas encore ce que trois siècles de jungle ont si bien gardé !
 
+:: intro_regles
+@mode full_text
+=! CE QUE VOUS AUREZ EN MAIN
+
+Quatre jauges, en haut de l'écran :
+
+*ADRESSE* : le coup de poing et les prouesses physiques.
+*ENDURANCE* : vos points de vie.
+*SANG_FROID* : vos nerfs. L'horreur les ronge, et le dieu s'y engouffre.
+*PERCEPTION* : le sens du détail : ce qu'on voit, ou ce qu'on manque.
+
+Une dernière mesure ne s'affiche nulle part : les nuits qui passent. Le journal du matin vous les rappellera. Chaque nuit, l'Écorcheur tue.
+
+Le passé que vous allez choisir décide de tout cela.
+
 # ===========================================================================
 @chapter "La Jungle"
+@flag q_fresques local
+@flag q_niche local
 # ===========================================================================
 
 :: perso
@@ -525,6 +526,15 @@ fond d'un temple.
 
 # ===========================================================================
 @chapter "Le Musée"
+@flag q_gala local
+@flag q_vitrine local
+@flag q_serveurs local
+@flag q_invites local
+@flag q_jean local
+@flag q_assistant local
+@flag q_photographe local  # gala : futile
+@flag q_rival local  # gala : futile
+@flag q_ole local  # gala : easter egg, pur non-sens
 # ===========================================================================
 
 :: ny_arrivee
@@ -749,6 +759,13 @@ plus qu'un trophée.
 
 # ===========================================================================
 @chapter "L'Enquête"
+@flag q_jean local
+@flag q_meurtres local
+@flag q_assistant local
+@flag q_conservateur local
+@flag q_recherche local
+@flag q_moretti local
+@flag q_presse local  # enquete : futile
 # ===========================================================================
 
 # /!\ Pas de `restore` ici : chaque piste revient sur cette section, un soin

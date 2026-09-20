@@ -1,7 +1,11 @@
 """Encodeur binaire : Story -> STORY.DAT + ASSETS.IDX.
 
-Tous les champs multi-octets sont little-endian (natif 6502). Les opcodes de
-condition et d'effet font 4 octets fixes.
+Tous les champs multi-octets sont little-endian (natif 6502). Les opcodes
+d'effet font 4 octets fixes. Les atomes de condition font 4 octets (flag/
+item) ou 5 (stat, dont la valeur est sur 16 bits) : largeur VARIABLE selon
+l'opcode, pour ne pas gaspiller un octet sur les nombreux atomes flag/item
+d'une aventure (cf. _encode_atom, state_eval_cond/state_skip_effects cote
+player).
 """
 
 from __future__ import annotations
@@ -10,13 +14,19 @@ import struct
 
 from . import model as M
 from .errors import A2Error
-from .symbols import Symbols
+from .symbols import Symbols, substitute_stat_refs
 from .translit import normalize_display
 
 MAGIC_STORY = b"A2AD"
 MAGIC_ASSETS = b"A2IX"
 MAGIC_LANG = b"A2LG"
-VERSION = 7                 # v7 : @version de l'aventure (optionnelle, "" sinon)
+VERSION = 10                # v10 : conditions en OU de ET (u8 clauses, puis u8 atomes par
+                            #      clause ; pas de condition = 1 seul octet a 0)
+                            # v9 : @splash (octet de mode : bit 7 = splash present, bit 2 =
+                            #      toujours ; alors u16 asset + u8 duree apres l'image de section)
+                            # v8 : stats sur 16 bits (init/min/max ; @stat 0..65535,
+                            #      atomes de condition 'stat' passes de 4 a 5 octets)
+                            # v7 : @version de l'aventure (optionnelle, "" sinon)
                             # v5 : socle d'UI dans APP.LNG, l'aventure ne porte
                             #      plus que ses surcharges (v4 : index par fichier)
 LANG_VERSION = 1
@@ -112,7 +122,7 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE) -> list[bytes
         + struct.pack("<BB", VERSION, flags)
         + struct.pack("<H", n)
         + struct.pack("<BBBB", len(story.stats), len(story.items),
-                      len(story.flags), len(story.intro_index))
+                      story.n_flag_slots, len(story.intro_index))
         + struct.pack("<H", story.start_index)
         + struct.pack("<I", HEADER_SIZE + len(preamble))   # -> table file_first
         # offset 18 : n_files ; offset 19 : 1er index de flag LOCAL
@@ -154,7 +164,7 @@ def encode_story(story: M.Story, max_file: int = DEFAULT_MAX_FILE) -> list[bytes
 def _encode_preamble(story: M.Story) -> bytes:
     out = bytearray()
     for s in story.stats:
-        out += struct.pack("<BBB", s.init, s.lo, s.hi)
+        out += struct.pack("<HHH", s.init, s.lo, s.hi)
     # v6 : masque des stats MASQUEES (bit i = stat i absente du bandeau d'etat).
     # Un seul octet suffit (MAX_STATS = 8), plutot qu'un octet par stat.
     hidden = 0
@@ -163,7 +173,8 @@ def _encode_preamble(story: M.Story) -> bytes:
             hidden |= 1 << i
     out += struct.pack("<B", hidden)
     out += _bitset(len(story.items), lambda i: story.items[i].default_on)
-    out += _bitset(len(story.flags), lambda i: story.flags[i].default_on)
+    defaults = story.flag_defaults()
+    out += _bitset(len(defaults), lambda i: defaults[i])
     for s in story.stats:
         out += _lenstr(s.name)
     for it in story.items:
@@ -198,8 +209,13 @@ def _lenstr(text: str) -> bytes:
 
 def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
     out = bytearray()
-    out += struct.pack("<BB", int(sec.mode), int(sec.ending))
+    mode = int(sec.mode)
+    if sec.splash is not None:
+        mode |= 0x80 | (0x04 if sec.splash_always else 0)
+    out += struct.pack("<BB", mode, int(sec.ending))
     out += struct.pack("<H", sec.image_asset if sec.image else NO_IMAGE)
+    if sec.splash is not None:
+        out += struct.pack("<HB", sec.splash_asset, sec.splash_secs)
     # bloc combat optionnel (u8 présent + données ennemi + cibles)
     if sec.combat is None:
         out += struct.pack("<B", 0)
@@ -213,16 +229,18 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
         out += _encode_effects(cb.win_effects, sym)    # effets par issue
         out += _encode_effects(cb.lose_effects, sym)
         out += _encode_effects(cb.flee_effects, sym)
-        out += _lenstr(cb.win_msg)     # textes d'issue (vides = aucun ecran)
-        out += _lenstr(cb.lose_msg)
-        out += _lenstr(cb.flee_msg)
+        # textes d'issue (vides = aucun ecran) : %NOM% -> reference de stat,
+        # cf. substitute_stat_refs (deja valide par resolve()).
+        out += _lenstr(substitute_stat_refs(cb.win_msg, sym))
+        out += _lenstr(substitute_stat_refs(cb.lose_msg, sym))
+        out += _lenstr(substitute_stat_refs(cb.flee_msg, sym))
     # bloc saisie optionnel (u8 present + invite + reponses + cibles + effets)
     if sec.input is None:
         out += struct.pack("<B", 0)
     else:
         ip = sec.input
         out += struct.pack("<B", 1)
-        out += _lenstr(ip.prompt)
+        out += _lenstr(substitute_stat_refs(ip.prompt, sym))
         out += struct.pack("<B", ip.maxlen)
         out += struct.pack("<B", len(ip.answers))
         for a in ip.answers:
@@ -237,8 +255,12 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
     for t in sec.texts:
         out += _encode_cond(t.cond, sym)
         out += struct.pack("<B", t.style)        # style du paragraphe
-        # marqueurs inline *...* -> octet bascule inverse (invisible)
-        body = _encode_text(t.text).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
+        # %NOM% -> reference de stat (avant l'encodage : normalize_display
+        # ne touche pas aux caracteres de controle qui en resultent, cf.
+        # substitute_stat_refs). marqueurs inline *...* -> octet bascule
+        # inverse (invisible), applique apres coup comme avant.
+        text = substitute_stat_refs(t.text, sym)
+        body = _encode_text(text).replace(b"*", bytes([M.TXT_INV_TOGGLE]))
         if len(body) > 0xFFFF:
             raise A2Error("segment de texte trop long (>65535)", t.line)
         out += struct.pack("<H", len(body)) + body
@@ -248,25 +270,33 @@ def _encode_section(sec: M.Section, sym: Symbols) -> bytes:
         out += _encode_cond(c.cond, sym)
         out += _encode_effects(c.effects, sym)
         out += struct.pack("<H", c.target_index)
-        out += _lenstr(c.label)
+        out += _lenstr(substitute_stat_refs(c.label, sym))
     return bytes(out)
 
 
 def _encode_cond(cond: M.Condition, sym: Symbols) -> bytes:
-    out = bytearray(struct.pack("<BB", len(cond.atoms), cond.connective))
-    for a in cond.atoms:
-        out += _encode_atom(a, sym)
+    """OU de ET : u8 nombre de clauses (0 = pas de condition : un seul octet),
+    puis pour chaque clause u8 nombre d'atomes et les atomes."""
+    out = bytearray(struct.pack("<B", len(cond.clauses)))
+    for clause in cond.clauses:
+        out += struct.pack("<B", len(clause))
+        for a in clause:
+            out += _encode_atom(a, sym)
     return bytes(out)
 
 
 def _encode_atom(a: M.Atom, sym: Symbols) -> bytes:
+    # flag/item : op,a0,a1,a2 tous u8 (4 o, a2 inutilise) -- format inchange.
+    # stat : a2 promu en u16 (5 o) pour porter une valeur jusqu'a 65535
+    # (~ if stat X > N). Largeur VARIABLE selon l'opcode (cf. docstring de
+    # ce module) : _decode_atom et state_eval_cond distinguent sur op.
     op = _ATOM_OP[a.op]
     if a.op in ("flag", "not_flag"):
         return struct.pack("<BBBB", op, sym.flags[a.name], 0, 0)
     if a.op in ("has", "not_has"):
         return struct.pack("<BBBB", op, sym.items[a.name], 0, 0)
     # stat
-    return struct.pack("<BBBB", op, sym.stats[a.name], int(a.cmp), a.value)
+    return struct.pack("<BBBH", op, sym.stats[a.name], int(a.cmp), a.value)
 
 
 def _encode_effects(effects: list[M.Effect], sym: Symbols) -> bytes:
@@ -278,13 +308,17 @@ def _encode_effects(effects: list[M.Effect], sym: Symbols) -> bytes:
 
 
 def _encode_effect(e: M.Effect, sym: Symbols) -> bytes:
+    # Effet : op(u8) a0(u8) a1(u8) a2(u8) = 4 octets fixes, meme pour les
+    # effets 'stat' -- a1/a2 y portent la valeur en petit-boutiste (16 bits,
+    # jusqu'a 65535) au lieu d'un a1 seul + a2 inutilise.
     op = _EFFECT_OP[e.op]
     if e.op in ("set", "clear", "toggle"):
         return struct.pack("<BBBB", op, sym.flags[e.name], 0, 0)
     if e.op in ("give", "take"):
         return struct.pack("<BBBB", op, sym.items[e.name], 0, 0)
     if e.op in ("add", "sub", "setstat", "setmax"):
-        return struct.pack("<BBBB", op, sym.stats[e.name], e.value, 0)
+        return struct.pack("<BBBB", op, sym.stats[e.name],
+                           e.value & 0xFF, (e.value >> 8) & 0xFF)
     if e.op == "restore":                       # valeur = max courant (a1 inutile)
         return struct.pack("<BBBB", op, sym.stats[e.name], 0, 0)
     if e.op == "sound":
