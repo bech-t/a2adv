@@ -35,6 +35,9 @@ import {
             V{{ a.version }} ·
           }
           {{ a.sections }} sections · {{ size() }}
+          @if (a.license) {
+            · Licence {{ a.license }}
+          }
         </p>
         @if (a.description) {
           <p>{{ a.description }}</p>

@@ -4,8 +4,9 @@
 
 @title  Le Tour du Monde en 80 Jours
 @version 0.1
-@author Thomas B.
+@author Thomas B. & Claude
 @description "D'après Jules Verne : vous êtes Passepartout, et le temps presse. Premier chapitre, de Londres à Suez."
+@license "CC0 1.0"
 @start  londres_carte
 @intro  intro_1 intro_2 intro_regles
 @lang   fr

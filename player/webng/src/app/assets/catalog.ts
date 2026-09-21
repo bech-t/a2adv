@@ -13,6 +13,7 @@ export interface CatalogEntry {
   version: string;
   lang: string;
   description: string;
+  license: string;         // nom de la licence du contenu, "" si non renseigne
   cover: string | null;
   base: string;            // dossier de l'aventure : adventures/<id>/<hash>
   story: string;           // <base>/story.json

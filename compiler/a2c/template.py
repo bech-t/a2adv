@@ -34,7 +34,7 @@ _MAX_DEPTH = 8
 # Directives du format : un paramètre ne peut pas porter leur nom, sinon
 # `@chapter` ou `@image` du corps serait remplacé.
 RESERVED = frozenset("""
-    title version author description start stat item flag intro ui lang score moves
+    title version author description license start stat item flag intro ui lang score moves
     combat_attack combat_hp combat_basedmg combat win lose flee ask answer
     correct wrong mode image splash ending on_enter on_exit chapter
     template use end

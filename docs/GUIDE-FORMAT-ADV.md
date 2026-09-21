@@ -211,13 +211,14 @@ compilateur refuse qu'une caractéristique, un objet ou un drapeau soit utilisé
 sans avoir été déclaré ici. C'est un filet contre les fautes de frappe, et
 c'est ce qui garantit que le format des sauvegardes reste stable.
 
-### `@title`, `@version`, `@author`, `@description`, `@start`, `@intro`
+### `@title`, `@version`, `@author`, `@description`, `@license`, `@start`, `@intro`
 
 ```
 @title   L'Homme en Costume Blanc
 @version 1.2
 @author  Votre nom
 @description "Une phrase ou deux pour présenter l'aventure."
+@license "CC0 1.0"
 @start   premiere_section
 @intro   intro_1 intro_2 intro_3
 ```
@@ -231,6 +232,10 @@ c'est ce qui garantit que le format des sauvegardes reste stable.
 - `@description` (optionnelle) est une présentation courte, sur une seule
   ligne, entre guillemets. Elle sert au catalogue du player web ; les autres
   plateformes l'ignorent et elle n'occupe aucune place sur disquette.
+- `@license` (optionnelle) est le nom de la licence du contenu, entre
+  guillemets (`"CC0 1.0"`, `"CC BY-SA 4.0"`). Le catalogue et la fiche du
+  player web l'affichent ; le texte complet reste dans le fichier `LICENSE`
+  du dossier de l'aventure.
 - `@start` est **obligatoire** : c'est la section par laquelle une nouvelle
   partie commence.
 - `@intro` liste des sections jouées automatiquement au lancement, avant

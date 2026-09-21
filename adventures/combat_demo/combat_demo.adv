@@ -4,6 +4,7 @@
 @title  Démo Combat
 @author a2adv
 @description "Une mini-aventure pour découvrir le combat : une arme à ramasser, un adversaire, et la fuite pour dernier recours."
+@license "CC0 1.0"
 @start  entree
 
 @stat HABILETE  8 0 12      # sert d'attaque au combat (2d6 + HABILETE)

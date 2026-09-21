@@ -795,6 +795,7 @@ _SITE_ADV = """\
 @title Aventure de test
 @author Quelqu'un
 @description "Une courte presentation."
+@license "CC0 1.0"
 @version 1.2
 @start a
 
@@ -830,6 +831,7 @@ def test_export_site_catalogue_et_fichiers():
         assert e["id"] == "test" and e["title"] == "Aventure de test"
         assert e["author"] == "Quelqu'un" and e["version"] == "1.2"
         assert e["description"] == "Une courte presentation."
+        assert e["license"] == "CC0 1.0"
         assert e["sections"] == 2 and e["images"] == 1
         base = f"adventures/test/{e['hash']}"
         assert e["base"] == base and e["story"] == f"{base}/story.json"
@@ -860,6 +862,15 @@ def test_description_directive_et_aller_retour_json():
     assert back.description == story.description
     assert '@description "Une courte presentation."' in render_adv(back)
     assert parse("@title T\n@start a\n:: a\nx\n").description == ""
+
+
+def test_license_directive_et_aller_retour_json():
+    story = parse(_SITE_ADV)
+    assert story.license == "CC0 1.0"
+    back = dict_to_story(story_to_dict(story))
+    assert back.license == "CC0 1.0"
+    assert '@license "CC0 1.0"' in render_adv(back)
+    assert parse("@title T\n@start a\n:: a\nx\n").license == ""
 
 
 def test_lang_web_surcharge_le_socle():

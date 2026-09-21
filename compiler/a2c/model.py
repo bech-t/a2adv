@@ -319,6 +319,7 @@ class Story:
     version: str = ""          # @version, optionnelle -- "" si absente
     author: str = ""
     description: str = ""      # @description, optionnelle : presentation courte (catalogue web)
+    license: str = ""          # @license, optionnelle : nom de la licence du contenu (catalogue web)
     start: str = ""
     stats: list[StatDecl] = field(default_factory=list)
     items: list[ItemDecl] = field(default_factory=list)
@@ -329,7 +330,7 @@ class Story:
     score_on: bool = True     # compteur de points (désactivable via @score off)
     moves_on: bool = True     # compteur de mouvements (désactivable via @moves off)
     # commentaires '#' des directives scalaires du preambule (celles qui n'ont
-    # pas de dataclass a elles : @title/@author/@description/@version/@start/@lang/@score/
+    # pas de dataclass a elles : @title/@author/@description/@license/@version/@start/@lang/@score/
     # @moves/@combat_attack/@combat_hp/@combat_basedmg/@intro, et chaque
     # ligne @ui sous la cle "ui:<cle>"). {"lead": [...], "trail": "..."}.
     directive_comments: dict = field(default_factory=dict)

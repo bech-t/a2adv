@@ -4,6 +4,7 @@
 @title   La Caverne aux Échos
 @author  Thomas
 @description "Une courte exploration de caverne : une torche, quelques choix, une fin heureuse ou fatale."
+@license "CC0 1.0"
 @start   lisiere
 
 @stat VIE    10  0 10

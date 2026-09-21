@@ -227,6 +227,8 @@ contenu, une par dossier :
   faites pour être copiées comme point de départ : partez de l'une d'elles,
   écrivez votre histoire par-dessus, publiez-la sous la licence que vous
   voulez. Vous ne devez rien ;
+- *La Cité perdue* et *Le Tour du Monde en 80 Jours* (d'après Jules Verne,
+  dans le domaine public) sont aussi en **CC0** ;
 - *L'Homme en Costume Blanc* est sous **CC BY-SA 4.0**, licence héritée et non
   choisie : le scénario original de Cosmicsoap publié par Rolis est lui-même
   sous CC BY-SA, dont la clause de partage dans les mêmes conditions s'impose à

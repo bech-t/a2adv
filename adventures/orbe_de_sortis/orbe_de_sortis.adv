@@ -3,8 +3,9 @@
 # But : rapporter l'Orbe de Sortis du donjon de l'archimage Malgarde.
 
 @title   L'Orbe de Sortis
-@author  a2adv
+@author  Thomas & Claude
 @description "Rapportez l'Orbe de Sortis du donjon de l'archimage Malgarde : une aventure de fantasy à la manière des livres dont vous êtes le héros."
+@license "CC0 1.0"
 @start   depart
 @intro   intro_legende intro_regles
 

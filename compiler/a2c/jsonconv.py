@@ -173,6 +173,7 @@ def story_to_dict(story: Story) -> dict:
         "version": story.version,
         "author": story.author,
         "description": story.description,
+        "license": story.license,
         "start": story.start,
         "lang": story.lang,
         "score_on": story.score_on,
@@ -302,6 +303,7 @@ def dict_to_story(d: dict) -> Story:
     story = Story(
         title=d.get("title", ""), version=d.get("version", ""),
         author=d.get("author", ""), description=d.get("description", ""),
+        license=d.get("license", ""),
         start=d.get("start", ""),
         lang=d.get("lang", "fr"), score_on=d.get("score_on", True),
         moves_on=d.get("moves_on", True),
@@ -511,6 +513,8 @@ def render_adv(story: Story) -> str:
         lines += directive("author", f'@author "{story.author}"')
     if story.description:
         lines += directive("description", f'@description "{story.description}"')
+    if story.license:
+        lines += directive("license", f'@license "{story.license}"')
     if story.version:
         lines += directive("version", f'@version "{story.version}"')
     lines += directive("lang", f"@lang {story.lang}")

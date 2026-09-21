@@ -277,7 +277,7 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
 
     # directives de préambule (avant toute section)
     # (@flag local fait exception : il se declare dans son chapitre, cf. _parse_flag)
-    if key in ("@title", "@version", "@author", "@description", "@start",
+    if key in ("@title", "@version", "@author", "@description", "@license", "@start",
                "@stat", "@item",
                "@flag", "@intro", "@ui", "@lang", "@score", "@moves",
                "@combat_attack", "@combat_hp", "@combat_basedmg"):
@@ -293,6 +293,8 @@ def _parse_directive(body: str, n: int, story: Story, cur: Section | None,
         story.author = body[len(key):].strip().strip('"')
     elif key == "@description":
         story.description = body[len(key):].strip().strip('"')
+    elif key == "@license":
+        story.license = body[len(key):].strip().strip('"')
     elif key == "@start":
         if len(args) != 1:
             raise A2Error("@start attend un nom de section", n)
@@ -419,7 +421,7 @@ def _require_section(cur: Section | None, n: int) -> None:
 
 # Directives scalaires du preambule : pas de dataclass a elles (juste un champ
 # sur Story), donc leurs commentaires vont dans Story.directive_comments.
-_SCALAR_DIRECTIVES = {"title", "author", "description", "version", "start", "lang", "score",
+_SCALAR_DIRECTIVES = {"title", "author", "description", "license", "version", "start", "lang", "score",
                       "moves", "combat_attack", "combat_hp", "combat_basedmg",
                       "intro"}
 

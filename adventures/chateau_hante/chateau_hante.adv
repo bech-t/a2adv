@@ -3,8 +3,9 @@
 # Prose originale ; déplacements = choix ; objets = flags de possession.
 
 @title  Le Château Hanté
-@author a2adv
+@author Thomas & Claude
 @description "Un vieux château, une poupée de porcelaine et l'âme d'une petite fille. Explorez dix-huit salles, trouvez les objets et menez le rituel à son terme."
+@license "CC0 1.0"
 @start  entree
 @intro  intro_legende intro_quete intro_regles intro_entree
 

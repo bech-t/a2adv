@@ -9,6 +9,7 @@
 @version 1.0
 @author Thomas B.
 @description "Gabriel Valmont hérite du journal inachevé d'un explorateur disparu. Une chasse au trésor qui devient une enquête, puis un choix : que faire de ce qu'on a compris ?"
+@license "CC0 1.0"
 @start  c1_start
 @intro  intro_1 intro_2 intro_regles
 @lang   fr
