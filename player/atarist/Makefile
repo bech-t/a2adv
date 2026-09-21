@@ -15,7 +15,9 @@
 # IMG_EXT dans src/platform.h, la seule reference a ne pas dedoubler.
 
 CC := m68k-atari-mint-gcc
-CFLAGS := -mshort -O2 -Wall
+# -MMD/-MP : les .d listent les en-tetes de chaque .o, pour recompiler quand l'un
+# d'eux change (format.h : la version de format doit suivre le compilateur).
+CFLAGS := -mshort -O2 -Wall -MMD -MP
 
 ADV      ?= combat_demo
 ADVBUILD := ../../adventures/$(ADV)/build
@@ -51,6 +53,8 @@ $(PRG): $(OBJ) | $(AUTO)
 $(BUILDDIR) $(AUTO):
 	mkdir -p $@
 
+-include $(OBJ:.o=.d)
+
 # STORY00.DAT/APP.LNG : compiles depuis le .adv par le Makefile racine (le
 # compilateur a2c ne connait pas la plateforme cible -- cf. ../../Makefile,
 # cible `compile`). A la racine du lecteur C: (pas dans AUTO/) : le programme
@@ -59,11 +63,11 @@ $(BUILDDIR) $(AUTO):
 #
 # Nettoie les STORY*.DAT AVANT de copier : sans ca, enchainer `make dsk
 # ADV=x` puis `make run` tout seul (ADV retombe au defaut combat_demo) melange
-# les STORYnn.DAT de deux aventures differentes dans build/ -- constate en
-# pratique le 2026-09-09.
+# les STORYnn.DAT (et les images .PI1, dont les noms IMGnn se recouvrent
+# d'une aventure a l'autre) de deux aventures differentes dans build/.
 dsk: $(PRG)
 	$(MAKE) -C ../.. compile ADV=$(ADV)
-	rm -f $(BUILDDIR)/STORY*.DAT
+	rm -f $(BUILDDIR)/STORY*.DAT $(BUILDDIR)/*.PI1
 	cp $(ADVBUILD)/STORY*.DAT $(ADVBUILD)/APP.LNG $(BUILDDIR)/
 	@# Splash du player, pas de l'aventure : contrairement a l'Apple II (ou
 	@# BOOT00.HGR est toujours fourni par l'aventure, cf. adventures/*/img/),

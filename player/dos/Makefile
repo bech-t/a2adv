@@ -59,6 +59,11 @@ OBJ      := $(patsubst src/%.c,$(BUILDDIR)/%.o,\
 .PHONY: all dsk img run dist hosttest clean
 all: $(EXE)
 
+# Tout .o depend de tous les en-tetes : format.h porte la version de format, qui
+# doit suivre le compilateur (un player perime refuse l'aventure).
+HEADERS  := $(wildcard src/*.h $(COMMONDIR)/include/*.h)
+$(OBJ): $(HEADERS)
+
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) $(CPATHS) -fo=$@ $<
 
@@ -78,10 +83,11 @@ $(BUILDDIR):
 # STORY00.DAT/APP.LNG : compiles depuis le .adv par le Makefile racine (cf.
 # ../../Makefile, cible `compile`) -- neutre vis-a-vis de la plateforme.
 # Nettoie les STORY*.DAT AVANT de copier, meme raison qu'Atari ST (cf.
-# ../atarist/Makefile) : eviter de melanger deux aventures dans build/.
+# ../atarist/Makefile) : eviter de melanger deux aventures dans build/ (les
+# images .PCX aussi, leurs noms IMGnn se recouvrent d'une aventure a l'autre).
 dsk: $(EXE)
 	$(MAKE) -C ../.. compile ADV=$(ADV)
-	rm -f $(BUILDDIR)/STORY*.DAT
+	rm -f $(BUILDDIR)/STORY*.DAT $(BUILDDIR)/*.PCX
 	cp $(ADVBUILD)/STORY*.DAT $(ADVBUILD)/APP.LNG $(BUILDDIR)/
 	@test -f BOOT00.PCX && cp BOOT00.PCX $(BUILDDIR)/ || true
 	@test -d $(IMGDIR) && cp $(IMGDIR)/*.PCX $(BUILDDIR)/ || true
