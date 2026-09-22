@@ -11,6 +11,7 @@ import {
   listSlots,
   parseSaveFile,
   saveFileName,
+  slotSummary,
   toSaveFile,
   writeSlot,
   type SaveSlot,
@@ -169,21 +170,7 @@ export class AdventurePage implements OnInit {
   }
 
   protected summary(slot: SaveSlot | null): string {
-    if (!slot) return "vide";
-    const parts: string[] = [];
-    if (slot.data.moves > 0) parts.push(`${slot.data.moves} mouvements`);
-    if (slot.data.score > 0) parts.push(`score ${slot.data.score}`);
-    if (slot.savedAt) {
-      parts.push(
-        new Date(slot.savedAt).toLocaleString("fr-FR", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      );
-    }
-    return parts.join(" · ") || "partie sauvegardée";
+    return slotSummary(slot) || "vide";
   }
 
   protected exportSlot(n: number, slot: SaveSlot): void {

@@ -61,6 +61,17 @@ export interface SaveData {
 export interface SaveStore {
   read(): SaveData | null;
   write(data: SaveData): void;
+  /** Emplacements proposes au joueur (absent : un seul, implicite). */
+  slots?(): SaveSlotInfo[];
+  /** Emplacement que read() et write() visent ensuite. */
+  select?(slot: number): void;
+}
+
+/** Un emplacement de sauvegarde tel que le joueur le voit. */
+export interface SaveSlotInfo {
+  slot: number;      // numero, a partir de 1
+  summary: string;   // description lisible ; "" si l'emplacement est vide
+  current: boolean;  // emplacement visé par read() et write()
 }
 
 // number, pas Snd : l'operande OP_SOUND est un octet brut lu dans
@@ -579,6 +590,17 @@ export class Engine {
   }
 
   // --- Sauvegarde ---------------------------------------------------------
+
+  /** Emplacements que le port propose ; [] s'il n'en a qu'un. */
+  saveSlots(): SaveSlotInfo[] {
+    return this.saveStore.slots?.() ?? [];
+  }
+
+  /** Sauvegarde dans l'emplacement `slot`, qui devient l'emplacement courant. */
+  saveTo(slot: number): void {
+    this.saveStore.select?.(slot);
+    this.save();
+  }
 
   save(): void {
     this.saveStore.write({

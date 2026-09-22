@@ -50,6 +50,20 @@ describe("emplacements de sauvegarde", () => {
     expect(readSlot("a", 1)).toBeNull();
   });
 
+  it("le port peut changer d'emplacement et les decrit", () => {
+    const store = localSaveStore("a", 1, "h1");
+    store.select?.(3);
+    store.write(DATA);
+    expect(readSlot("a", 3)?.data).toEqual(DATA);
+    expect(readSlot("a", 1)).toBeNull();
+    store.select?.(9); // hors bornes : ignore
+    expect(store.slots?.().map((s) => [s.slot, s.summary !== "", s.current])).toEqual([
+      [1, false, false],
+      [2, false, false],
+      [3, true, true],
+    ]);
+  });
+
   it("l'ancienne sauvegarde unique devient l'emplacement 1", () => {
     localStorage.setItem("a2adv:save:a", JSON.stringify(DATA));
     expect(readSlot("a", 1)?.data).toEqual(DATA);

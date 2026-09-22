@@ -7,7 +7,7 @@
 // Chaque emplacement garde aussi la date et le hash de l'aventure qui l'a
 // ecrit : le hash dit si la sauvegarde vient d'une autre version du texte.
 
-import type { SaveData, SaveStore } from "../engine/engine";
+import type { SaveData, SaveSlotInfo, SaveStore } from "../engine/engine";
 
 export const SLOT_COUNT = 3;
 
@@ -98,13 +98,42 @@ export function hasAnySave(advId: string): boolean {
   return listSlots(advId).some((s) => s !== null);
 }
 
-/** Port d'E/S du moteur pour un emplacement : `Engine` lit et ecrit la
- * partie de l'emplacement choisi, sans rien savoir des autres. */
+/** Description lisible d'un emplacement ; "" s'il est vide. */
+export function slotSummary(slot: SaveSlot | null): string {
+  if (!slot) return "";
+  const parts: string[] = [];
+  if (slot.data.moves > 0) parts.push(`${slot.data.moves} mouvements`);
+  if (slot.data.score > 0) parts.push(`score ${slot.data.score}`);
+  if (slot.savedAt) {
+    parts.push(
+      new Date(slot.savedAt).toLocaleString("fr-FR", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    );
+  }
+  return parts.join(" · ") || "partie sauvegardée";
+}
+
+/** Port d'E/S du moteur : `Engine` lit et ecrit la partie de l'emplacement
+ * courant (`slot` au depart), et peut en changer via select(). */
 export function localSaveStore(advId: string, slot: number, hash: string): SaveStore {
+  let current = slot;
   return {
-    read: () => readSlot(advId, slot)?.data ?? null,
+    read: () => readSlot(advId, current)?.data ?? null,
     write: (data: SaveData) =>
-      void writeSlot(advId, slot, { savedAt: new Date().toISOString(), hash, data }),
+      void writeSlot(advId, current, { savedAt: new Date().toISOString(), hash, data }),
+    slots: (): SaveSlotInfo[] =>
+      listSlots(advId).map((s, i) => ({
+        slot: i + 1,
+        summary: slotSummary(s),
+        current: i + 1 === current,
+      })),
+    select: (n: number) => {
+      if (Number.isInteger(n) && n >= 1 && n <= SLOT_COUNT) current = n;
+    },
   };
 }
 
