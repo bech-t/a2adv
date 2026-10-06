@@ -19,7 +19,7 @@
     "@angular/forms": "^22.1.0",
     "@angular/material": "^22.1.5",
     "@angular/platform-browser": "^22.1.0",
-    "@angular/router": "^22.1.0",
+    "@angular/router": "^22.2.0",
     "@codemirror/commands": "^6.11.0",
     "@codemirror/language": "^6.12.4",
     "@codemirror/state": "^6.7.4",
